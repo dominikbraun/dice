@@ -1,0 +1,20 @@
+version: 2.1
+
+executors:
+  go-container:
+    docker:
+      - image: circleci/golang:1.12
+        environment:
+          CGO_ENABLED: 0
+          GO111MODULE: "on"
+jobs:
+  dice-build:
+    executor: go-container
+    steps:
+      - checkout
+
+workflows:
+  version: 2
+  all-builds:
+    jobs:
+      - dice-build

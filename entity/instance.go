@@ -34,6 +34,7 @@ const (
 type InstanceConfig struct {
 	Name       string   `json:"name"`
 	ServiceID  string   `json:"service_id"`
+	NodeID     string   `json:"node_id"`
 	URL        *url.URL `json:"url"`
 	Version    string   `json:"version"`
 	IsAttached bool     `json:"is_attached"`

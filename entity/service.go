@@ -25,11 +25,10 @@ const (
 
 // ServiceConfig concludes all properties that can be configured by the user.
 type ServiceConfig struct {
-	Name          string   `json:"name"`
-	NodeIDs       []string `json:"node_ids"`
-	Weight        uint8    `json:"weight"`
-	TargetVersion string   `json:"target_version"`
-	IsActive      bool     `json:"is_active"`
+	Name          string `json:"name"`
+	Weight        uint8  `json:"weight"`
+	TargetVersion string `json:"target_version"`
+	IsActive      bool   `json:"is_active"`
 }
 
 // Service represents a single service of an application or even the application

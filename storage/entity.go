@@ -15,14 +15,14 @@
 // Package storage provides persistence interfaces and implementations.
 package storage
 
-// Entity is any Dice core entity that will be stored.
-type Entity interface{}
+// AnyEntity is any Dice core entity that will be stored.
+type AnyEntity interface{}
 
 // Property is an entity's property it will be identified by.
 type Property interface{}
 
-// EntityType indicates the data type of the Entity. Depending on the type,
-// an EntityStore has to decide where and how the entity has to be stored.
+// EntityType indicates the entity's data type. Depending on the type, an
+// Entity storage has to decide where and how the entity has to be stored.
 type EntityType uint
 
 const (
@@ -31,11 +31,10 @@ const (
 	Instance EntityType = 2
 )
 
-// EntityStore is the common interface for persisting core entities.
-type EntityStore interface {
-	Create(entity Entity, t EntityType) error
-	FindAll(t EntityType) ([]Entity, error)
-	FindBy(identifier string, property Property, t EntityType) (Entity, error)
-	Update(identifier string, property Property, t EntityType, src Entity) error
-	Delete(identifier string, property Property, t EntityType) error
+// Entity is the common interface for persisting core entities.
+type Entity interface {
+	Create(source AnyEntity, t EntityType) error
+	FindAll(t EntityType) ([]AnyEntity, error)
+	FindBy(identifier interface{}, property Property, t EntityType) ([]AnyEntity, error)
+	Delete(identifier interface{}, property Property, t EntityType) error
 }

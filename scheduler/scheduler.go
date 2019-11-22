@@ -15,16 +15,19 @@
 // Package scheduler provides multiple request scheduling implementations.
 package scheduler
 
-import "github.com/dominikbraun/dice/entity"
+import (
+	"fmt"
+	"github.com/dominikbraun/dice/entity"
+)
 
-// BalancingAlgorithm represents a load balancing method.
-type BalancingAlgorithm string
+// BalancingMethod represents a load balancing method.
+type BalancingMethod string
 
 const (
-	LeastConnectionBalancing    BalancingAlgorithm = "least_connection"
-	RandomBalancing             BalancingAlgorithm = "random"
-	RoundRobinBalancing         BalancingAlgorithm = "round_robin"
-	WeightedRoundRobinBalancing BalancingAlgorithm = "weighted_round_robin"
+	LeastConnectionBalancing    BalancingMethod = "least_connection"
+	RandomBalancing             BalancingMethod = "random"
+	RoundRobinBalancing         BalancingMethod = "round_robin"
+	WeightedRoundRobinBalancing BalancingMethod = "weighted_round_robin"
 )
 
 // Scheduler prescribes methods for retrieving the next service instance.
@@ -45,10 +48,10 @@ type Deployment struct {
 }
 
 // NewScheduler creates a scheduler instance depending on the balancing algorithm.
-func NewScheduler(algorithm BalancingAlgorithm, deployments []Deployment) Scheduler {
+func NewScheduler(method BalancingMethod, deployments []Deployment) (Scheduler, error) {
 	var s Scheduler
 
-	switch algorithm {
+	switch method {
 	case LeastConnectionBalancing:
 		panic("unimplemented balancing algorithm")
 	case RandomBalancing:
@@ -58,8 +61,15 @@ func NewScheduler(algorithm BalancingAlgorithm, deployments []Deployment) Schedu
 	case WeightedRoundRobinBalancing:
 		s = newWeightedRoundRobin(deployments)
 	default:
-		panic("unimplemented balancing algorithm")
+		return nil, invalidBalancingMethodErr(method)
 	}
 
-	return s
+	return s, nil
+}
+
+// invalidBalancingMethodErr returns an error indicating that an unsupported
+// load balancing method has been supplied.
+func invalidBalancingMethodErr(method BalancingMethod) error {
+	err := fmt.Errorf("invalid balancing method: %v", method)
+	return err
 }

@@ -35,20 +35,8 @@ type Scheduler interface {
 	Next() (*entity.Instance, error)
 }
 
-// Deployment represents a service instance deployed to a node. A scheduler
-// needs to know on which node an instance has been deployed, because the
-// node's weight is important for some algorithms.
-//
-// Storing just a reference to the node instance is useful when the node data
-// is being updated via the CLI: The new data will be read automatically, since
-// the reference points to the global, modified object.
-type Deployment struct {
-	instance *entity.Instance
-	node     *entity.Node
-}
-
 // NewScheduler creates a scheduler instance depending on the balancing algorithm.
-func NewScheduler(method BalancingMethod, deployments []Deployment) (Scheduler, error) {
+func NewScheduler(method BalancingMethod, deployments *[]entity.Deployment) (Scheduler, error) {
 	var s Scheduler
 
 	switch method {

@@ -55,8 +55,14 @@ type Instance struct {
 	IsAlive       bool           `json:"is_alive"`
 }
 
-// NewInstance creates a new Instance instance and returns a reference to it. Returns
-// an error in case the ID cannot be generated.
+// Deployment represents a service instance that has been deployed to a node.
+type Deployment struct {
+	Node     *Node
+	Instance *Instance
+}
+
+// NewInstance creates a new Instance instance and returns a reference to it.
+// Returns an error in case the ID cannot be generated.
 func NewInstance(config InstanceConfig) (*Instance, error) {
 	uuid, err := generateEntityUUID()
 	if err != nil {

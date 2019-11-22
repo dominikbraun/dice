@@ -23,13 +23,13 @@ import (
 // WeightedRoundRobin is a request scheduler which implements the Weighted
 // Round Robin algorithm.
 type WeightedRoundRobin struct {
-	deployments   []Deployment
+	deployments   *[]entity.Deployment
 	currentIndex  int
 	currentWeight uint8
 }
 
 // newWeightedRoundRobin creates a new WeightedRoundRobin instance.
-func newWeightedRoundRobin(deployments []Deployment) *WeightedRoundRobin {
+func newWeightedRoundRobin(deployments *[]entity.Deployment) *WeightedRoundRobin {
 	w := WeightedRoundRobin{
 		deployments:   deployments,
 		currentIndex:  0,
@@ -45,26 +45,26 @@ func (w *WeightedRoundRobin) Next() (*entity.Instance, error) {
 	attempts := 0
 
 lookup:
-	for attempts < len(w.deployments) {
-		index := w.currentIndex % len(w.deployments)
-		d := w.deployments[index]
+	for attempts < len(*w.deployments) {
+		index := w.currentIndex % len(*w.deployments)
+		d := (*w.deployments)[index]
 
-		if !d.instance.Config.IsAttached || !d.instance.IsAlive {
+		if !d.Instance.Config.IsAttached || !d.Instance.IsAlive {
 			w.currentIndex++
 			attempts++
 			continue lookup
 		}
 
-		if d.node.Config.Weight == w.currentWeight {
+		if d.Node.Config.Weight == w.currentWeight {
 			w.currentIndex++
 			w.currentWeight = uint8(0)
 			attempts++
 			continue lookup
 		}
 
-		if d.node.Config.Weight > w.currentWeight {
+		if d.Node.Config.Weight > w.currentWeight {
 			w.currentWeight++
-			return d.instance, nil
+			return d.Instance, nil
 		}
 
 		attempts++

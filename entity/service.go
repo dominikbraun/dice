@@ -27,7 +27,6 @@ const (
 type ServiceConfig struct {
 	Name            string   `json:"name"`
 	Hosts           []string `json:"hosts"`
-	Weight          uint8    `json:"weight"`
 	TargetVersion   string   `json:"target_version"`
 	BalancingMethod string   `json:"balancing_method"`
 	IsActive        bool     `json:"is_active"`

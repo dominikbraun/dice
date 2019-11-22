@@ -30,12 +30,13 @@ func newNodeCommand() *cobra.Command {
 
 	nodeCmd.AddCommand(newNodeCreateCommand())
 	nodeCmd.AddCommand(newNodeAttachCommand())
+	nodeCmd.AddCommand(newNodeDetachCommand())
 	nodeCmd.AddCommand(newNodeInfoCommand())
 
 	return &nodeCmd
 }
 
-// newNodeCreateCommand creates a command for creating a new node.
+// newNodeCreateCommand creates a new command for creating a new node.
 func newNodeCreateCommand() *cobra.Command {
 	nodeCreateCmd := cobra.Command{
 		Use:   "create <URL>",
@@ -67,6 +68,21 @@ func newNodeAttachCommand() *cobra.Command {
 	}
 
 	return &nodeAttachCmd
+}
+
+// newNodeDetachCommand creates a new command for detaching a node.
+func newNodeDetachCommand() *cobra.Command {
+	nodeDetachCmd := cobra.Command{
+		Use:   "detach <ID|NAME|URL>",
+		Short: `Detach an existing node`,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			_ = cmd.Help()
+			return nil
+		},
+	}
+
+	return &nodeDetachCmd
 }
 
 // newNodeInfoCommand creates a new command for printing information.

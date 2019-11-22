@@ -22,24 +22,24 @@ import (
 	"os"
 )
 
-// ClientAPIConfig concludes all properties that can be configured by the user.
+// APIConfig concludes all properties that can be configured by the user.
 // Note that the TCP address needs to be secured against remote access.
-type ClientAPIConfig struct {
+type APIConfig struct {
 	Address string `json:"address"`
 	Logfile string `json:"logfile"`
 }
 
-// ClientAPI is an API server which exposes a REST API. The Dice CLI will send
-// all requests to this server's endpoints.
-type ClientAPI struct {
-	config ClientAPIConfig
+// API is an API server which exposes a REST API. The Dice CLI will send all
+// requests to this server's endpoints.
+type API struct {
+	config APIConfig
 	router chi.Router
 	server *http.Server
 }
 
-// NewClientAPI creates a new ClientAPI instance and returns a reference to it.
-func NewClientAPI(config ClientAPIConfig) *ClientAPI {
-	c := ClientAPI{
+// NewAPI creates a new API instance and returns a reference to it.
+func NewAPI(config APIConfig) *API {
+	c := API{
 		config: config,
 		router: chi.NewRouter(),
 	}
@@ -52,12 +52,12 @@ func NewClientAPI(config ClientAPIConfig) *ClientAPI {
 	return &c
 }
 
-// Run starts the API server. It will listen to the specified port and
-// handle incoming requests, sending errors through the returned channel.
+// Run starts the API server. It will listen to the specified port and handle
+// incoming requests, sending errors through the returned channel.
 //
-// When a signal is received through the quit channel, the proxy server
-// attempts a graceful shutdown.
-func (c *ClientAPI) Run(quit <-chan os.Signal) chan<- error {
+// When a signal is received through the quit channel, the proxy server attempts
+// a graceful shutdown.
+func (c *API) Run(quit <-chan os.Signal) chan<- error {
 	errorChan := make(chan error)
 
 	go func() {

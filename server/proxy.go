@@ -17,7 +17,10 @@ package server
 
 import (
 	"context"
+	"fmt"
+	"github.com/dominikbraun/dice/entity"
 	"github.com/dominikbraun/dice/scheduler"
+	"github.com/dominikbraun/dice/storage"
 	"net/http"
 	"os"
 )
@@ -31,16 +34,36 @@ type ProxyConfig struct {
 // Proxy is a proxy server that will handle incoming requests, establish a
 // new connection to an service instance and return the service's respond.
 type Proxy struct {
-	config    ProxyConfig
-	server    *http.Server
-	scheduler scheduler.Scheduler
+	config ProxyConfig
+	memory storage.Entity
+	server *http.Server
+
+	// hostRegistry is a mapping of a hostname against a service ID.
+	hostRegistry map[string]string
+
+	// serviceRegistry is a mapping of a service ID against a service.
+	serviceRegistry map[string]Service
+}
+
+// Service represents an entity.Service from the proxy's point of view. This
+// means that it holds the original service data, an associated scheduler and
+// most importantly a list of deployed service instances.
+//
+// The data about the services - such as existing services and their instances -
+// will be read from Dice's memory storage and then stored in the service map.
+type Service struct {
+	entity      *entity.Service
+	scheduler   scheduler.Scheduler
+	deployments []entity.Deployment
 }
 
 // NewProxy creates a new Proxy instance and returns a reference to it.
-func NewProxy(config ProxyConfig, scheduler scheduler.Scheduler) *Proxy {
+func NewProxy(config ProxyConfig, memory storage.Entity) *Proxy {
 	p := Proxy{
-		config:    config,
-		scheduler: scheduler,
+		config:          config,
+		memory:          memory,
+		hostRegistry:    make(map[string]string),
+		serviceRegistry: make(map[string]Service),
 	}
 
 	p.server = &http.Server{
@@ -51,11 +74,56 @@ func NewProxy(config ProxyConfig, scheduler scheduler.Scheduler) *Proxy {
 	return &p
 }
 
-// Run starts the proxy server. It will listen to the specified port and
-// handle incoming requests, sending errors through the returned channel.
-//
-// When a signal is received through the quit channel, the proxy server
-// attempts a graceful shutdown.
+// initRegistries initializes the host- and service registries. It reads
+// all stored services from the in-memory storage and populates the maps.
+func (p *Proxy) initRegistries() error {
+	services, err := p.memory.FindAll(storage.Service)
+	if err != nil {
+		return err
+	}
+
+	for _, s := range services {
+		e := s.(*entity.Service)
+
+		for _, h := range e.Config.Hosts {
+			p.hostRegistry[h] = e.ID
+		}
+
+		service := Service{
+			entity:      e,
+			deployments: nil,
+		}
+
+		method := scheduler.BalancingMethod(e.Config.BalancingMethod)
+		service.scheduler, err = scheduler.NewScheduler(method, &service.deployments)
+		if err != nil {
+			return err
+		}
+
+		p.serviceRegistry[service.entity.ID] = service
+	}
+
+	return nil
+}
+
+// lookupService searches an entry for the given host in the host registry. If
+// it exists, it searches and returns the service with the associated ID.
+func (p *Proxy) lookupService(host string) (Service, error) {
+	serviceID, exists := p.hostRegistry[host]
+	if !exists {
+		return Service{}, fmt.Errorf("host entry for %v not found", host)
+	}
+
+	service, exists := p.serviceRegistry[serviceID]
+	if !exists {
+		return Service{}, fmt.Errorf("service for %v not found", host)
+	}
+
+	return service, nil
+}
+
+// Run starts the proxy server. It will listen to the specified port and handle
+// incoming requests, sending errors through the returned channel.
 func (p *Proxy) Run(quit <-chan os.Signal) chan<- error {
 	errorChan := make(chan error)
 
@@ -78,8 +146,8 @@ func (p *Proxy) Run(quit <-chan os.Signal) chan<- error {
 	return errorChan
 }
 
-// handleRequest implements the core request handling logic which includes
-// the transfer/copy of the byte streams between the connections.
+// handleRequest implements the core request handling logic which includes the
+// transfer/copy of the byte streams between the connections.
 func (p *Proxy) handleRequest() http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		// ToDo: Implement request handling

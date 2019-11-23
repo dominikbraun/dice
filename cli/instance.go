@@ -21,7 +21,7 @@ import "github.com/spf13/cobra"
 func newInstanceCommand() *cobra.Command {
 	instanceCmd := cobra.Command{
 		Use:   "instance",
-		Short: `Manage service instances`,
+		Short: `Manage Dice's service instances`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_ = cmd.Help()
 			return nil

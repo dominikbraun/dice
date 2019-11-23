@@ -31,11 +31,12 @@ func newDiceCommand() *cobra.Command {
 
 	diceCmd.AddCommand(newNodeCommand())
 	diceCmd.AddCommand(newServiceCommand())
+	diceCmd.AddCommand(newInstanceCommand())
 
 	return &diceCmd
 }
 
 // Build triggers the build of all commands and returns the root command.
 func Build() *cobra.Command {
-	return newNodeCommand()
+	return newDiceCommand()
 }

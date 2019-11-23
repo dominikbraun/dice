@@ -36,7 +36,7 @@ type ProxyServerConfig struct {
 // new connection to an service instance and return the service's respond.
 type ProxyServer struct {
 	config ProxyServerConfig
-	memory storage.Entity
+	memory storage.EntityStorage
 	server *http.Server
 
 	// hostRegistry is a mapping of a hostname against a service ID.
@@ -59,7 +59,7 @@ type Service struct {
 }
 
 // NewProxyServer creates a new Proxy instance and returns a reference to it.
-func NewProxyServer(config ProxyServerConfig, memory storage.Entity) *ProxyServer {
+func NewProxyServer(config ProxyServerConfig, memory storage.EntityStorage) *ProxyServer {
 	p := ProxyServer{
 		config:          config,
 		memory:          memory,

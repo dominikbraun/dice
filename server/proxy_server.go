@@ -26,16 +26,16 @@ import (
 	"github.com/dominikbraun/dice/storage"
 )
 
-// ProxyConfig concludes all properties that can be configured by the user.
-type ProxyConfig struct {
+// ProxyServerConfig concludes all properties that can be configured by the user.
+type ProxyServerConfig struct {
 	Address string `json:"address"`
 	Logfile string `json:"logfile"`
 }
 
-// Proxy is a proxy server that will handle incoming requests, establish a
+// ProxyServer is a proxy server that will handle incoming requests, establish a
 // new connection to an service instance and return the service's respond.
-type Proxy struct {
-	config ProxyConfig
+type ProxyServer struct {
+	config ProxyServerConfig
 	memory storage.Entity
 	server *http.Server
 
@@ -58,9 +58,9 @@ type Service struct {
 	deployments []entity.Deployment
 }
 
-// NewProxy creates a new Proxy instance and returns a reference to it.
-func NewProxy(config ProxyConfig, memory storage.Entity) *Proxy {
-	p := Proxy{
+// NewProxyServer creates a new Proxy instance and returns a reference to it.
+func NewProxyServer(config ProxyServerConfig, memory storage.Entity) *ProxyServer {
+	p := ProxyServer{
 		config:          config,
 		memory:          memory,
 		hostRegistry:    make(map[string]string),
@@ -77,7 +77,7 @@ func NewProxy(config ProxyConfig, memory storage.Entity) *Proxy {
 
 // initRegistries initializes the host- and service registries. It reads
 // all stored services from the in-memory storage and populates the maps.
-func (p *Proxy) initRegistries() error {
+func (p *ProxyServer) initRegistries() error {
 	services, err := p.memory.FindAll(storage.Service)
 	if err != nil {
 		return err
@@ -109,7 +109,7 @@ func (p *Proxy) initRegistries() error {
 
 // lookupService searches an entry for the given host in the host registry. If
 // it exists, it searches and returns the service with the associated ID.
-func (p *Proxy) lookupService(host string) (Service, error) {
+func (p *ProxyServer) lookupService(host string) (Service, error) {
 	serviceID, exists := p.hostRegistry[host]
 	if !exists {
 		return Service{}, fmt.Errorf("host entry for %v not found", host)
@@ -125,7 +125,7 @@ func (p *Proxy) lookupService(host string) (Service, error) {
 
 // Run starts the proxy server. It will listen to the specified port and handle
 // incoming requests, sending errors through the returned channel.
-func (p *Proxy) Run(quit <-chan os.Signal) chan<- error {
+func (p *ProxyServer) Run(quit <-chan os.Signal) chan<- error {
 	errorChan := make(chan error)
 
 	go func() {
@@ -149,7 +149,7 @@ func (p *Proxy) Run(quit <-chan os.Signal) chan<- error {
 
 // handleRequest implements the core request handling logic which includes the
 // transfer/copy of the byte streams between the connections.
-func (p *Proxy) handleRequest() http.Handler {
+func (p *ProxyServer) handleRequest() http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		// ToDo: Implement request handling
 	}

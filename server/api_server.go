@@ -23,34 +23,34 @@ import (
 	"github.com/go-chi/chi"
 )
 
-// APIConfig concludes all properties that can be configured by the user.
+// APIServerConfig concludes all properties that can be configured by the user.
 // Note that the TCP address needs to be secured against remote access.
-type APIConfig struct {
+type APIServerConfig struct {
 	Address string `json:"address"`
 	Logfile string `json:"logfile"`
 }
 
-// API is an API server which exposes a REST API. The Dice CLI will send all
+// APIServer is an APIServer server which exposes a REST APIServer. The Dice CLI will send all
 // requests to this server's endpoints.
-type API struct {
-	config APIConfig
+type APIServer struct {
+	config APIServerConfig
 	router chi.Router
 	server *http.Server
 }
 
-// NewAPI creates a new API instance and returns a reference to it.
-func NewAPI(config APIConfig) *API {
-	c := API{
+// NewAPIServer creates a new API instance and returns a reference to it.
+func NewAPIServer(config APIServerConfig) *APIServer {
+	a := APIServer{
 		config: config,
 		router: chi.NewRouter(),
 	}
 
-	c.server = &http.Server{
-		Addr:    c.config.Address,
-		Handler: c.router,
+	a.server = &http.Server{
+		Addr:    a.config.Address,
+		Handler: a.router,
 	}
 
-	return &c
+	return &a
 }
 
 // Run starts the API server. It will listen to the specified port and handle
@@ -58,11 +58,11 @@ func NewAPI(config APIConfig) *API {
 //
 // When a signal is received through the quit channel, the proxy server attempts
 // a graceful shutdown.
-func (c *API) Run(quit <-chan os.Signal) chan<- error {
+func (a *APIServer) Run(quit <-chan os.Signal) chan<- error {
 	errorChan := make(chan error)
 
 	go func() {
-		err := c.server.ListenAndServe()
+		err := a.server.ListenAndServe()
 
 		if err != nil && err != http.ErrServerClosed {
 			errorChan <- err
@@ -72,7 +72,7 @@ func (c *API) Run(quit <-chan os.Signal) chan<- error {
 	go func() {
 		<-quit
 
-		if err := c.server.Shutdown(context.Background()); err != nil {
+		if err := a.server.Shutdown(context.Background()); err != nil {
 			errorChan <- err
 		}
 	}()

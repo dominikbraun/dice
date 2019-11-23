@@ -80,6 +80,23 @@ func (sr *ServiceRegistry) AddService(service Service) error {
 	return nil
 }
 
+// UpdateService updates an existing service entry. Returns an error if
+// the service is not registered.
+func (sr *ServiceRegistry) UpdateService(serviceID string, service Service) error {
+	if _, exists := sr.services[serviceID]; !exists {
+		return fmt.Errorf("service %v is not registered", serviceID)
+	}
+	sr.services[serviceID] = service
+
+	return nil
+}
+
+// ServiceExits determines if a service is registered.
+func (sr *ServiceRegistry) ServiceExists(serviceID string) bool {
+	_, exists := sr.services[serviceID]
+	return exists
+}
+
 // LookupService searches a service using a given service ID.
 func (sr *ServiceRegistry) LookupService(serviceID string) (Service, error) {
 	if _, exists := sr.services[serviceID]; !exists {
@@ -98,4 +115,26 @@ func (sr *ServiceRegistry) LookupServiceByHost(host string) (Service, error) {
 	}
 
 	return sr.LookupService(serviceID)
+}
+
+// AddServiceHost adds a new host to the registry. Note that this function
+// does not add the host to the service entity.
+func (sr *ServiceRegistry) AddServiceHost(host, serviceID string) error {
+	if _, exists := sr.hosts[host]; exists {
+		return fmt.Errorf("host %v is already registered", host)
+	}
+	sr.hosts[host] = serviceID
+
+	return nil
+}
+
+// RemoveServiceHost removes an existing host entry from the registry. Note
+// that this function does not remove the host from the service entity.
+func (sr *ServiceRegistry) RemoveServiceHost(host string) error {
+	if _, exists := sr.hosts[host]; !exists {
+		return fmt.Errorf("host %v is not registered", host)
+	}
+	delete(sr.hosts, host)
+
+	return nil
 }

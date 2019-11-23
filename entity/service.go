@@ -29,7 +29,7 @@ type ServiceConfig struct {
 	Hosts           []string `json:"hosts"`
 	TargetVersion   string   `json:"target_version"`
 	BalancingMethod string   `json:"balancing_method"`
-	IsActive        bool     `json:"is_active"`
+	IsActivated     bool     `json:"is_activated"`
 }
 
 // Service represents a single service of an application or even the application

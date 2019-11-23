@@ -49,7 +49,7 @@ func newServiceCreateCommand() *cobra.Command {
 	}
 
 	serviceCreateCmd.Flags().String("balancing", "weighted_round_robin", `specify a balancing method`)
-	serviceCreateCmd.Flags().Bool("is-active", false, `immediately activate the service`)
+	serviceCreateCmd.Flags().Bool("activate", false, `immediately activate the service`)
 
 	return &serviceCreateCmd
 }

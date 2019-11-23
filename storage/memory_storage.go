@@ -22,18 +22,18 @@ import (
 	"github.com/dominikbraun/dice/entity"
 )
 
-// Memory represents a simple in-memory storage. Manipulating a stored
+// MemoryStorage represents a simple in-memory storage. Manipulating a stored
 // entity will take effect on any function reading the entity.
-type Memory struct {
+type MemoryStorage struct {
 	nodes     []*entity.Node
 	services  []*entity.Service
 	instances []*entity.Instance
 }
 
-// NewMemory creates a new Memory instances that will be initialized with the
+// NewMemoryStorage creates a new Memory instances that will be initialized with the
 // pre-allocated entity slices.
-func NewMemory(nodes []*entity.Node, services []*entity.Service, instances []*entity.Instance) *Memory {
-	m := Memory{
+func NewMemoryStorage(nodes []*entity.Node, services []*entity.Service, instances []*entity.Instance) *MemoryStorage {
+	m := MemoryStorage{
 		nodes:     nodes,
 		services:  services,
 		instances: instances,
@@ -43,7 +43,7 @@ func NewMemory(nodes []*entity.Node, services []*entity.Service, instances []*en
 }
 
 // Create implements Entity.Create.
-func (m *Memory) Create(source AnyEntity, t EntityType) error {
+func (m *MemoryStorage) Create(source Entity, t EntityType) error {
 	switch t {
 	case Node:
 		node, ok := source.(*entity.Node)
@@ -74,10 +74,10 @@ func (m *Memory) Create(source AnyEntity, t EntityType) error {
 }
 
 // FindAll implements Entity.FindAll.
-func (m *Memory) FindAll(t EntityType) ([]AnyEntity, error) {
+func (m *MemoryStorage) FindAll(t EntityType) ([]Entity, error) {
 	switch t {
 	case Node:
-		nodes := make([]AnyEntity, len(m.nodes))
+		nodes := make([]Entity, len(m.nodes))
 
 		for i, n := range m.nodes {
 			nodes[i] = n
@@ -86,7 +86,7 @@ func (m *Memory) FindAll(t EntityType) ([]AnyEntity, error) {
 		return nodes, nil
 
 	case Service:
-		services := make([]AnyEntity, len(m.services))
+		services := make([]Entity, len(m.services))
 
 		for i, s := range m.services {
 			services[i] = s
@@ -95,7 +95,7 @@ func (m *Memory) FindAll(t EntityType) ([]AnyEntity, error) {
 		return services, nil
 
 	case Instance:
-		instances := make([]AnyEntity, len(m.instances))
+		instances := make([]Entity, len(m.instances))
 
 		for i, inst := range m.services {
 			instances[i] = inst
@@ -109,8 +109,8 @@ func (m *Memory) FindAll(t EntityType) ([]AnyEntity, error) {
 }
 
 // FindBy implements Entity.FindBy.
-func (m *Memory) FindBy(identifier interface{}, property Property, t EntityType) ([]AnyEntity, error) {
-	matches := make([]AnyEntity, 0)
+func (m *MemoryStorage) FindBy(identifier interface{}, property Property, t EntityType) ([]Entity, error) {
+	matches := make([]Entity, 0)
 
 	switch t {
 	case Node:
@@ -157,7 +157,7 @@ func (m *Memory) FindBy(identifier interface{}, property Property, t EntityType)
 }
 
 // Delete implements Entity.Delete.
-func (m *Memory) Delete(identifier interface{}, property Property, t EntityType) error {
+func (m *MemoryStorage) Delete(identifier interface{}, property Property, t EntityType) error {
 	switch t {
 	case Node:
 		indexOf := -1

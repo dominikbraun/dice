@@ -13,6 +13,8 @@
 // limitations under the License.
 
 // Package storage provides persistence interfaces and implementations.
+// Unlike the storage registry, the storage package provides data in a
+// representation designed for persisting the data.
 package storage
 
 // Entity is any Dice core entity that will be stored.

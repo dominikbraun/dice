@@ -18,6 +18,7 @@ package storage
 import (
 	"errors"
 	"fmt"
+
 	"github.com/dominikbraun/dice/entity"
 )
 

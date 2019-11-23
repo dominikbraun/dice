@@ -15,9 +15,10 @@
 package entity
 
 import (
-	"github.com/sony/sonyflake"
 	"net/url"
 	"time"
+
+	"github.com/sony/sonyflake"
 )
 
 // NodeProperty represents a characteristic a node can be identified by.

@@ -17,9 +17,10 @@ package server
 
 import (
 	"context"
-	"github.com/go-chi/chi"
 	"net/http"
 	"os"
+
+	"github.com/go-chi/chi"
 )
 
 // APIConfig concludes all properties that can be configured by the user.

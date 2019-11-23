@@ -16,8 +16,9 @@
 package log
 
 import (
-	"github.com/sirupsen/logrus"
 	"io"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Level is the logging level which decides if a value will be logged or not.

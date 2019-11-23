@@ -17,6 +17,7 @@ package scheduler
 
 import (
 	"errors"
+
 	"github.com/dominikbraun/dice/entity"
 )
 

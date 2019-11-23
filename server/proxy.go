@@ -18,11 +18,12 @@ package server
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/dominikbraun/dice/entity"
 	"github.com/dominikbraun/dice/scheduler"
 	"github.com/dominikbraun/dice/storage"
-	"net/http"
-	"os"
 )
 
 // ProxyConfig concludes all properties that can be configured by the user.

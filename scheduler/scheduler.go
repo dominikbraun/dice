@@ -17,6 +17,7 @@ package scheduler
 
 import (
 	"fmt"
+
 	"github.com/dominikbraun/dice/entity"
 )
 

@@ -39,4 +39,5 @@ type EntityStorage interface {
 	FindAll(t EntityType) ([]Entity, error)
 	FindBy(identifier interface{}, property Property, t EntityType) ([]Entity, error)
 	Delete(identifier interface{}, property Property, t EntityType) error
+	Close() error
 }

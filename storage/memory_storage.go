@@ -229,6 +229,10 @@ func (m *MemoryStorage) Delete(identifier interface{}, property Property, t Enti
 	return nil
 }
 
+func (m *MemoryStorage) Close() error {
+	return nil
+}
+
 // typeAssertionErr returns an error indicating that a type assertion has failed.
 func typeAssertionErr(asserted string) error {
 	err := fmt.Errorf("entity is not of type %v", asserted)

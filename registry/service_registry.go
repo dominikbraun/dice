@@ -91,6 +91,22 @@ func (sr *ServiceRegistry) UpdateService(serviceID string, service Service) erro
 	return nil
 }
 
+// RemoveService removes a service and all host entries from the registry.
+func (sr *ServiceRegistry) RemoveService(serviceID string) error {
+	if _, exists := sr.services[serviceID]; !exists {
+		return fmt.Errorf("service %v is not registered", serviceID)
+	}
+
+	for host, id := range sr.hosts {
+		if id == serviceID {
+			delete(sr.hosts, host)
+		}
+	}
+	delete(sr.services, serviceID)
+
+	return nil
+}
+
 // ServiceExits determines if a service is registered.
 func (sr *ServiceRegistry) ServiceExists(serviceID string) bool {
 	_, exists := sr.services[serviceID]

@@ -16,6 +16,7 @@
 package core
 
 import (
+	"github.com/dominikbraun/dice/entity"
 	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/server"
 	"github.com/dominikbraun/dice/storage"
@@ -37,4 +38,44 @@ func NewDice() *Dice {
 	// Initialize components...
 
 	return &d
+}
+
+// CreateEntity creates and stores a new entity.
+func (d *Dice) CreateEntity(source entity.Entity, t entity.Type) error {
+	if err := d.memory.Create(source, t); err != nil {
+		return err
+	}
+
+	if err := d.kvStore.Create(source, t); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoveEntity removes an entity from all storages. In case the entity is a
+// service, the service will be removed from the registry.
+func (d *Dice) RemoveEntity(identifier interface{}, property entity.Property, t entity.Type) error {
+	if err := d.memory.Delete(identifier, property, t); err != nil {
+		return err
+	}
+
+	if err := d.kvStore.Delete(identifier, property, t); err != nil {
+		return err
+	}
+
+	if t == entity.TypeService {
+		e, err := d.memory.FindBy(identifier, property, t)
+		if err != nil {
+			return err
+		}
+
+		service := e.(*entity.Service)
+
+		if err := d.registry.RemoveService(service.ID); err != nil {
+			return nil
+		}
+	}
+
+	return nil
 }

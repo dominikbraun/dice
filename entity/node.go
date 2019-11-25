@@ -32,7 +32,7 @@ type Node struct {
 	IsAlive       bool      `json:"is_alive"`
 }
 
-func NewNode(options types.NodeCreateOptions) (*Node, error) {
+func NewNode(url *url.URL, options types.NodeCreateOptions) (*Node, error) {
 	uuid, err := generateEntityID()
 	if err != nil {
 		return nil, err
@@ -41,6 +41,7 @@ func NewNode(options types.NodeCreateOptions) (*Node, error) {
 	n := Node{
 		ID:            uuid,
 		Name:          options.Name,
+		URL:           url,
 		Weight:        options.Weight,
 		IsAttached:    options.Attach,
 		CreatedAt:     time.Now(),

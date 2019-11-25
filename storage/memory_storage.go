@@ -109,51 +109,46 @@ func (m *MemoryStorage) FindAll(t entity.Type) ([]entity.Entity, error) {
 }
 
 // FindBy implements Entity.FindBy.
-func (m *MemoryStorage) FindBy(identifier interface{}, property entity.Property, t entity.Type) ([]entity.Entity, error) {
-	matches := make([]entity.Entity, 0)
-
+func (m *MemoryStorage) FindBy(identifier interface{}, property entity.Property, t entity.Type) (entity.Entity, error) {
 	switch t {
 	case entity.TypeNode:
 		for _, n := range m.nodes {
 			if property == entity.NodeID && identifier == n.ID {
-				matches = append(matches, n)
+				return n, nil
 			}
 			if property == entity.NodeName && identifier == n.Config.Name {
-				matches = append(matches, n)
+				return n, nil
 			}
 			if property == entity.NodeURL && identifier == n.Config.URL {
-				matches = append(matches, n)
+				return n, nil
 			}
 		}
 
 	case entity.TypeService:
 		for _, s := range m.services {
 			if property == entity.ServiceID && identifier == s.ID {
-				matches = append(matches, s)
+				return s, nil
 			}
 			if property == entity.ServiceName && identifier == s.Config.Name {
-				matches = append(matches, s)
+				return s, nil
 			}
 		}
 
 	case entity.TypeInstance:
 		for _, i := range m.instances {
 			if property == entity.InstanceID && identifier == i.ID {
-				matches = append(matches, i)
+				return i, nil
 			}
 			if property == entity.InstanceName && identifier == i.Config.Name {
-				matches = append(matches, i)
+				return i, nil
 			}
 			if property == entity.InstanceURL && identifier == i.Config.URL {
-				matches = append(matches, i)
+				return i, nil
 			}
 		}
-
-	default:
-		return matches, invalidEntityTypeErr()
 	}
 
-	return matches, nil
+	return nil, invalidEntityTypeErr()
 }
 
 // Delete implements Entity.Delete.

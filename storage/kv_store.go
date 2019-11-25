@@ -67,7 +67,7 @@ func (kv *KVStore) FindAll(t entity.Type) ([]entity.Entity, error) {
 }
 
 // FindBy implements EntityStorage.FindBy.
-func (kv *KVStore) FindBy(identifier interface{}, property entity.Property, t entity.Type) ([]entity.Entity, error) {
+func (kv *KVStore) FindBy(identifier interface{}, property entity.Property, t entity.Type) (entity.Entity, error) {
 	return nil, nil
 }
 

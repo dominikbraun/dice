@@ -23,7 +23,7 @@ import "github.com/dominikbraun/dice/entity"
 type EntityStorage interface {
 	Create(source entity.Entity, t entity.Type) error
 	FindAll(t entity.Type) ([]entity.Entity, error)
-	FindBy(identifier interface{}, property entity.Property, t entity.Type) ([]entity.Entity, error)
+	FindBy(identifier interface{}, property entity.Property, t entity.Type) (entity.Entity, error)
 	Delete(identifier interface{}, property entity.Property, t entity.Type) error
 	Close() error
 }

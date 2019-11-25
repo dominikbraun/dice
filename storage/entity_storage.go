@@ -17,27 +17,13 @@
 // representation designed for persisting the data.
 package storage
 
-// Entity is any Dice core entity that will be stored.
-type Entity interface{}
+import "github.com/dominikbraun/dice/entity"
 
-// Property is an entity's property it will be identified by.
-type Property interface{}
-
-// EntityType indicates the entity's data type. Depending on the type, an
-// Entity storage has to decide where and how the entity has to be stored.
-type EntityType uint
-
-const (
-	Node     EntityType = 0
-	Service  EntityType = 1
-	Instance EntityType = 2
-)
-
-// EntityStorage is the common interface for persisting core entities.
+// EntityStorage is the common interface for persisting entities.
 type EntityStorage interface {
-	Create(source Entity, t EntityType) error
-	FindAll(t EntityType) ([]Entity, error)
-	FindBy(identifier interface{}, property Property, t EntityType) ([]Entity, error)
-	Delete(identifier interface{}, property Property, t EntityType) error
+	Create(source entity.Entity, t entity.Type) error
+	FindAll(t entity.Type) ([]entity.Entity, error)
+	FindBy(identifier interface{}, property entity.Property, t entity.Type) ([]entity.Entity, error)
+	Delete(identifier interface{}, property entity.Property, t entity.Type) error
 	Close() error
 }

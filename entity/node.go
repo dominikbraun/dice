@@ -43,7 +43,7 @@ type NodeConfig struct {
 // This may be a physical server or a virtual machine for example.
 type Node struct {
 	ID            string     `json:"id"`
-	Config        NodeConfig `json:"id"`
+	Config        NodeConfig `json:"config"`
 	CreatedAt     time.Time  `json:"created_at"`
 	AttachedSince time.Time  `json:"attached_since"`
 	IsAlive       bool       `json:"is_alive"`

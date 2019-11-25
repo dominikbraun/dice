@@ -43,23 +43,23 @@ func NewMemoryStorage(nodes []*entity.Node, services []*entity.Service, instance
 }
 
 // Create implements Entity.Create.
-func (m *MemoryStorage) Create(source Entity, t EntityType) error {
+func (m *MemoryStorage) Create(source entity.Entity, t entity.Type) error {
 	switch t {
-	case Node:
+	case entity.TypeNode:
 		node, ok := source.(*entity.Node)
 		if !ok {
 			return typeAssertionErr("*entity.Node")
 		}
 		m.nodes = append(m.nodes, node)
 
-	case Service:
+	case entity.TypeService:
 		service, ok := source.(*entity.Service)
 		if !ok {
 			return typeAssertionErr("*entity.Service")
 		}
 		m.services = append(m.services, service)
 
-	case Instance:
+	case entity.TypeInstance:
 		instance, ok := source.(*entity.Instance)
 		if !ok {
 			return typeAssertionErr("*entity.Instance")
@@ -74,10 +74,10 @@ func (m *MemoryStorage) Create(source Entity, t EntityType) error {
 }
 
 // FindAll implements Entity.FindAll.
-func (m *MemoryStorage) FindAll(t EntityType) ([]Entity, error) {
+func (m *MemoryStorage) FindAll(t entity.Type) ([]entity.Entity, error) {
 	switch t {
-	case Node:
-		nodes := make([]Entity, len(m.nodes))
+	case entity.TypeNode:
+		nodes := make([]entity.Entity, len(m.nodes))
 
 		for i, n := range m.nodes {
 			nodes[i] = n
@@ -85,8 +85,8 @@ func (m *MemoryStorage) FindAll(t EntityType) ([]Entity, error) {
 
 		return nodes, nil
 
-	case Service:
-		services := make([]Entity, len(m.services))
+	case entity.TypeService:
+		services := make([]entity.Entity, len(m.services))
 
 		for i, s := range m.services {
 			services[i] = s
@@ -94,8 +94,8 @@ func (m *MemoryStorage) FindAll(t EntityType) ([]Entity, error) {
 
 		return services, nil
 
-	case Instance:
-		instances := make([]Entity, len(m.instances))
+	case entity.TypeInstance:
+		instances := make([]entity.Entity, len(m.instances))
 
 		for i, inst := range m.services {
 			instances[i] = inst
@@ -109,11 +109,11 @@ func (m *MemoryStorage) FindAll(t EntityType) ([]Entity, error) {
 }
 
 // FindBy implements Entity.FindBy.
-func (m *MemoryStorage) FindBy(identifier interface{}, property Property, t EntityType) ([]Entity, error) {
-	matches := make([]Entity, 0)
+func (m *MemoryStorage) FindBy(identifier interface{}, property entity.Property, t entity.Type) ([]entity.Entity, error) {
+	matches := make([]entity.Entity, 0)
 
 	switch t {
-	case Node:
+	case entity.TypeNode:
 		for _, n := range m.nodes {
 			if property == entity.NodeID && identifier == n.ID {
 				matches = append(matches, n)
@@ -126,7 +126,7 @@ func (m *MemoryStorage) FindBy(identifier interface{}, property Property, t Enti
 			}
 		}
 
-	case Service:
+	case entity.TypeService:
 		for _, s := range m.services {
 			if property == entity.ServiceID && identifier == s.ID {
 				matches = append(matches, s)
@@ -136,7 +136,7 @@ func (m *MemoryStorage) FindBy(identifier interface{}, property Property, t Enti
 			}
 		}
 
-	case Instance:
+	case entity.TypeInstance:
 		for _, i := range m.instances {
 			if property == entity.InstanceID && identifier == i.ID {
 				matches = append(matches, i)
@@ -157,9 +157,9 @@ func (m *MemoryStorage) FindBy(identifier interface{}, property Property, t Enti
 }
 
 // Delete implements Entity.Delete.
-func (m *MemoryStorage) Delete(identifier interface{}, property Property, t EntityType) error {
+func (m *MemoryStorage) Delete(identifier interface{}, property entity.Property, t entity.Type) error {
 	switch t {
-	case Node:
+	case entity.TypeNode:
 		indexOf := -1
 
 		for i, n := range m.nodes {
@@ -181,7 +181,7 @@ func (m *MemoryStorage) Delete(identifier interface{}, property Property, t Enti
 			return entityNotFoundErr(identifier)
 		}
 
-	case Service:
+	case entity.TypeService:
 		indexOf := -1
 
 		for i, s := range m.services {
@@ -200,7 +200,7 @@ func (m *MemoryStorage) Delete(identifier interface{}, property Property, t Enti
 			return entityNotFoundErr(identifier)
 		}
 
-	case Instance:
+	case entity.TypeInstance:
 		indexOf := -1
 
 		for i, inst := range m.instances {
@@ -229,6 +229,7 @@ func (m *MemoryStorage) Delete(identifier interface{}, property Property, t Enti
 	return nil
 }
 
+// Close implements EntityStorage.Close.
 func (m *MemoryStorage) Close() error {
 	return nil
 }

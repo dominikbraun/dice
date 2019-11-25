@@ -19,6 +19,8 @@ package storage
 
 import "github.com/dgraph-io/badger"
 
+import "github.com/dominikbraun/dice/entity"
+
 const (
 	rootBucket     = "dice"
 	nodeBucket     = "nodes"
@@ -55,22 +57,22 @@ func NewKVStore(config KVStoreConfig) (*KVStore, error) {
 }
 
 // Create implements EntityStorage.Create.
-func (kv *KVStore) Create(source Entity, t EntityType) error {
+func (kv *KVStore) Create(source entity.Entity, t entity.Type) error {
 	return nil
 }
 
 // FindAll implements EntityStorage.FindAll.
-func (kv *KVStore) FindAll(t EntityType) ([]Entity, error) {
+func (kv *KVStore) FindAll(t entity.Type) ([]entity.Entity, error) {
 	return nil, nil
 }
 
 // FindBy implements EntityStorage.FindBy.
-func (kv *KVStore) FindBy(identifier interface{}, property Property, t EntityType) ([]Entity, error) {
+func (kv *KVStore) FindBy(identifier interface{}, property entity.Property, t entity.Type) ([]entity.Entity, error) {
 	return nil, nil
 }
 
 // Delete implements EntityStorage.Delete.
-func (kv *KVStore) Delete(identifier interface{}, property Property, t EntityType) error {
+func (kv *KVStore) Delete(identifier interface{}, property entity.Property, t entity.Type) error {
 	return nil
 }
 

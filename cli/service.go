@@ -14,7 +14,10 @@
 
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/dominikbraun/dice/types"
+	"github.com/spf13/cobra"
+)
 
 func newServiceCommand() *cobra.Command {
 	serviceCmd := cobra.Command{
@@ -35,6 +38,8 @@ func newServiceCommand() *cobra.Command {
 }
 
 func newServiceCreateCommand() *cobra.Command {
+	var options types.ServiceCreateOptions
+
 	serviceCreateCmd := cobra.Command{
 		Use:   "create <NAME>",
 		Short: `Create a new service`,
@@ -45,8 +50,8 @@ func newServiceCreateCommand() *cobra.Command {
 		},
 	}
 
-	serviceCreateCmd.Flags().String("balancing", "weighted_round_robin", `specify a balancing method`)
-	serviceCreateCmd.Flags().Bool("activate", false, `immediately activate the service`)
+	serviceCreateCmd.Flags().StringVar(&options.Balancing, "balancing", "weighted_round_robin", `specify a balancing method`)
+	serviceCreateCmd.Flags().BoolVar(&options.Enable, "enable", false, `immediately enable the service`)
 
 	return &serviceCreateCmd
 }
@@ -80,6 +85,8 @@ func newServiceDisableCommand() *cobra.Command {
 }
 
 func newServiceInfoCommand() *cobra.Command {
+	var options types.ServiceInfoOptions
+
 	serviceInfoCmd := cobra.Command{
 		Use:   "info <ID|NAME>",
 		Short: `Print information for a service`,
@@ -90,7 +97,7 @@ func newServiceInfoCommand() *cobra.Command {
 		},
 	}
 
-	serviceInfoCmd.Flags().BoolP("quiet", "q", false, `only print the ID`)
+	serviceInfoCmd.Flags().BoolVarP(&options.Quiet, "quiet", "q", false, `only print the ID`)
 
 	return &serviceInfoCmd
 }

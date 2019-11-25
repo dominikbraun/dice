@@ -15,27 +15,24 @@
 package entity
 
 import (
+	"github.com/dominikbraun/dice/types"
 	"github.com/sony/sonyflake"
 	"net/url"
 	"time"
 )
 
-type NodeConfig struct {
-	Name       string   `json:"name"`
-	URL        *url.URL `json:"url"`
-	Weight     uint8    `json:"weight"`
-	IsAttached bool     `json:"is_attached"`
-}
-
 type Node struct {
-	ID            string     `json:"id"`
-	Config        NodeConfig `json:"config"`
-	CreatedAt     time.Time  `json:"created_at"`
-	AttachedSince time.Time  `json:"attached_since"`
-	IsAlive       bool       `json:"is_alive"`
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	URL           *url.URL  `json:"url"`
+	Weight        uint8     `json:"weight"`
+	IsAttached    bool      `json:"is_attached"`
+	CreatedAt     time.Time `json:"created_at"`
+	AttachedSince time.Time `json:"attached_since"`
+	IsAlive       bool      `json:"is_alive"`
 }
 
-func NewNode(config NodeConfig) (*Node, error) {
+func NewNode(options types.NodeCreateOptions) (*Node, error) {
 	uuid, err := generateEntityID()
 	if err != nil {
 		return nil, err
@@ -43,7 +40,9 @@ func NewNode(config NodeConfig) (*Node, error) {
 
 	n := Node{
 		ID:            uuid,
-		Config:        config,
+		Name:          options.Name,
+		Weight:        options.Weight,
+		IsAttached:    options.Attach,
 		CreatedAt:     time.Now(),
 		AttachedSince: time.Time{},
 		IsAlive:       false,

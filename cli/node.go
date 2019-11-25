@@ -14,7 +14,10 @@
 
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/dominikbraun/dice/types"
+	"github.com/spf13/cobra"
+)
 
 func newNodeCommand() *cobra.Command {
 	nodeCmd := cobra.Command{
@@ -35,6 +38,8 @@ func newNodeCommand() *cobra.Command {
 }
 
 func newNodeCreateCommand() *cobra.Command {
+	var options types.NodeCreateOptions
+
 	nodeCreateCmd := cobra.Command{
 		Use:   "create <URL>",
 		Short: `Create a new node`,
@@ -45,9 +50,9 @@ func newNodeCreateCommand() *cobra.Command {
 		},
 	}
 
-	nodeCreateCmd.Flags().StringP("name", "n", "", `assign a name to the node`)
-	nodeCreateCmd.Flags().Uint8P("weight", "w", 1, `specify the node's weight`)
-	nodeCreateCmd.Flags().BoolP("attach", "a", false, `immediately attach the node`)
+	nodeCreateCmd.Flags().StringVarP(&options.Name, "name", "n", "", `assign a name to the node`)
+	nodeCreateCmd.Flags().Uint8VarP(&options.Weight, "weight", "w", 1, `specify the node's weight`)
+	nodeCreateCmd.Flags().BoolVarP(&options.Attach, "attach", "a", false, `immediately attach the node`)
 
 	return &nodeCreateCmd
 }
@@ -81,6 +86,8 @@ func newNodeDetachCommand() *cobra.Command {
 }
 
 func newNodeInfoCommand() *cobra.Command {
+	var options types.NodeInfoOptions
+
 	nodeInfoCmd := cobra.Command{
 		Use:   "info <ID|NAME|URL>",
 		Short: `Print information for a node`,
@@ -91,7 +98,7 @@ func newNodeInfoCommand() *cobra.Command {
 		},
 	}
 
-	nodeInfoCmd.Flags().BoolP("quiet", "q", false, `only print the ID`)
+	nodeInfoCmd.Flags().BoolVarP(&options.Quiet, "quiet", "q", false, `only print the ID`)
 
 	return &nodeInfoCmd
 }

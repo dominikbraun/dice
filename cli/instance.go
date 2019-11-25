@@ -14,7 +14,10 @@
 
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/dominikbraun/dice/types"
+	"github.com/spf13/cobra"
+)
 
 func newInstanceCommand() *cobra.Command {
 	instanceCmd := cobra.Command{
@@ -35,6 +38,8 @@ func newInstanceCommand() *cobra.Command {
 }
 
 func newInstanceCreateCommand() *cobra.Command {
+	var options types.InstanceCreateOptions
+
 	instanceCreateCmd := cobra.Command{
 		Use:   "create <SERVICE> <NODE> <URL>",
 		Short: `Create a new service instance`,
@@ -45,9 +50,9 @@ func newInstanceCreateCommand() *cobra.Command {
 		},
 	}
 
-	instanceCreateCmd.Flags().StringP("name", "n", "", `assign a name to the instance`)
-	instanceCreateCmd.Flags().StringP("version", "v", "", `specify the deployed service version`)
-	instanceCreateCmd.Flags().BoolP("attach", "a", false, `immediately attach the instance`)
+	instanceCreateCmd.Flags().StringVarP(&options.Name, "name", "n", "", `assign a name to the instance`)
+	instanceCreateCmd.Flags().StringVarP(&options.Version, "version", "v", "", `specify the deployed service version`)
+	instanceCreateCmd.Flags().BoolVarP(&options.Attach, "attach", "a", false, `immediately attach the instance`)
 
 	return &instanceCreateCmd
 }
@@ -81,6 +86,8 @@ func newInstanceDetachCommand() *cobra.Command {
 }
 
 func newInstanceInfoCommand() *cobra.Command {
+	var options types.InstanceInfoOptions
+
 	instanceInfoCmd := cobra.Command{
 		Use:   "info <ID|NAME|URL>",
 		Short: `Print information for a service instance`,
@@ -91,7 +98,7 @@ func newInstanceInfoCommand() *cobra.Command {
 		},
 	}
 
-	instanceInfoCmd.Flags().BoolP("quiet", "q", false, `only print the ID`)
+	instanceInfoCmd.Flags().BoolVarP(&options.Quiet, "quiet", "q", false, `only print the ID`)
 
 	return &instanceInfoCmd
 }

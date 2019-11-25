@@ -14,7 +14,10 @@
 
 package entity
 
-type ServiceConfig struct {
+import "github.com/dominikbraun/dice/types"
+
+type Service struct {
+	ID              string   `json:"id"`
 	Name            string   `json:"name"`
 	Hostnames       []string `json:"hostnames"`
 	TargetVersion   string   `json:"target_version"`
@@ -22,20 +25,19 @@ type ServiceConfig struct {
 	IsEnabled       bool     `json:"is_enabled"`
 }
 
-type Service struct {
-	ID     string        `json:"id"`
-	Config ServiceConfig `json:"config"`
-}
-
-func NewService(config ServiceConfig) (*Service, error) {
+func NewService(name string, options types.ServiceCreateOptions) (*Service, error) {
 	uuid, err := generateEntityID()
 	if err != nil {
 		return nil, err
 	}
 
 	s := Service{
-		ID:     uuid,
-		Config: config,
+		ID:              uuid,
+		Name:            name,
+		Hostnames:       make([]string, 0),
+		TargetVersion:   "",
+		BalancingMethod: options.Balancing,
+		IsEnabled:       options.Enable,
 	}
 
 	return &s, nil

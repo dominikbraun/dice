@@ -15,29 +15,26 @@
 package entity
 
 import (
+	"github.com/dominikbraun/dice/types"
 	"net/url"
 	"time"
 )
 
-type InstanceConfig struct {
-	Name       string   `json:"name"`
-	ServiceID  string   `json:"service_id"`
-	NodeID     string   `json:"node_id"`
-	URL        *url.URL `json:"url"`
-	Version    string   `json:"version"`
-	IsAttached bool     `json:"is_attached"`
-	IsUpdated  bool     `json:"is_updated"`
-}
-
 type Instance struct {
-	ID            string         `json:"id"`
-	Config        InstanceConfig `json:"config"`
-	CreatedAt     time.Time      `json:"created_at"`
-	AttachedSince time.Time      `json:"attached_since"`
-	IsAlive       bool           `json:"is_alive"`
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	ServiceID     string    `json:"service_id"`
+	NodeID        string    `json:"node_id"`
+	URL           *url.URL  `json:"url"`
+	Version       string    `json:"version"`
+	IsAttached    bool      `json:"is_attached"`
+	IsUpdated     bool      `json:"is_updated"`
+	CreatedAt     time.Time `json:"created_at"`
+	AttachedSince time.Time `json:"attached_since"`
+	IsAlive       bool      `json:"is_alive"`
 }
 
-func NewInstance(config InstanceConfig) (*Instance, error) {
+func NewInstance(serviceID, nodeID string, url *url.URL, options types.InstanceCreateOptions) (*Instance, error) {
 	uuid, err := generateEntityID()
 	if err != nil {
 		return nil, err
@@ -45,7 +42,13 @@ func NewInstance(config InstanceConfig) (*Instance, error) {
 
 	i := Instance{
 		ID:            uuid,
-		Config:        config,
+		Name:          options.Name,
+		ServiceID:     serviceID,
+		NodeID:        nodeID,
+		URL:           url,
+		Version:       options.Version,
+		IsAttached:    options.Attach,
+		IsUpdated:     false,
 		CreatedAt:     time.Now(),
 		AttachedSince: time.Time{},
 		IsAlive:       false,

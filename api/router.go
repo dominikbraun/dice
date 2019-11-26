@@ -12,66 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package api
 
 import (
-	"context"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
-	"net/http"
-	"os"
 )
 
-type APIServerConfig struct {
-	Address string `json:"address"`
-	Logfile string `json:"logfile"`
-}
-
-type APIServer struct {
-	config    APIServerConfig
-	router    chi.Router
-	server    *http.Server
-	interrupt chan os.Signal
-}
-
-func NewAPIServer(config APIServerConfig, quit chan os.Signal) *APIServer {
-	as := APIServer{
-		config:    config,
-		router:    buildRouter(),
-		interrupt: quit,
-	}
-
-	as.server = &http.Server{
-		Addr:    as.config.Address,
-		Handler: as.router,
-	}
-
-	return &as
-}
-
-func (as *APIServer) Run() chan<- error {
-	errors := make(chan error)
-
-	go func() {
-		err := as.server.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			errors <- err
-		}
-		close(errors)
-	}()
-
-	go func() {
-		<-as.interrupt
-		if err := as.server.Shutdown(context.Background()); err != nil {
-			errors <- err
-		}
-	}()
-
-	return errors
-}
-
-func buildRouter() chi.Router {
+func newRouter() chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(

@@ -15,9 +15,10 @@
 package core
 
 import (
+	"github.com/dominikbraun/dice/api"
 	"github.com/dominikbraun/dice/config"
+	"github.com/dominikbraun/dice/proxy"
 	"github.com/dominikbraun/dice/registry"
-	"github.com/dominikbraun/dice/server"
 	"github.com/dominikbraun/dice/store"
 )
 
@@ -25,6 +26,6 @@ type Dice struct {
 	config    config.Reader
 	kvStore   store.EntityStore
 	registry  *registry.ServiceRegistry
-	apiServer *server.APIServer
-	proxy     *server.Proxy
+	apiServer *api.Server
+	proxy     *proxy.Proxy
 }

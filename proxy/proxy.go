@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package proxy
 
 import (
 	"context"
@@ -21,19 +21,19 @@ import (
 	"os"
 )
 
-type ProxyConfig struct {
+type Config struct {
 	Address string `json:"address"`
 	Logfile string `json:"logfile"`
 }
 
 type Proxy struct {
-	config    ProxyConfig
+	config    Config
 	registry  *registry.ServiceRegistry
 	server    *http.Server
 	interrupt chan os.Signal
 }
 
-func NewProxy(config ProxyConfig, registry *registry.ServiceRegistry, quit chan os.Signal) *Proxy {
+func NewProxy(config Config, registry *registry.ServiceRegistry, quit chan os.Signal) *Proxy {
 	p := Proxy{
 		config:    config,
 		registry:  registry,

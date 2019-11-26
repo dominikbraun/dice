@@ -14,7 +14,157 @@
 
 package registry
 
+import (
+	"errors"
+	"github.com/dominikbraun/dice/entity"
+)
+
+type UnregisterMode uint
+
+const (
+	SoftUnregister UnregisterMode = 0
+	HardUnregister UnregisterMode = 1
+)
+
+var (
+	ErrUnregisteredService       = errors.New("service is not registered")
+	ErrServiceAlreadyRegistered  = errors.New("service is already registered")
+	ErrServiceNotRemovable       = errors.New("service has attached instances on an attached node")
+	ErrUnregisteredDeployment    = errors.New("deployment is not registered")
+	ErrDeploymentNotRemovable    = errors.New("deployed instance is attached on an attached node")
+	ErrUnregisteredHostname      = errors.New("hostname is not registered")
+	ErrHostnameAlreadyRegistered = errors.New("hostname is already registered")
+)
+
 type ServiceRegistry struct {
-	services map[string]Service
-	hosts    map[string]string
+	services  map[string]Service
+	hostnames map[string]string
+}
+
+func NewServiceRegistry() *ServiceRegistry {
+	sr := ServiceRegistry{
+		services:  make(map[string]Service),
+		hostnames: make(map[string]string),
+	}
+
+	return &sr
+}
+
+func (sr *ServiceRegistry) Register(entity *entity.Service, build func(*entity.Service) Service) error {
+	service := build(entity)
+	return sr.RegisterService(service)
+}
+
+func (sr *ServiceRegistry) RegisterService(service Service) error {
+	serviceID := service.entity.ID
+
+	if _, exists := sr.services[serviceID]; exists {
+		return ErrServiceAlreadyRegistered
+	}
+
+	for _, h := range service.entity.Hostnames {
+		if err := sr.RegisterHostname(h, serviceID); err != nil {
+			return err
+		}
+	}
+
+	sr.services[serviceID] = service
+	return nil
+}
+
+func (sr *ServiceRegistry) UnregisterService(serviceID string, mode UnregisterMode) error {
+	if _, exists := sr.services[serviceID]; !exists {
+		return ErrUnregisteredService
+	}
+
+	if mode != HardUnregister {
+		if !sr.services[serviceID].isRemovable() {
+			return ErrServiceNotRemovable
+		}
+	}
+
+	for _, h := range sr.services[serviceID].entity.Hostnames {
+		if err := sr.UnregisterHostname(h); err != nil {
+			return err
+		}
+	}
+
+	delete(sr.services, serviceID)
+	return nil
+}
+
+func (sr *ServiceRegistry) RegisterDeployment(deployment Deployment) error {
+	serviceID := deployment.Instance.ServiceID
+
+	if _, exists := sr.services[serviceID]; !exists {
+		return ErrUnregisteredService
+	}
+
+	deployments := sr.services[serviceID].deployments
+	deployments = append(deployments, deployment)
+
+	return nil
+}
+
+func (sr *ServiceRegistry) UnregisterDeployment(deployment Deployment, mode UnregisterMode) error {
+	serviceID := deployment.Instance.ServiceID
+
+	if _, exists := sr.services[serviceID]; !exists {
+		return ErrUnregisteredService
+	}
+
+	index, err := sr.indexOfDeployment(serviceID, deployment)
+	if err != nil {
+		return err
+	} else if index == -1 {
+		return ErrUnregisteredDeployment
+	}
+
+	if mode != HardUnregister {
+		if !deployment.isRemovable() {
+			return ErrDeploymentNotRemovable
+		}
+	}
+
+	deployments := sr.services[serviceID].deployments
+	deployments[index] = deployments[len(deployments)-1]
+	deployments = deployments[:len(deployments)-1]
+
+	return nil
+}
+
+func (sr *ServiceRegistry) RegisterHostname(hostname string, serviceID string) error {
+	if _, exists := sr.hostnames[hostname]; exists {
+		return ErrHostnameAlreadyRegistered
+	}
+
+	if _, exists := sr.services[serviceID]; !exists {
+		return ErrUnregisteredService
+	}
+	sr.hostnames[hostname] = serviceID
+
+	return nil
+}
+
+func (sr *ServiceRegistry) UnregisterHostname(hostname string) error {
+	if _, exists := sr.hostnames[hostname]; !exists {
+		return ErrUnregisteredHostname
+	}
+	delete(sr.hostnames, hostname)
+
+	return nil
+}
+
+func (sr *ServiceRegistry) indexOfDeployment(serviceID string, deployment Deployment) (int, error) {
+	if _, exists := sr.services[serviceID]; !exists {
+		return 0, ErrUnregisteredService
+	}
+
+	for i, d := range sr.services[serviceID].deployments {
+		if d.equals(deployment) {
+			return i, nil
+		}
+	}
+
+	return -1, nil
 }

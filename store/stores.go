@@ -30,24 +30,24 @@ type EntityStore interface {
 
 type NodeStore interface {
 	CreateNode(node *entity.Node) error
-	FindNodes() ([]*entity.Node, error)
-	FindNode(filter NodeFilter) (*entity.Node, error)
-	UpdateNode(filter NodeFilter) error
-	DeleteNode(filter NodeFilter) error
+	FindNodes(filter NodeFilter) ([]*entity.Node, error)
+	FindNode(id string) (*entity.Node, error)
+	UpdateNode(id string, source *entity.Node) error
+	DeleteNode(id string) error
 }
 
 type ServiceStore interface {
 	CreateService(service *entity.Service) error
-	FindServices() ([]*entity.Service, error)
-	FindService(filter ServiceFilter) (entity.Service, error)
-	UpdateService(filter ServiceFilter) error
-	DeleteService(filter ServiceFilter) error
+	FindServices(filter ServiceFilter) ([]*entity.Service, error)
+	FindService(id string) (*entity.Service, error)
+	UpdateService(id string, source *entity.Service) error
+	DeleteService(id string) error
 }
 
 type InstanceStore interface {
 	CreateInstance(instance *entity.Instance) error
-	FindInstances() ([]*entity.Service, error)
-	FindInstance(filter InstanceFilter) (*entity.Service, error)
-	UpdateInstance(filter InstanceFilter) error
-	DeleteInstance(filter InstanceFilter) error
+	FindInstances(filter InstanceFilter) ([]*entity.Instance, error)
+	FindInstance(id string) (*entity.Instance, error)
+	UpdateInstance(id string, source *entity.Instance) error
+	DeleteInstance(id string) error
 }

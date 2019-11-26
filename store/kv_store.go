@@ -137,7 +137,7 @@ func (kv *KVStore) get(bucket Bucket, key string) ([]byte, error) {
 	return result, nil
 }
 
-func (kv *KVStore) Delete(bucket Bucket, key string) error {
+func (kv *KVStore) delete(bucket Bucket, key string) error {
 	fn := func(tx *bolt.Tx) error {
 		b := tx.Bucket(diceBucket).Bucket(bucket)
 		if b == nil {
@@ -161,7 +161,7 @@ func (kv *KVStore) CreateNode(node *entity.Node) error {
 
 func (kv *KVStore) FindNodes(filter NodeFilter) ([]*entity.Node, error) {
 	values, err := kv.getAll(nodeBucket)
-	if err != nil {
+	if len(values) == 0 || err != nil {
 		return nil, err
 	}
 
@@ -184,7 +184,7 @@ func (kv *KVStore) FindNodes(filter NodeFilter) ([]*entity.Node, error) {
 
 func (kv *KVStore) FindNode(id string) (*entity.Node, error) {
 	value, err := kv.get(nodeBucket, id)
-	if err != nil {
+	if value == nil || err != nil {
 		return nil, err
 	}
 
@@ -202,7 +202,7 @@ func (kv *KVStore) UpdateNode(id string, source *entity.Node) error {
 }
 
 func (kv *KVStore) DeleteNode(id string) error {
-	return kv.Delete(nodeBucket, id)
+	return kv.delete(nodeBucket, id)
 }
 
 func (kv *KVStore) CreateService(service *entity.Service) error {
@@ -216,7 +216,7 @@ func (kv *KVStore) CreateService(service *entity.Service) error {
 
 func (kv *KVStore) FindServices(filter ServiceFilter) ([]*entity.Service, error) {
 	values, err := kv.getAll(serviceBucket)
-	if err != nil {
+	if len(values) == 0 || err != nil {
 		return nil, err
 	}
 
@@ -239,7 +239,7 @@ func (kv *KVStore) FindServices(filter ServiceFilter) ([]*entity.Service, error)
 
 func (kv *KVStore) FindService(id string) (*entity.Service, error) {
 	value, err := kv.get(serviceBucket, id)
-	if err != nil {
+	if value == nil || err != nil {
 		return nil, err
 	}
 
@@ -257,7 +257,7 @@ func (kv *KVStore) UpdateService(id string, source *entity.Service) error {
 }
 
 func (kv *KVStore) DeleteService(id string) error {
-	return kv.Delete(serviceBucket, id)
+	return kv.delete(serviceBucket, id)
 }
 
 func (kv *KVStore) CreateInstance(instance *entity.Instance) error {
@@ -271,7 +271,7 @@ func (kv *KVStore) CreateInstance(instance *entity.Instance) error {
 
 func (kv *KVStore) FindInstances(filter InstanceFilter) ([]*entity.Instance, error) {
 	values, err := kv.getAll(instanceBucket)
-	if err != nil {
+	if len(values) == 0 || err != nil {
 		return nil, err
 	}
 
@@ -294,7 +294,7 @@ func (kv *KVStore) FindInstances(filter InstanceFilter) ([]*entity.Instance, err
 
 func (kv *KVStore) FindInstance(id string) (*entity.Instance, error) {
 	value, err := kv.get(instanceBucket, id)
-	if err != nil {
+	if value == nil || err != nil {
 		return nil, err
 	}
 
@@ -312,5 +312,5 @@ func (kv *KVStore) UpdateInstance(id string, source *entity.Instance) error {
 }
 
 func (kv *KVStore) DeleteInstance(id string) error {
-	return kv.Delete(instanceBucket, id)
+	return kv.delete(instanceBucket, id)
 }

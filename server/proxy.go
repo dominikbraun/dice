@@ -15,8 +15,10 @@
 package server
 
 import (
+	"context"
 	"github.com/dominikbraun/dice/registry"
 	"net/http"
+	"os"
 )
 
 type ProxyConfig struct {
@@ -25,7 +27,52 @@ type ProxyConfig struct {
 }
 
 type Proxy struct {
-	config   ProxyConfig
-	registry *registry.ServiceRegistry
-	server   *http.Server
+	config    ProxyConfig
+	registry  *registry.ServiceRegistry
+	server    *http.Server
+	interrupt chan os.Signal
+}
+
+func NewProxy(config ProxyConfig, registry *registry.ServiceRegistry, quit chan os.Signal) *Proxy {
+	p := Proxy{
+		config:    config,
+		registry:  registry,
+		interrupt: quit,
+	}
+
+	p.server = &http.Server{
+		Addr:    p.config.Address,
+		Handler: nil,
+	}
+
+	return &p
+}
+
+func (p *Proxy) Run() chan<- error {
+	errors := make(chan error)
+
+	go func() {
+		err := p.server.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			errors <- err
+		}
+		close(errors)
+	}()
+
+	go func() {
+		<-p.interrupt
+		if err := p.server.Shutdown(context.Background()); err != nil {
+			errors <- err
+		}
+	}()
+
+	return errors
+}
+
+func (p *Proxy) handleRequest() http.Handler {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		// ToDo: Determine service and handle request
+	}
+
+	return http.HandlerFunc(handler)
 }

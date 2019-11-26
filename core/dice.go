@@ -54,12 +54,10 @@ func NewDice() (*Dice, chan<- os.Signal, error) {
 	}
 
 	d.registry = registry.NewServiceRegistry()
-
 	d.interrupt = make(chan os.Signal)
-	signal.Notify(d.interrupt, os.Interrupt)
 
-	d.apiServer = api.NewServer(api.ServerConfig{}, d.interrupt)
-	d.proxy = proxy.New(proxy.Config{}, d.registry, d.interrupt)
+	d.apiServer = api.NewServer(api.ServerConfig{})
+	d.proxy = proxy.New(proxy.Config{}, d.registry)
 
 	logfile, err := os.OpenFile(logfilePath, os.O_WRONLY|os.O_CREATE, 0755)
 	if err != nil {
@@ -68,5 +66,26 @@ func NewDice() (*Dice, chan<- os.Signal, error) {
 
 	d.logger = log.NewLogger(logfile, log.InfoLevel)
 
+	signal.Notify(d.interrupt, os.Interrupt)
+
 	return &d, d.interrupt, nil
+}
+
+func (d *Dice) Run() error {
+	errors := make(chan error)
+
+	go func() {
+		if err := d.proxy.Run(d.interrupt); err != nil {
+			errors <- err
+		}
+	}()
+
+	go func() {
+		if err := d.apiServer.Run(d.interrupt); err != nil {
+			errors <- err
+		}
+	}()
+
+	err := <-errors
+	return err
 }

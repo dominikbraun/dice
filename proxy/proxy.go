@@ -27,17 +27,15 @@ type Config struct {
 }
 
 type Proxy struct {
-	config    Config
-	registry  *registry.ServiceRegistry
-	server    *http.Server
-	interrupt chan os.Signal
+	config   Config
+	registry *registry.ServiceRegistry
+	server   *http.Server
 }
 
-func New(config Config, registry *registry.ServiceRegistry, quit chan os.Signal) *Proxy {
+func New(config Config, registry *registry.ServiceRegistry) *Proxy {
 	p := Proxy{
-		config:    config,
-		registry:  registry,
-		interrupt: quit,
+		config:   config,
+		registry: registry,
 	}
 
 	p.server = &http.Server{
@@ -48,7 +46,7 @@ func New(config Config, registry *registry.ServiceRegistry, quit chan os.Signal)
 	return &p
 }
 
-func (p *Proxy) Run() chan error {
+func (p *Proxy) Run(interrupt <-chan os.Signal) error {
 	errors := make(chan error)
 
 	go func() {
@@ -60,13 +58,14 @@ func (p *Proxy) Run() chan error {
 	}()
 
 	go func() {
-		<-p.interrupt
+		<-interrupt
 		if err := p.server.Shutdown(context.Background()); err != nil {
 			errors <- err
 		}
 	}()
 
-	return errors
+	err := <-errors
+	return err
 }
 
 func (p *Proxy) handleRequest() http.Handler {

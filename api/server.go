@@ -27,17 +27,15 @@ type ServerConfig struct {
 }
 
 type Server struct {
-	config    ServerConfig
-	router    chi.Router
-	server    *http.Server
-	interrupt chan os.Signal
+	config ServerConfig
+	router chi.Router
+	server *http.Server
 }
 
-func NewServer(config ServerConfig, quit chan os.Signal) *Server {
+func NewServer(config ServerConfig) *Server {
 	s := Server{
-		config:    config,
-		router:    newRouter(),
-		interrupt: quit,
+		config: config,
+		router: newRouter(),
 	}
 
 	s.server = &http.Server{
@@ -48,7 +46,7 @@ func NewServer(config ServerConfig, quit chan os.Signal) *Server {
 	return &s
 }
 
-func (s *Server) Run() chan error {
+func (s *Server) Run(interrupt <-chan os.Signal) error {
 	errors := make(chan error)
 
 	go func() {
@@ -60,11 +58,12 @@ func (s *Server) Run() chan error {
 	}()
 
 	go func() {
-		<-s.interrupt
+		<-interrupt
 		if err := s.server.Shutdown(context.Background()); err != nil {
 			errors <- err
 		}
 	}()
 
-	return errors
+	err := <-errors
+	return err
 }

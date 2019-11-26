@@ -33,7 +33,7 @@ type Proxy struct {
 	interrupt chan os.Signal
 }
 
-func NewProxy(config Config, registry *registry.ServiceRegistry, quit chan os.Signal) *Proxy {
+func New(config Config, registry *registry.ServiceRegistry, quit chan os.Signal) *Proxy {
 	p := Proxy{
 		config:    config,
 		registry:  registry,
@@ -48,7 +48,7 @@ func NewProxy(config Config, registry *registry.ServiceRegistry, quit chan os.Si
 	return &p
 }
 
-func (p *Proxy) Run() chan<- error {
+func (p *Proxy) Run() chan error {
 	errors := make(chan error)
 
 	go func() {

@@ -48,7 +48,7 @@ func NewServer(config ServerConfig, quit chan os.Signal) *Server {
 	return &s
 }
 
-func (s *Server) Run() chan<- error {
+func (s *Server) Run() chan error {
 	errors := make(chan error)
 
 	go func() {

@@ -12,10 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package entity provides domain entities and their factory functions.
 package entity
 
 import "github.com/dominikbraun/dice/types"
 
+// Service represents an application or webservice. A Service itself is not
+// a running application. Instead, the running executables are represented
+// by service instances (see entity.Instance).
+//
+// Each service is available under multiple hostnames like example.com and
+// www.example.com. Also, the load balancing algorithm is configurable for
+// each service. If a service is disabled, requests will run into HTTP 503.
 type Service struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
@@ -25,6 +33,7 @@ type Service struct {
 	IsEnabled       bool     `json:"is_enabled"`
 }
 
+// NewService creates a new Service instance. It doesn't guarantee uniqueness.
 func NewService(name string, options types.ServiceCreateOptions) (*Service, error) {
 	uuid, err := generateEntityID()
 	if err != nil {

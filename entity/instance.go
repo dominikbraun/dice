@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package entity provides domain entities and their factory functions.
 package entity
 
 import (
@@ -20,6 +21,13 @@ import (
 	"time"
 )
 
+// Instance represents a service instance. It is an executable associated
+// with a service that has been deployed to a node. Any service can have
+// multiple instances, allowing redundancy and higher availability.
+//
+// Like with nodes, attaching an instance to Dice makes it available for
+// receiving requests. If the instance has been deployed to a node that is
+// currently detached, it won't receive any requests.
 type Instance struct {
 	ID            string    `json:"id"`
 	Name          string    `json:"name"`
@@ -34,6 +42,7 @@ type Instance struct {
 	IsAlive       bool      `json:"is_alive"`
 }
 
+// NewInstance creates a new Instance instance. It doesn't guarantee uniqueness.
 func NewInstance(serviceID, nodeID string, url *url.URL, options types.InstanceCreateOptions) (*Instance, error) {
 	uuid, err := generateEntityID()
 	if err != nil {

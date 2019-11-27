@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package entity provides domain entities and their factory functions.
 package entity
 
 import (
@@ -21,6 +22,12 @@ import (
 	"time"
 )
 
+// Node represents a network node that one or more applications run on,
+// for example a physical server, virtual machine or even a container.
+//
+// Each node has a weight depicting the node's physical computing power.
+// The heavier a node is, the more requests it receives from Dice. Each
+// node can be attached to Dice, making it available for these requests.
 type Node struct {
 	ID            string    `json:"id"`
 	Name          string    `json:"name"`
@@ -32,6 +39,7 @@ type Node struct {
 	IsAlive       bool      `json:"is_alive"`
 }
 
+// NewNode creates a new Node instance. It doesn't guarantee uniqueness.
 func NewNode(url *url.URL, options types.NodeCreateOptions) (*Node, error) {
 	uuid, err := generateEntityID()
 	if err != nil {
@@ -52,6 +60,8 @@ func NewNode(url *url.URL, options types.NodeCreateOptions) (*Node, error) {
 	return &n, nil
 }
 
+// generateEntityID generates a random, time-based ID. Even though an ID
+// collision is unlikely, you have to check if the ID really is unique.
 func generateEntityID() (string, error) {
 	flakeSettings := sonyflake.Settings{}
 	generator := sonyflake.NewSonyflake(flakeSettings)

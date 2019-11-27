@@ -24,7 +24,8 @@ import (
 type NodeReference string
 
 var (
-	ErrNodeNotFound = errors.New("node could not be found")
+	ErrNodeNotFound      = errors.New("node could not be found")
+	ErrNodeAlreadyExists = errors.New("a node with the given ID already exists")
 )
 
 func (d *Dice) NodeCreate(url *url.URL, options types.NodeCreateOptions) error {
@@ -33,11 +34,18 @@ func (d *Dice) NodeCreate(url *url.URL, options types.NodeCreateOptions) error {
 		return err
 	}
 
+	isUnique, err := d.nodeIsUnique(node)
+	if err != nil {
+		return err
+	} else if !isUnique {
+		return ErrNodeAlreadyExists
+	}
+
 	return d.kvStore.CreateNode(node)
 }
 
 func (d *Dice) NodeAttach(nodeRef NodeReference) error {
-	node, err := d.getNode(nodeRef)
+	node, err := d.findNode(nodeRef)
 	if err != nil {
 		return err
 	}
@@ -52,7 +60,7 @@ func (d *Dice) NodeAttach(nodeRef NodeReference) error {
 }
 
 func (d *Dice) NodeDetach(nodeRef NodeReference) error {
-	node, err := d.getNode(nodeRef)
+	node, err := d.findNode(nodeRef)
 	if err != nil {
 		return err
 	}
@@ -69,7 +77,7 @@ func (d *Dice) NodeDetach(nodeRef NodeReference) error {
 func (d *Dice) NodeInfo(nodeRef NodeReference) (types.NodeInfoOutput, error) {
 	var nodeInfo types.NodeInfoOutput
 
-	node, err := d.getNode(nodeRef)
+	node, err := d.findNode(nodeRef)
 	if err != nil {
 		return nodeInfo, err
 	}
@@ -79,7 +87,7 @@ func (d *Dice) NodeInfo(nodeRef NodeReference) (types.NodeInfoOutput, error) {
 	return nodeInfo, nil
 }
 
-func (d *Dice) getNode(nodeRef NodeReference) (*entity.Node, error) {
+func (d *Dice) findNode(nodeRef NodeReference) (*entity.Node, error) {
 	nodesByID, err := d.kvStore.FindNodes(func(node *entity.Node) bool {
 		return node.ID == string(nodeRef)
 	})
@@ -111,4 +119,16 @@ func (d *Dice) getNode(nodeRef NodeReference) (*entity.Node, error) {
 	}
 
 	return nil, nil
+}
+
+func (d *Dice) nodeIsUnique(node *entity.Node) (bool, error) {
+	service, err := d.findNode(NodeReference(node.ID))
+
+	if err != nil {
+		return false, err
+	} else if service != nil {
+		return false, nil
+	}
+
+	return true, nil
 }

@@ -28,24 +28,23 @@ var (
 )
 
 func (d *Dice) ServiceCreate(name string, options types.ServiceCreateOptions) error {
-	storedService, err := d.getService(ServiceReference(name))
-
-	if err != nil {
-		return err
-	} else if storedService != nil {
-		return ErrServiceAlreadyExists
-	}
-
 	service, err := entity.NewService(name, options)
 	if err != nil {
 		return err
+	}
+
+	isUnique, err := d.serviceIsUnique(service)
+	if err != nil {
+		return err
+	} else if !isUnique {
+		return ErrServiceAlreadyExists
 	}
 
 	return d.kvStore.CreateService(service)
 }
 
 func (d *Dice) ServiceEnable(serviceRef ServiceReference) error {
-	service, err := d.getService(serviceRef)
+	service, err := d.findService(serviceRef)
 	if err != nil {
 		return err
 	}
@@ -60,7 +59,7 @@ func (d *Dice) ServiceEnable(serviceRef ServiceReference) error {
 }
 
 func (d *Dice) ServiceDisable(serviceRef ServiceReference) error {
-	service, err := d.getService(serviceRef)
+	service, err := d.findService(serviceRef)
 	if err != nil {
 		return err
 	}
@@ -77,7 +76,7 @@ func (d *Dice) ServiceDisable(serviceRef ServiceReference) error {
 func (d *Dice) ServiceInfo(serviceRef ServiceReference) (types.ServiceInfoOutput, error) {
 	var serviceInfo types.ServiceInfoOutput
 
-	service, err := d.getService(serviceRef)
+	service, err := d.findService(serviceRef)
 	if err != nil {
 		return serviceInfo, err
 	}
@@ -87,7 +86,7 @@ func (d *Dice) ServiceInfo(serviceRef ServiceReference) (types.ServiceInfoOutput
 	return serviceInfo, nil
 }
 
-func (d *Dice) getService(serviceRef ServiceReference) (*entity.Service, error) {
+func (d *Dice) findService(serviceRef ServiceReference) (*entity.Service, error) {
 	servicesByID, err := d.kvStore.FindServices(func(service *entity.Service) bool {
 		return service.ID == string(serviceRef)
 	})
@@ -109,4 +108,24 @@ func (d *Dice) getService(serviceRef ServiceReference) (*entity.Service, error) 
 	}
 
 	return nil, nil
+}
+
+func (d *Dice) serviceIsUnique(service *entity.Service) (bool, error) {
+	service, err := d.findService(ServiceReference(service.ID))
+
+	if err != nil {
+		return false, err
+	} else if service != nil {
+		return false, nil
+	}
+
+	service, err = d.findService(ServiceReference(service.Name))
+
+	if err != nil {
+		return false, err
+	} else if service != nil {
+		return false, nil
+	}
+
+	return true, nil
 }

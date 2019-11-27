@@ -41,7 +41,15 @@ func (d *Dice) ServiceCreate(name string, options types.ServiceCreateOptions) er
 		return ErrServiceAlreadyExists
 	}
 
-	return d.kvStore.CreateService(service)
+	if err := d.kvStore.CreateService(service); err != nil {
+		return err
+	}
+
+	if options.Enable {
+		return d.ServiceEnable(ServiceReference(service.ID))
+	}
+
+	return nil
 }
 
 func (d *Dice) ServiceEnable(serviceRef ServiceReference) error {

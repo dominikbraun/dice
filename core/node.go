@@ -42,7 +42,15 @@ func (d *Dice) NodeCreate(url *url.URL, options types.NodeCreateOptions) error {
 		return ErrNodeAlreadyExists
 	}
 
-	return d.kvStore.CreateNode(node)
+	if err := d.kvStore.CreateNode(node); err != nil {
+		return err
+	}
+
+	if options.Attach {
+		return d.NodeAttach(NodeReference(node.ID))
+	}
+
+	return nil
 }
 
 func (d *Dice) NodeAttach(nodeRef NodeReference) error {

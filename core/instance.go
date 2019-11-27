@@ -42,7 +42,15 @@ func (d *Dice) InstanceCreate(serviceID, nodeID string, url *url.URL, options ty
 		return ErrInstanceAlreadyExists
 	}
 
-	return d.kvStore.CreateInstance(instance)
+	if err := d.kvStore.CreateInstance(instance); err != nil {
+		return err
+	}
+
+	if options.Attach {
+		return d.InstanceAttach(InstanceReference(instance.ID))
+	}
+
+	return nil
 }
 
 func (d *Dice) InstanceAttach(instanceRef InstanceReference) error {

@@ -24,17 +24,15 @@ type ServiceReference string
 
 var (
 	ErrServiceNotFound      = errors.New("service could not be found")
-	ErrServiceAlreadyExists = errors.New("a service with the given name already exists")
+	ErrServiceAlreadyExists = errors.New("a service with the given ID or name already exists")
 )
 
 func (d *Dice) ServiceCreate(name string, options types.ServiceCreateOptions) error {
-	servicesByName, err := d.kvStore.FindServices(func(service *entity.Service) bool {
-		return service.Name == name
-	})
+	storedService, err := d.getService(ServiceReference(name))
 
 	if err != nil {
 		return err
-	} else if len(servicesByName) > 0 {
+	} else if storedService != nil {
 		return ErrServiceAlreadyExists
 	}
 

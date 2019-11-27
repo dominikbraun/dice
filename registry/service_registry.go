@@ -26,6 +26,20 @@ const (
 	HardUnregister UnregisterMode = 1
 )
 
+type (
+	NodeFilter       func(node *entity.Node) bool
+	ServiceFilter    func(service *entity.Service) bool
+	InstanceFilter   func(instance *entity.Instance) bool
+	DeploymentFilter func(deployment Deployment) bool
+)
+
+type (
+	NodeUpdater       func(node *entity.Node) error
+	ServiceUpdater    func(service *entity.Service) error
+	InstanceUpdater   func(instance *entity.Instance) error
+	DeploymentUpdater func(deployment Deployment) error
+)
+
 var (
 	ErrUnregisteredService       = errors.New("service is not registered")
 	ErrServiceAlreadyRegistered  = errors.New("service is already registered")
@@ -34,6 +48,7 @@ var (
 	ErrDeploymentNotRemovable    = errors.New("deployed instance is attached on an attached node")
 	ErrUnregisteredHostname      = errors.New("hostname is not registered")
 	ErrHostnameAlreadyRegistered = errors.New("hostname is already registered")
+	ErrInvalidClosure            = errors.New("the provided closure is invalid")
 )
 
 type ServiceRegistry struct {
@@ -53,6 +68,39 @@ func NewServiceRegistry() *ServiceRegistry {
 func (sr *ServiceRegistry) Register(entity *entity.Service, build func(*entity.Service) Service) error {
 	service := build(entity)
 	return sr.RegisterService(service)
+}
+
+func (sr *ServiceRegistry) UpdateNodes(filter NodeFilter, updater NodeUpdater) error {
+	if filter == nil || updater == nil {
+		return ErrInvalidClosure
+	}
+
+	for _, s := range sr.services {
+		for _, d := range s.deployments {
+			if filter(d.Node) {
+				if err := updater(d.Node); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (sr *ServiceRegistry) UpdateServices(filter ServiceFilter, updater ServiceUpdater) error {
+	// ToDo: Implement method
+	return nil
+}
+
+func (sr *ServiceRegistry) UpdateInstances(filter InstanceFilter, updater InstanceUpdater) error {
+	// ToDo: Implement method
+	return nil
+}
+
+func (sr *ServiceRegistry) UpdateDeployments(filter DeploymentFilter, updater DeploymentUpdater) error {
+	// ToDo: Implement method
+	return nil
 }
 
 func (sr *ServiceRegistry) RegisterService(service Service) error {

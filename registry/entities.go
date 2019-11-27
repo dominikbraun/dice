@@ -38,6 +38,7 @@ func (s Service) isRemovable() bool {
 type Deployment struct {
 	Node     *entity.Node
 	Instance *entity.Instance
+	IsValid  bool
 }
 
 func (d Deployment) isRemovable() bool {

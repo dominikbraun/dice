@@ -35,6 +35,7 @@ func (d *Dice) NodeCreate(url *url.URL, options types.NodeCreateOptions) error {
 	}
 
 	isUnique, err := d.nodeIsUnique(node)
+
 	if err != nil {
 		return err
 	} else if !isUnique {
@@ -122,11 +123,11 @@ func (d *Dice) findNode(nodeRef NodeReference) (*entity.Node, error) {
 }
 
 func (d *Dice) nodeIsUnique(node *entity.Node) (bool, error) {
-	service, err := d.findNode(NodeReference(node.ID))
+	node, err := d.findNode(NodeReference(node.ID))
 
 	if err != nil {
 		return false, err
-	} else if service != nil {
+	} else if node != nil {
 		return false, nil
 	}
 

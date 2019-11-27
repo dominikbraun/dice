@@ -52,3 +52,25 @@ func (si ServiceInfoOutput) Populate(service *entity.Service) {
 	si.BalancingMethod = service.BalancingMethod
 	si.IsEnabled = service.IsEnabled
 }
+
+type InstanceInfoOutput struct {
+	ID         string   `json:"id"`
+	Name       string   `json:"name"`
+	ServiceID  string   `json:"service_id"`
+	NodeID     string   `json:"node_id"`
+	URL        *url.URL `json:"url"`
+	Version    string   `json:"version"`
+	IsAttached bool     `json:"is_attached"`
+	IsAlive    bool     `json:"is_alive"`
+}
+
+func (ii InstanceInfoOutput) Populate(instance *entity.Instance) {
+	ii.ID = instance.ID
+	ii.Name = instance.Name
+	ii.ServiceID = instance.ServiceID
+	ii.NodeID = instance.NodeID
+	ii.URL = instance.URL
+	ii.Version = instance.Version
+	ii.IsAttached = instance.IsAttached
+	ii.IsAlive = instance.IsAlive
+}

@@ -34,6 +34,7 @@ func (d *Dice) ServiceCreate(name string, options types.ServiceCreateOptions) er
 	}
 
 	isUnique, err := d.serviceIsUnique(service)
+
 	if err != nil {
 		return err
 	} else if !isUnique {
@@ -119,12 +120,14 @@ func (d *Dice) serviceIsUnique(service *entity.Service) (bool, error) {
 		return false, nil
 	}
 
-	service, err = d.findService(ServiceReference(service.Name))
+	if service.Name != "" {
+		service, err = d.findService(ServiceReference(service.Name))
 
-	if err != nil {
-		return false, err
-	} else if service != nil {
-		return false, nil
+		if err != nil {
+			return false, err
+		} else if service != nil {
+			return false, nil
+		}
 	}
 
 	return true, nil

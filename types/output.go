@@ -34,3 +34,21 @@ func (ni NodeInfoOutput) Populate(node *entity.Node) {
 	ni.IsAttached = node.IsAttached
 	ni.IsAttached = node.IsAlive
 }
+
+type ServiceInfoOutput struct {
+	ID              string   `json:"id"`
+	Name            string   `json:"name"`
+	Hostnames       []string `json:"hostnames"`
+	TargetVersion   string   `json:"target_version"`
+	BalancingMethod string   `json:"balancing_method"`
+	IsEnabled       bool     `json:"is_enabled"`
+}
+
+func (si ServiceInfoOutput) Populate(service *entity.Service) {
+	si.ID = service.ID
+	si.Name = service.Name
+	si.Hostnames = service.Hostnames
+	si.TargetVersion = service.TargetVersion
+	si.BalancingMethod = service.BalancingMethod
+	si.IsEnabled = service.IsEnabled
+}

@@ -21,12 +21,10 @@ import (
 	"net/url"
 )
 
-type NodeReference interface{}
+type NodeReference string
 
 var (
 	ErrNodeNotFound = errors.New("node could not be found")
-	//ErrNodeAlreadyExists = errors.New("a node with the given URL already exists")
-	ErrInvalidNodeReference = errors.New("supplied node identifier is invalid")
 )
 
 func (d *Dice) NodeCreate(url *url.URL, options types.NodeCreateOptions) error {
@@ -82,13 +80,8 @@ func (d *Dice) NodeInfo(nodeRef NodeReference) (types.NodeInfoOutput, error) {
 }
 
 func (d *Dice) getNode(nodeRef NodeReference) (*entity.Node, error) {
-	ref, ok := nodeRef.(string)
-	if !ok {
-		return nil, ErrInvalidNodeReference
-	}
-
 	nodesByID, err := d.kvStore.FindNodes(func(node *entity.Node) bool {
-		return node.ID == ref
+		return node.ID == string(nodeRef)
 	})
 
 	if err != nil {
@@ -98,13 +91,23 @@ func (d *Dice) getNode(nodeRef NodeReference) (*entity.Node, error) {
 	}
 
 	nodesByName, err := d.kvStore.FindNodes(func(node *entity.Node) bool {
-		return node.Name == ref
+		return node.Name == string(nodeRef)
 	})
 
 	if err != nil {
 		return nil, err
 	} else if len(nodesByName) > 0 {
 		return nodesByName[0], nil
+	}
+
+	nodesByURL, err := d.kvStore.FindNodes(func(node *entity.Node) bool {
+		return node.URL.String() == string(nodeRef)
+	})
+
+	if err != nil {
+		return nil, err
+	} else if len(nodesByURL) > 0 {
+		return nodesByURL[0], nil
 	}
 
 	return nil, nil

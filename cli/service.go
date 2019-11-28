@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newServiceCommand() *cobra.Command {
+func (c *CLI) newServiceCmd() *cobra.Command {
 	serviceCmd := cobra.Command{
 		Use:   "service",
 		Short: `Manage Dice's services`,
@@ -29,15 +29,10 @@ func newServiceCommand() *cobra.Command {
 		},
 	}
 
-	serviceCmd.AddCommand(newServiceCreateCommand())
-	serviceCmd.AddCommand(newServiceEnableCommand())
-	serviceCmd.AddCommand(newServiceDisableCommand())
-	serviceCmd.AddCommand(newServiceInfoCommand())
-
 	return &serviceCmd
 }
 
-func newServiceCreateCommand() *cobra.Command {
+func (c *CLI) newServiceCreateCmd() *cobra.Command {
 	var options types.ServiceCreateOptions
 
 	serviceCreateCmd := cobra.Command{
@@ -56,7 +51,7 @@ func newServiceCreateCommand() *cobra.Command {
 	return &serviceCreateCmd
 }
 
-func newServiceEnableCommand() *cobra.Command {
+func (c *CLI) newServiceEnableCmd() *cobra.Command {
 	serviceEnableCmd := cobra.Command{
 		Use:   "enable <ID|NAME>",
 		Short: `Enable an existing service`,
@@ -70,7 +65,7 @@ func newServiceEnableCommand() *cobra.Command {
 	return &serviceEnableCmd
 }
 
-func newServiceDisableCommand() *cobra.Command {
+func (c *CLI) newServiceDisableCmd() *cobra.Command {
 	serviceDisableCmd := cobra.Command{
 		Use:   "disable <ID|NAME>",
 		Short: `Disable an existing service`,
@@ -84,7 +79,7 @@ func newServiceDisableCommand() *cobra.Command {
 	return &serviceDisableCmd
 }
 
-func newServiceInfoCommand() *cobra.Command {
+func (c *CLI) newServiceInfoCmd() *cobra.Command {
 	var options types.ServiceInfoOptions
 
 	serviceInfoCmd := cobra.Command{

@@ -12,20 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cli
+package client
 
-import "github.com/spf13/cobra"
+import (
+	"net/http"
+	"net/url"
+)
 
-func (c *CLI) newDiceCmd() *cobra.Command {
-	diceCmd := cobra.Command{
-		Use:   "dice",
-		Short: `Simple load balancing for non-microservice infrastructures`,
-		Long:  `Dice is an ergonomic, easy to use load balancer designed for non-microservice infrastructures.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
-			return nil
-		},
+type Client struct {
+	internal *http.Client
+	apiURL   *url.URL
+}
+
+func New(apiURL *url.URL) *Client {
+	c := Client{
+		internal: &http.Client{},
+		apiURL:   apiURL,
 	}
 
-	return &diceCmd
+	return &c
 }

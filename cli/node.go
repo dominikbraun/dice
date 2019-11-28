@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newNodeCommand() *cobra.Command {
+func (c *CLI) newNodeCmd() *cobra.Command {
 	nodeCmd := cobra.Command{
 		Use:   "node",
 		Short: `Manage Dice's nodes`,
@@ -29,15 +29,10 @@ func newNodeCommand() *cobra.Command {
 		},
 	}
 
-	nodeCmd.AddCommand(newNodeCreateCommand())
-	nodeCmd.AddCommand(newNodeAttachCommand())
-	nodeCmd.AddCommand(newNodeDetachCommand())
-	nodeCmd.AddCommand(newNodeInfoCommand())
-
 	return &nodeCmd
 }
 
-func newNodeCreateCommand() *cobra.Command {
+func (c *CLI) newNodeCreateCmd() *cobra.Command {
 	var options types.NodeCreateOptions
 
 	nodeCreateCmd := cobra.Command{
@@ -57,7 +52,7 @@ func newNodeCreateCommand() *cobra.Command {
 	return &nodeCreateCmd
 }
 
-func newNodeAttachCommand() *cobra.Command {
+func (c *CLI) newNodeAttachCmd() *cobra.Command {
 	nodeAttachCmd := cobra.Command{
 		Use:   "attach <ID|NAME|URL>",
 		Short: `Attach an existing node`,
@@ -71,7 +66,7 @@ func newNodeAttachCommand() *cobra.Command {
 	return &nodeAttachCmd
 }
 
-func newNodeDetachCommand() *cobra.Command {
+func (c *CLI) newNodeDetachCmd() *cobra.Command {
 	nodeDetachCmd := cobra.Command{
 		Use:   "detach <ID|NAME|URL>",
 		Short: `Detach an existing node`,
@@ -85,7 +80,7 @@ func newNodeDetachCommand() *cobra.Command {
 	return &nodeDetachCmd
 }
 
-func newNodeInfoCommand() *cobra.Command {
+func (c *CLI) newNodeInfoCmd() *cobra.Command {
 	var options types.NodeInfoOptions
 
 	nodeInfoCmd := cobra.Command{

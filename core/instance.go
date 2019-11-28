@@ -156,6 +156,9 @@ func (d *Dice) findInstance(instanceRef InstanceReference) (*entity.Instance, er
 	return nil, nil
 }
 
+// instanceIsUnique checks if a newly created instance is unique. An instance
+// is unique if no instanceIsUnique with equal identifiers has been found in
+// the key value store.
 func (d *Dice) instanceIsUnique(instance *entity.Instance) (bool, error) {
 	instance, err := d.findInstance(InstanceReference(instance.ID))
 

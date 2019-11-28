@@ -54,7 +54,7 @@ type Dice struct {
 	logger    log.Logger
 }
 
-// NewDice creates a new Dice instances and invokes all setup methods.
+// NewDice creates a new Dice instance and invokes all setup methods.
 func NewDice() (*Dice, chan<- os.Signal, error) {
 	var d Dice
 

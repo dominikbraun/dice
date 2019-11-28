@@ -20,7 +20,7 @@ func (c *CLI) diceCmd() *cobra.Command {
 	diceCmd := cobra.Command{
 		Use:   "dice",
 		Short: `Simple load balancing for non-microservice infrastructures`,
-		Long:  `Dice is an ergonomic, easy to use load balancer designed for non-microservice infrastructures.`,
+		Long:  `Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice infrastructures.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_ = cmd.Help()
 			return nil

@@ -10,6 +10,7 @@
 <p align="center">
 <br>
 <br>
+<br>
 <img src="https://circleci.com/gh/dominikbraun/foodunit.svg?style=shield">
 <img src="https://goreportcard.com/badge/github.com/dominikbraun/foodunit">
 <img src="https://img.shields.io/github/v/release/dominikbraun/foodunit?sort=semver">

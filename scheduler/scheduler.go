@@ -14,7 +14,10 @@
 
 package scheduler
 
-import "github.com/dominikbraun/dice/entity"
+import (
+	"errors"
+	"github.com/dominikbraun/dice/registry"
+)
 
 type BalancingMethod string
 
@@ -25,6 +28,15 @@ const (
 	WeightedRoundRobinBalancing BalancingMethod = "weighted_round_robin"
 )
 
-type Scheduler interface {
-	Next() (*entity.Instance, error)
+var (
+	ErrUnsupportedMethod = errors.New("balancing method is not supported")
+)
+
+func New(deployments *[]registry.Deployment, method BalancingMethod) (registry.Scheduler, error) {
+	switch method {
+	case WeightedRoundRobinBalancing:
+		return newWeightedRoundRobin(deployments), nil
+	default:
+		return nil, ErrUnsupportedMethod
+	}
 }

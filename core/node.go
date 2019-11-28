@@ -65,7 +65,11 @@ func (d *Dice) NodeAttach(nodeRef NodeReference) error {
 
 	node.IsAttached = true
 
-	return d.kvStore.UpdateNode(node.ID, node)
+	if err := d.kvStore.UpdateNode(node.ID, node); err != nil {
+		return err
+	}
+
+	return d.synchronizeNode(node, Attachment)
 }
 
 func (d *Dice) NodeDetach(nodeRef NodeReference) error {
@@ -80,7 +84,11 @@ func (d *Dice) NodeDetach(nodeRef NodeReference) error {
 
 	node.IsAttached = false
 
-	return d.kvStore.UpdateNode(node.ID, node)
+	if err := d.kvStore.UpdateNode(node.ID, node); err != nil {
+		return err
+	}
+
+	return d.synchronizeNode(node, Detachment)
 }
 
 func (d *Dice) NodeInfo(nodeRef NodeReference) (types.NodeInfoOutput, error) {

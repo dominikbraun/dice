@@ -65,7 +65,11 @@ func (d *Dice) InstanceAttach(instanceRef InstanceReference) error {
 
 	instance.IsAttached = true
 
-	return d.kvStore.UpdateInstance(instance.ID, instance)
+	if err := d.kvStore.UpdateInstance(instance.ID, instance); err != nil {
+		return err
+	}
+
+	return d.synchronizeInstance(instance, Attachment)
 }
 
 func (d *Dice) InstanceDetach(instanceRef InstanceReference) error {
@@ -80,7 +84,11 @@ func (d *Dice) InstanceDetach(instanceRef InstanceReference) error {
 
 	instance.IsAttached = false
 
-	return d.kvStore.UpdateInstance(instance.ID, instance)
+	if err := d.kvStore.UpdateInstance(instance.ID, instance); err != nil {
+		return err
+	}
+
+	return d.synchronizeInstance(instance, Detachment)
 }
 
 func (d *Dice) InstanceInfo(instanceRef InstanceReference) (types.InstanceInfoOutput, error) {

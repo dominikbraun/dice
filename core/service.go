@@ -64,7 +64,11 @@ func (d *Dice) ServiceEnable(serviceRef ServiceReference) error {
 
 	service.IsEnabled = true
 
-	return d.kvStore.UpdateService(service.ID, service)
+	if err := d.kvStore.UpdateService(service.ID, service); err != nil {
+		return err
+	}
+
+	return d.synchronizeService(service, Enabling)
 }
 
 func (d *Dice) ServiceDisable(serviceRef ServiceReference) error {
@@ -79,7 +83,11 @@ func (d *Dice) ServiceDisable(serviceRef ServiceReference) error {
 
 	service.IsEnabled = false
 
-	return d.kvStore.UpdateService(service.ID, service)
+	if err := d.kvStore.UpdateService(service.ID, service); err != nil {
+		return err
+	}
+
+	return d.synchronizeService(service, Disabling)
 }
 
 func (d *Dice) ServiceInfo(serviceRef ServiceReference) (types.ServiceInfoOutput, error) {

@@ -29,8 +29,9 @@ func NewConfig(filename string) (Reader, error) {
 	r := viper.New()
 
 	r.SetConfigName(filename)
-	r.AddConfigPath("$HOME/dice")
-	r.AddConfigPath("../..")
+	r.AddConfigPath("/etc/dice/")
+	r.AddConfigPath("$HOME/.dice")
+	r.AddConfigPath(".")
 
 	if err := r.ReadInConfig(); err != nil {
 		return nil, err

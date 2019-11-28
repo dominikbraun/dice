@@ -35,24 +35,28 @@ func New(client *client.Client) *CLI {
 
 func (c *CLI) buildCommands() {
 	nodeCmd := c.newNodeCmd()
+
 	nodeCmd.AddCommand(c.newNodeCreateCmd())
 	nodeCmd.AddCommand(c.newNodeAttachCmd())
 	nodeCmd.AddCommand(c.newNodeDetachCmd())
 	nodeCmd.AddCommand(c.newNodeInfoCmd())
 
 	serviceCmd := c.newServiceCmd()
+
 	serviceCmd.AddCommand(c.newServiceCreateCmd())
 	serviceCmd.AddCommand(c.newServiceEnableCmd())
 	serviceCmd.AddCommand(c.newServiceDisableCmd())
 	serviceCmd.AddCommand(c.newServiceInfoCmd())
 
 	instanceCmd := c.newInstanceCmd()
+
 	instanceCmd.AddCommand(c.newInstanceCreateCmd())
 	instanceCmd.AddCommand(c.newInstanceAttachCmd())
 	instanceCmd.AddCommand(c.newInstanceDetachCmd())
 	instanceCmd.AddCommand(c.newInstanceInfoCmd())
 
 	diceCmd := c.newDiceCmd()
+
 	diceCmd.AddCommand(nodeCmd)
 	diceCmd.AddCommand(serviceCmd)
 	diceCmd.AddCommand(instanceCmd)

@@ -89,17 +89,54 @@ func (sr *ServiceRegistry) UpdateNodes(filter NodeFilter, updater NodeUpdater) e
 }
 
 func (sr *ServiceRegistry) UpdateServices(filter ServiceFilter, updater ServiceUpdater) error {
-	// ToDo: Implement method
+	if filter == nil || updater == nil {
+		return ErrInvalidClosure
+	}
+
+	for _, s := range sr.services {
+		if filter(s.entity) {
+			if err := updater(s.entity); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
 func (sr *ServiceRegistry) UpdateInstances(filter InstanceFilter, updater InstanceUpdater) error {
-	// ToDo: Implement method
+	if filter == nil || updater == nil {
+		return ErrInvalidClosure
+	}
+
+	for _, s := range sr.services {
+		for _, d := range s.deployments {
+			if filter(d.Instance) {
+				if err := updater(d.Instance); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
 func (sr *ServiceRegistry) UpdateDeployments(filter DeploymentFilter, updater DeploymentUpdater) error {
-	// ToDo: Implement method
+	if filter == nil || updater == nil {
+		return ErrInvalidClosure
+	}
+
+	for _, s := range sr.services {
+		for _, d := range s.deployments {
+			if filter(d) {
+				if err := updater(d); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	return nil
 }
 

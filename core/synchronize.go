@@ -17,7 +17,6 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
-	"github.com/dominikbraun/dice/registry"
 )
 
 type SynchronizationTask uint
@@ -25,7 +24,8 @@ type SynchronizationTask uint
 const (
 	Attachment SynchronizationTask = 0
 	Detachment SynchronizationTask = 1
-	Removal    SynchronizationTask = 2
+	Enabling   SynchronizationTask = 2
+	Disabling  SynchronizationTask = 3
 )
 
 var (
@@ -54,15 +54,59 @@ func (d *Dice) synchronizeNode(node *entity.Node, task SynchronizationTask) erro
 		}
 		return d.registry.UpdateNodes(filter, update)
 
-	case Removal:
-		filter := func(deployment registry.Deployment) bool {
-			return deployment.Node.ID == node.ID
+	default:
+		return ErrInvalidSynchronizationTask
+	}
+}
+
+func (d *Dice) synchronizeService(service *entity.Service, task SynchronizationTask) error {
+	switch task {
+	case Enabling:
+		filter := func(s *entity.Service) bool {
+			return s.ID == service.ID
 		}
-		update := func(deployment registry.Deployment) error {
-			deployment.IsValid = false
+		update := func(s *entity.Service) error {
+			s.IsEnabled = true
 			return nil
 		}
-		return d.registry.UpdateDeployments(filter, update)
+		return d.registry.UpdateServices(filter, update)
+
+	case Disabling:
+		filter := func(s *entity.Service) bool {
+			return s.ID == service.ID
+		}
+		update := func(s *entity.Service) error {
+			s.IsEnabled = false
+			return nil
+		}
+		return d.registry.UpdateServices(filter, update)
+
+	default:
+		return ErrInvalidSynchronizationTask
+	}
+}
+
+func (d *Dice) synchronizeInstance(instance *entity.Instance, task SynchronizationTask) error {
+	switch task {
+	case Attachment:
+		filter := func(i *entity.Instance) bool {
+			return i.ID == instance.ID
+		}
+		update := func(i *entity.Instance) error {
+			i.IsAttached = true
+			return nil
+		}
+		return d.registry.UpdateInstances(filter, update)
+
+	case Detachment:
+		filter := func(i *entity.Instance) bool {
+			return i.ID == instance.ID
+		}
+		update := func(i *entity.Instance) error {
+			i.IsAttached = true
+			return nil
+		}
+		return d.registry.UpdateInstances(filter, update)
 
 	default:
 		return ErrInvalidSynchronizationTask

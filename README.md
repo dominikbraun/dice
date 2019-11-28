@@ -14,7 +14,6 @@
 
 ---
 
-<br>
 <h3>Dice &ndash; Simple load balancing for non-microservice infrastructures.</h3>
 <br>
 

@@ -15,7 +15,6 @@
 <img src="https://img.shields.io/github/v/release/dominikbraun/foodunit?sort=semver">
 <img src="https://img.shields.io/github/license/dominikbraun/foodunit">
 <br>
-<br>
 </p>
 
 ---

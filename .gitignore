@@ -2,6 +2,16 @@
 .idea
 .vscode
 
+# Dice development config
+dice.yml
+
+# Dice log
+dice.log
+
+# Dice KV store
+dice-store
+dice-store.lock
+
 # Directory for compiled binaries
 .target/
 

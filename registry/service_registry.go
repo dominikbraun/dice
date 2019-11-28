@@ -163,8 +163,10 @@ func (sr *ServiceRegistry) UnregisterService(serviceID string, mode UnregisterMo
 	}
 
 	if mode != HardUnregister {
-		if !sr.services[serviceID].isRemovable() {
-			return ErrServiceNotRemovable
+		for _, d := range sr.services[serviceID].deployments {
+			if !d.isRemovable() {
+				return ErrServiceNotRemovable
+			}
 		}
 	}
 

@@ -14,25 +14,16 @@
 
 package registry
 
-import (
-	"github.com/dominikbraun/dice/entity"
-	"github.com/dominikbraun/dice/scheduler"
-)
+import "github.com/dominikbraun/dice/entity"
+
+type Scheduler interface {
+	Next() (*entity.Instance, error)
+}
 
 type Service struct {
 	entity      *entity.Service
 	deployments []Deployment
-	scheduler   scheduler.Scheduler
-}
-
-func (s Service) isRemovable() bool {
-	for _, d := range s.deployments {
-		if !d.isRemovable() {
-			return false
-		}
-	}
-
-	return true
+	scheduler   Scheduler
 }
 
 type Deployment struct {
@@ -45,7 +36,6 @@ func (d Deployment) isRemovable() bool {
 	if d.Node.IsAttached && d.Instance.IsAttached {
 		return false
 	}
-
 	return true
 }
 

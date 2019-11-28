@@ -23,13 +23,15 @@ import (
 	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"os"
-	"os/signal"
 )
 
 const (
 	configName  string = "dice"
 	kvStorePath string = "./dice-store"
 	logfilePath string = "./dice.log"
+)
+const (
+	DefaultAPIServerPort = "8080"
 )
 
 // Dice represents the Dice load balancer and wires up all the components.
@@ -52,33 +54,25 @@ type Dice struct {
 	logger    log.Logger
 }
 
-// NewDice creates a new Dice instances and initializes all components.
+// NewDice creates a new Dice instances and invokes all setup methods.
 func NewDice() (*Dice, chan<- os.Signal, error) {
 	var d Dice
-	var err error
 
-	if d.config, err = config.NewConfig(configName); err != nil {
-		return nil, nil, err
+	steps := []func() error{
+		d.setupConfig,
+		d.setupKVStore,
+		d.setupRegistry,
+		d.setupAPIServer,
+		d.setupProxy,
+		d.setupLogger,
+		d.setupInterrupt,
 	}
 
-	if d.kvStore, err = store.NewKV(kvStorePath); err != nil {
-		return nil, nil, err
+	for _, setup := range steps {
+		if err := setup(); err != nil {
+			return nil, nil, err
+		}
 	}
-
-	d.registry = registry.NewServiceRegistry()
-	d.interrupt = make(chan os.Signal)
-
-	d.apiServer = api.NewServer(api.ServerConfig{})
-	d.proxy = proxy.New(proxy.Config{}, d.registry)
-
-	logfile, err := os.OpenFile(logfilePath, os.O_WRONLY|os.O_CREATE, 0755)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	d.logger = log.NewLogger(logfile, log.InfoLevel)
-
-	signal.Notify(d.interrupt, os.Interrupt)
 
 	return &d, d.interrupt, nil
 }

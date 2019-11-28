@@ -15,7 +15,6 @@
 package types
 
 import (
-	"github.com/dominikbraun/dice/entity"
 	"net/url"
 )
 
@@ -27,14 +26,6 @@ type NodeInfoOutput struct {
 	IsAlive    bool     `json:"is_alive"`
 }
 
-func (ni NodeInfoOutput) Populate(node *entity.Node) {
-	ni.ID = node.ID
-	ni.Name = node.Name
-	ni.URL = node.URL
-	ni.IsAttached = node.IsAttached
-	ni.IsAttached = node.IsAlive
-}
-
 type ServiceInfoOutput struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
@@ -42,15 +33,6 @@ type ServiceInfoOutput struct {
 	TargetVersion   string   `json:"target_version"`
 	BalancingMethod string   `json:"balancing_method"`
 	IsEnabled       bool     `json:"is_enabled"`
-}
-
-func (si ServiceInfoOutput) Populate(service *entity.Service) {
-	si.ID = service.ID
-	si.Name = service.Name
-	si.Hostnames = service.Hostnames
-	si.TargetVersion = service.TargetVersion
-	si.BalancingMethod = service.BalancingMethod
-	si.IsEnabled = service.IsEnabled
 }
 
 type InstanceInfoOutput struct {
@@ -62,15 +44,4 @@ type InstanceInfoOutput struct {
 	Version    string   `json:"version"`
 	IsAttached bool     `json:"is_attached"`
 	IsAlive    bool     `json:"is_alive"`
-}
-
-func (ii InstanceInfoOutput) Populate(instance *entity.Instance) {
-	ii.ID = instance.ID
-	ii.Name = instance.Name
-	ii.ServiceID = instance.ServiceID
-	ii.NodeID = instance.NodeID
-	ii.URL = instance.URL
-	ii.Version = instance.Version
-	ii.IsAttached = instance.IsAttached
-	ii.IsAlive = instance.IsAlive
 }

@@ -104,14 +104,18 @@ func (d *Dice) NodeDetach(nodeRef NodeReference) error {
 
 // NodeInfo returns user-relevant information for an existing node.
 func (d *Dice) NodeInfo(nodeRef NodeReference) (types.NodeInfoOutput, error) {
-	var nodeInfo types.NodeInfoOutput
-
 	node, err := d.findNode(nodeRef)
 	if err != nil {
-		return nodeInfo, err
+		return types.NodeInfoOutput{}, err
 	}
 
-	nodeInfo.Populate(node)
+	nodeInfo := types.NodeInfoOutput{
+		ID:         node.ID,
+		Name:       node.Name,
+		URL:        node.URL,
+		IsAttached: node.IsAttached,
+		IsAlive:    node.IsAlive,
+	}
 
 	return nodeInfo, nil
 }

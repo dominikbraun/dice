@@ -104,14 +104,21 @@ func (d *Dice) InstanceDetach(instanceRef InstanceReference) error {
 
 // InstanceInfo returns user-relevant information for an existing instance.
 func (d *Dice) InstanceInfo(instanceRef InstanceReference) (types.InstanceInfoOutput, error) {
-	var instanceInfo types.InstanceInfoOutput
-
 	instance, err := d.findInstance(instanceRef)
 	if err != nil {
-		return instanceInfo, err
+		return types.InstanceInfoOutput{}, err
 	}
 
-	instanceInfo.Populate(instance)
+	instanceInfo := types.InstanceInfoOutput{
+		ID:         instance.ID,
+		Name:       instance.Name,
+		ServiceID:  instance.ServiceID,
+		NodeID:     instance.NodeID,
+		URL:        instance.URL,
+		Version:    instance.Version,
+		IsAttached: instance.IsAttached,
+		IsAlive:    instance.IsAlive,
+	}
 
 	return instanceInfo, nil
 }

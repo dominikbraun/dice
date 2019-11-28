@@ -102,14 +102,19 @@ func (d *Dice) ServiceDisable(serviceRef ServiceReference) error {
 
 // ServiceInfo returns user-relevant information for an existing service.
 func (d *Dice) ServiceInfo(serviceRef ServiceReference) (types.ServiceInfoOutput, error) {
-	var serviceInfo types.ServiceInfoOutput
-
 	service, err := d.findService(serviceRef)
 	if err != nil {
-		return serviceInfo, err
+		return types.ServiceInfoOutput{}, err
 	}
 
-	serviceInfo.Populate(service)
+	serviceInfo := types.ServiceInfoOutput{
+		ID:              service.ID,
+		Name:            service.Name,
+		Hostnames:       service.Hostnames,
+		TargetVersion:   service.TargetVersion,
+		BalancingMethod: service.BalancingMethod,
+		IsEnabled:       service.IsEnabled,
+	}
 
 	return serviceInfo, nil
 }

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package core provides the Dice load balancer and its methods.
 package core
 
 import (
@@ -21,6 +22,7 @@ import (
 	"net/url"
 )
 
+// InstanceReference is a string that identifies an instance, e. g. an ID.
 type InstanceReference string
 
 var (
@@ -28,6 +30,9 @@ var (
 	ErrInstanceAlreadyExists = errors.New("a instance with the given ID, name or URL already exists")
 )
 
+// InstanceCreate creates a new instance with the provided service ID,
+// node ID and URL. If the `Attach` option is set, the created instance
+// will be attached immediately.
 func (d *Dice) InstanceCreate(serviceID, nodeID string, url *url.URL, options types.InstanceCreateOptions) error {
 	instance, err := entity.NewInstance(serviceID, nodeID, url, options)
 	if err != nil {
@@ -53,6 +58,9 @@ func (d *Dice) InstanceCreate(serviceID, nodeID string, url *url.URL, options ty
 	return nil
 }
 
+// InstanceAttach attaches an existing instance to Dice, making it available
+// as a target for load balancing. This function will update the instance
+// data and synchronize the instance with the service registry.
 func (d *Dice) InstanceAttach(instanceRef InstanceReference) error {
 	instance, err := d.findInstance(instanceRef)
 	if err != nil {
@@ -72,6 +80,9 @@ func (d *Dice) InstanceAttach(instanceRef InstanceReference) error {
 	return d.synchronizeInstance(instance, Attachment)
 }
 
+// InstanceDetach detaches an existing instance from Dice, removing it as
+// a target for load balancing. Detaching an instance will leave all other
+// instances of the service untouched.
 func (d *Dice) InstanceDetach(instanceRef InstanceReference) error {
 	instance, err := d.findInstance(instanceRef)
 	if err != nil {
@@ -91,6 +102,7 @@ func (d *Dice) InstanceDetach(instanceRef InstanceReference) error {
 	return d.synchronizeInstance(instance, Detachment)
 }
 
+// InstanceInfo returns user-relevant information for an existing instance.
 func (d *Dice) InstanceInfo(instanceRef InstanceReference) (types.InstanceInfoOutput, error) {
 	var instanceInfo types.InstanceInfoOutput
 
@@ -104,6 +116,12 @@ func (d *Dice) InstanceInfo(instanceRef InstanceReference) (types.InstanceInfoOu
 	return instanceInfo, nil
 }
 
+// findInstance attempts to find an instance in the key-value store that
+// matches the reference. The ID has the highest priority, then name and
+// URL are checked.
+//
+// If multiple instances match, only the first one will be returned. If no
+// instances match, `nil` - and no error - will be returned.
 func (d *Dice) findInstance(instanceRef InstanceReference) (*entity.Instance, error) {
 	instancesByID, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
 		return instance.ID == string(instanceRef)

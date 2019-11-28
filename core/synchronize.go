@@ -19,6 +19,8 @@ import (
 	"github.com/dominikbraun/dice/entity"
 )
 
+// SynchronizationTask is a type of synchronization between the key-value
+// store and the service registry.
 type SynchronizationTask uint
 
 const (
@@ -32,6 +34,8 @@ var (
 	ErrInvalidSynchronizationTask = errors.New("the provided synchronization task is invalid")
 )
 
+// synchronizeNode synchronizes the state of a given node with the state
+// of a node that is currently managed by the service registry.
 func (d *Dice) synchronizeNode(node *entity.Node, task SynchronizationTask) error {
 	switch task {
 	case Attachment:
@@ -59,6 +63,8 @@ func (d *Dice) synchronizeNode(node *entity.Node, task SynchronizationTask) erro
 	}
 }
 
+// synchronizeService synchronizes the state of a given service with the
+// state of a service that is currently managed by the service registry.
 func (d *Dice) synchronizeService(service *entity.Service, task SynchronizationTask) error {
 	switch task {
 	case Enabling:
@@ -86,6 +92,8 @@ func (d *Dice) synchronizeService(service *entity.Service, task SynchronizationT
 	}
 }
 
+// synchronizeInstance synchronizes the state of a given instance with the
+// state of an instance that is currently managed by the service registry.
 func (d *Dice) synchronizeInstance(instance *entity.Instance, task SynchronizationTask) error {
 	switch task {
 	case Attachment:

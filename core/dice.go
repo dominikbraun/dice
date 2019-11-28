@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package core provides the Dice load balancer and its methods.
 package core
 
 import (
@@ -31,6 +32,16 @@ const (
 	logfilePath string = "./dice.log"
 )
 
+// Dice represents the Dice load balancer and wires up all the components.
+//
+// Most importantly, this type consists of:
+// - a key-value store for simply persisting domain entities
+// - a registry that manages all services and their instances
+// - an API server that exposes a REST API for managing Dice
+// - a proxy server that will receive and balance all requests
+// - some utility types for configuration parsing, logging etc.
+//
+// Some deeper explanations can be found at the corresponding components.
 type Dice struct {
 	config    config.Reader
 	kvStore   store.EntityStore
@@ -41,6 +52,7 @@ type Dice struct {
 	logger    log.Logger
 }
 
+// NewDice creates a new Dice instances and initializes all components.
 func NewDice() (*Dice, chan<- os.Signal, error) {
 	var d Dice
 	var err error
@@ -71,6 +83,8 @@ func NewDice() (*Dice, chan<- os.Signal, error) {
 	return &d, d.interrupt, nil
 }
 
+// Run starts the API and proxy servers. To shut them down gracefully, send
+// a signal through the interrupt channel returned by NewDice.
 func (d *Dice) Run() error {
 	errors := make(chan error)
 

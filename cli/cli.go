@@ -21,7 +21,7 @@ import (
 
 type CLI struct {
 	client  *client.Client
-	diceCmd *cobra.Command
+	rootCmd *cobra.Command
 }
 
 func New(client *client.Client) *CLI {
@@ -34,36 +34,36 @@ func New(client *client.Client) *CLI {
 }
 
 func (c *CLI) buildCommands() {
-	nodeCmd := c.newNodeCmd()
+	nodeCmd := c.nodeCmd()
 
-	nodeCmd.AddCommand(c.newNodeCreateCmd())
-	nodeCmd.AddCommand(c.newNodeAttachCmd())
-	nodeCmd.AddCommand(c.newNodeDetachCmd())
-	nodeCmd.AddCommand(c.newNodeInfoCmd())
+	nodeCmd.AddCommand(c.nodeCreateCmd())
+	nodeCmd.AddCommand(c.nodeAttachCmd())
+	nodeCmd.AddCommand(c.nodeDetachCmd())
+	nodeCmd.AddCommand(c.nodeInfoCmd())
 
-	serviceCmd := c.newServiceCmd()
+	serviceCmd := c.serviceCmd()
 
-	serviceCmd.AddCommand(c.newServiceCreateCmd())
-	serviceCmd.AddCommand(c.newServiceEnableCmd())
-	serviceCmd.AddCommand(c.newServiceDisableCmd())
-	serviceCmd.AddCommand(c.newServiceInfoCmd())
+	serviceCmd.AddCommand(c.serviceCreateCmd())
+	serviceCmd.AddCommand(c.serviceEnableCmd())
+	serviceCmd.AddCommand(c.serviceDisableCmd())
+	serviceCmd.AddCommand(c.serviceInfoCmd())
 
-	instanceCmd := c.newInstanceCmd()
+	instanceCmd := c.instanceCmd()
 
-	instanceCmd.AddCommand(c.newInstanceCreateCmd())
-	instanceCmd.AddCommand(c.newInstanceAttachCmd())
-	instanceCmd.AddCommand(c.newInstanceDetachCmd())
-	instanceCmd.AddCommand(c.newInstanceInfoCmd())
+	instanceCmd.AddCommand(c.instanceCreateCmd())
+	instanceCmd.AddCommand(c.instanceAttachCmd())
+	instanceCmd.AddCommand(c.instanceDetachCmd())
+	instanceCmd.AddCommand(c.instanceInfoCmd())
 
-	diceCmd := c.newDiceCmd()
+	diceCmd := c.diceCmd()
 
 	diceCmd.AddCommand(nodeCmd)
 	diceCmd.AddCommand(serviceCmd)
 	diceCmd.AddCommand(instanceCmd)
 
-	c.diceCmd = diceCmd
+	c.rootCmd = diceCmd
 }
 
 func (c *CLI) Execute() error {
-	return c.diceCmd.Execute()
+	return c.rootCmd.Execute()
 }

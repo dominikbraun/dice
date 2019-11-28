@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (c *CLI) newInstanceCmd() *cobra.Command {
+func (c *CLI) instanceCmd() *cobra.Command {
 	instanceCmd := cobra.Command{
 		Use:   "instance",
 		Short: `Manage Dice's service instances`,
@@ -32,7 +32,7 @@ func (c *CLI) newInstanceCmd() *cobra.Command {
 	return &instanceCmd
 }
 
-func (c *CLI) newInstanceCreateCmd() *cobra.Command {
+func (c *CLI) instanceCreateCmd() *cobra.Command {
 	var options types.InstanceCreateOptions
 
 	instanceCreateCmd := cobra.Command{
@@ -52,7 +52,7 @@ func (c *CLI) newInstanceCreateCmd() *cobra.Command {
 	return &instanceCreateCmd
 }
 
-func (c *CLI) newInstanceAttachCmd() *cobra.Command {
+func (c *CLI) instanceAttachCmd() *cobra.Command {
 	instanceAttachCmd := cobra.Command{
 		Use:   "attach <ID|NAME|URL>",
 		Short: `Attach an existing service instance`,
@@ -66,7 +66,7 @@ func (c *CLI) newInstanceAttachCmd() *cobra.Command {
 	return &instanceAttachCmd
 }
 
-func (c *CLI) newInstanceDetachCmd() *cobra.Command {
+func (c *CLI) instanceDetachCmd() *cobra.Command {
 	instanceDetachCmd := cobra.Command{
 		Use:   "detach <ID|NAME|URL>",
 		Short: `Detach an existing service instance`,
@@ -80,7 +80,7 @@ func (c *CLI) newInstanceDetachCmd() *cobra.Command {
 	return &instanceDetachCmd
 }
 
-func (c *CLI) newInstanceInfoCmd() *cobra.Command {
+func (c *CLI) instanceInfoCmd() *cobra.Command {
 	var options types.InstanceInfoOptions
 
 	instanceInfoCmd := cobra.Command{

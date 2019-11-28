@@ -16,7 +16,7 @@ package cli
 
 import "github.com/spf13/cobra"
 
-func (c *CLI) newDiceCmd() *cobra.Command {
+func (c *CLI) diceCmd() *cobra.Command {
 	diceCmd := cobra.Command{
 		Use:   "dice",
 		Short: `Simple load balancing for non-microservice infrastructures`,

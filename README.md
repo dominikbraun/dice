@@ -14,6 +14,8 @@
 
 ---
 
+<br>
 <h3>Dice &ndash; Simple load balancing for non-microservice infrastructures.</h3>
+<br>
 
 Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice infrastructures.

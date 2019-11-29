@@ -78,7 +78,8 @@ func NewDice() (*Dice, error) {
 }
 
 // Run starts the API and proxy servers. To shut them down gracefully, send
-// a signal through the interrupt channel returned by NewDice.
+// an interrupt signal (SIGINT) to the Dice executable. If an error happens
+// while running one of the servers, Dice will be stopped entirely.
 func (d *Dice) Run() error {
 	errors := make(chan error)
 
@@ -96,8 +97,12 @@ func (d *Dice) Run() error {
 
 	select {
 	case <-d.interrupt:
-		_ = d.proxy.Shutdown()
-		_ = d.apiServer.Shutdown()
+		if err := d.proxy.Shutdown(); err != nil {
+			d.logger.Errorf("Proxy shutdown error: %v", err)
+		}
+		if err := d.apiServer.Shutdown(); err != nil {
+			d.logger.Errorf("API server shutdown error: %v", err)
+		}
 	case err := <-errors:
 		return err
 	}

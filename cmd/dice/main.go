@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	dice, _, err := core.NewDice()
+	dice, err := core.NewDice()
 	if err != nil {
 		log.Fatal(err)
 	}

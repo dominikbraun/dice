@@ -55,7 +55,7 @@ type Dice struct {
 }
 
 // NewDice creates a new Dice instance and invokes all setup methods.
-func NewDice() (*Dice, chan<- os.Signal, error) {
+func NewDice() (*Dice, error) {
 	var d Dice
 
 	steps := []func() error{
@@ -70,11 +70,11 @@ func NewDice() (*Dice, chan<- os.Signal, error) {
 
 	for _, setup := range steps {
 		if err := setup(); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 
-	return &d, d.interrupt, nil
+	return &d, nil
 }
 
 // Run starts the API and proxy servers. To shut them down gracefully, send

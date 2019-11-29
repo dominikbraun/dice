@@ -83,17 +83,24 @@ func (d *Dice) Run() error {
 	errors := make(chan error)
 
 	go func() {
-		if err := d.proxy.Run(d.interrupt); err != nil {
+		if err := d.proxy.Run(); err != nil {
 			errors <- err
 		}
 	}()
 
 	go func() {
-		if err := d.apiServer.Run(d.interrupt); err != nil {
+		if err := d.apiServer.Run(); err != nil {
 			errors <- err
 		}
 	}()
 
-	err := <-errors
-	return err
+	select {
+	case <-d.interrupt:
+		_ = d.proxy.Shutdown()
+		_ = d.apiServer.Shutdown()
+	case err := <-errors:
+		return err
+	}
+
+	return nil
 }

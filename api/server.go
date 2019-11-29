@@ -18,7 +18,6 @@ import (
 	"context"
 	"github.com/go-chi/chi"
 	"net/http"
-	"os"
 )
 
 type ServerConfig struct {
@@ -46,24 +45,16 @@ func NewServer(config ServerConfig) *Server {
 	return &s
 }
 
-func (s *Server) Run(interrupt <-chan os.Signal) error {
-	errors := make(chan error)
+func (s *Server) Run() error {
+	err := s.server.ListenAndServe()
 
-	go func() {
-		err := s.server.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			errors <- err
-		}
-		close(errors)
-	}()
+	if err != nil && err != http.ErrServerClosed {
+		return err
+	}
 
-	go func() {
-		<-interrupt
-		if err := s.server.Shutdown(context.Background()); err != nil {
-			errors <- err
-		}
-	}()
+	return nil
+}
 
-	err := <-errors
-	return err
+func (s *Server) Shutdown() error {
+	return s.server.Shutdown(context.Background())
 }

@@ -26,9 +26,10 @@ type ServerConfig struct {
 }
 
 type Server struct {
-	config ServerConfig
-	router chi.Router
-	server *http.Server
+	config     ServerConfig
+	router     chi.Router
+	server     *http.Server
+	controller Controller
 }
 
 func NewServer(config ServerConfig) *Server {

@@ -30,10 +30,10 @@ var (
 	ErrNodeAlreadyExists = errors.New("a node with the given ID already exists")
 )
 
-// NodeCreate creates a new node with the provided URL and stores the node
+// CreateNode creates a new node with the provided URL and stores the node
 // in the key-value store. If the `Attach` option is set, the created node
 // will be attached immediately.
-func (d *Dice) NodeCreate(url *url.URL, options types.NodeCreateOptions) error {
+func (d *Dice) CreateNode(url *url.URL, options types.NodeCreateOptions) error {
 	node, err := entity.NewNode(url, options)
 	if err != nil {
 		return err
@@ -52,16 +52,16 @@ func (d *Dice) NodeCreate(url *url.URL, options types.NodeCreateOptions) error {
 	}
 
 	if options.Attach {
-		return d.NodeAttach(NodeReference(node.ID))
+		return d.AttachNode(NodeReference(node.ID))
 	}
 
 	return nil
 }
 
-// NodeAttach attaches an existing node to Dice, making it available as a
+// AttachNode attaches an existing node to Dice, making it available as a
 // target for load balancing. This function will update the node data and
 // synchronize the node with the service registry.
-func (d *Dice) NodeAttach(nodeRef NodeReference) error {
+func (d *Dice) AttachNode(nodeRef NodeReference) error {
 	node, err := d.findNode(nodeRef)
 	if err != nil {
 		return err
@@ -80,10 +80,10 @@ func (d *Dice) NodeAttach(nodeRef NodeReference) error {
 	return d.synchronizeNode(node, Attachment)
 }
 
-// NodeDetach detaches an existing node from Dice, removing it as a target
+// DetachNode detaches an existing node from Dice, removing it as a target
 // for load balancing. Detaching a node will make all instances deployed to
 // that node unavailable until it gets attached again.
-func (d *Dice) NodeDetach(nodeRef NodeReference) error {
+func (d *Dice) DetachNode(nodeRef NodeReference) error {
 	node, err := d.findNode(nodeRef)
 	if err != nil {
 		return err

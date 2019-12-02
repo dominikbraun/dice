@@ -30,10 +30,10 @@ var (
 	ErrInstanceAlreadyExists = errors.New("a instance with the given ID, name or URL already exists")
 )
 
-// InstanceCreate creates a new instance with the provided service ID,
+// CreateInstance creates a new instance with the provided service ID,
 // node ID and URL. If the `Attach` option is set, the created instance
 // will be attached immediately.
-func (d *Dice) InstanceCreate(serviceID, nodeID string, url *url.URL, options types.InstanceCreateOptions) error {
+func (d *Dice) CreateInstance(serviceID, nodeID string, url *url.URL, options types.InstanceCreateOptions) error {
 	instance, err := entity.NewInstance(serviceID, nodeID, url, options)
 	if err != nil {
 		return err
@@ -52,16 +52,16 @@ func (d *Dice) InstanceCreate(serviceID, nodeID string, url *url.URL, options ty
 	}
 
 	if options.Attach {
-		return d.InstanceAttach(InstanceReference(instance.ID))
+		return d.AttachInstance(InstanceReference(instance.ID))
 	}
 
 	return nil
 }
 
-// InstanceAttach attaches an existing instance to Dice, making it available
+// AttachInstance attaches an existing instance to Dice, making it available
 // as a target for load balancing. This function will update the instance
 // data and synchronize the instance with the service registry.
-func (d *Dice) InstanceAttach(instanceRef InstanceReference) error {
+func (d *Dice) AttachInstance(instanceRef InstanceReference) error {
 	instance, err := d.findInstance(instanceRef)
 	if err != nil {
 		return err
@@ -80,10 +80,10 @@ func (d *Dice) InstanceAttach(instanceRef InstanceReference) error {
 	return d.synchronizeInstance(instance, Attachment)
 }
 
-// InstanceDetach detaches an existing instance from Dice, removing it as
+// DetachInstance detaches an existing instance from Dice, removing it as
 // a target for load balancing. Detaching an instance will leave all other
 // instances of the service untouched.
-func (d *Dice) InstanceDetach(instanceRef InstanceReference) error {
+func (d *Dice) DetachInstance(instanceRef InstanceReference) error {
 	instance, err := d.findInstance(instanceRef)
 	if err != nil {
 		return err

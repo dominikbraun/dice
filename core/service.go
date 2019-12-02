@@ -29,10 +29,10 @@ var (
 	ErrServiceAlreadyExists = errors.New("a service with the given ID or name already exists")
 )
 
-// ServiceCreate creates a new service with the provided name and stores
+// CreateService creates a new service with the provided name and stores
 // the service in the key-value store. If the `Enable` option is set, the
 // created service will be enabled immediately.
-func (d *Dice) ServiceCreate(name string, options types.ServiceCreateOptions) error {
+func (d *Dice) CreateService(name string, options types.ServiceCreateOptions) error {
 	service, err := entity.NewService(name, options)
 	if err != nil {
 		return err
@@ -51,16 +51,16 @@ func (d *Dice) ServiceCreate(name string, options types.ServiceCreateOptions) er
 	}
 
 	if options.Enable {
-		return d.ServiceEnable(ServiceReference(service.ID))
+		return d.EnableService(ServiceReference(service.ID))
 	}
 
 	return nil
 }
 
-// ServiceEnable enables an existing service, making it available as request
+// EnableService enables an existing service, making it available as request
 // target. This function will update the service data and synchronize the
 // service with the service registry.
-func (d *Dice) ServiceEnable(serviceRef ServiceReference) error {
+func (d *Dice) EnableService(serviceRef ServiceReference) error {
 	service, err := d.findService(serviceRef)
 	if err != nil {
 		return err
@@ -79,9 +79,9 @@ func (d *Dice) ServiceEnable(serviceRef ServiceReference) error {
 	return d.synchronizeService(service, Enabling)
 }
 
-// ServiceDisable disables a service, removing it as request target and
+// DisableService disables a service, removing it as request target and
 // therefore making it unavailable for any clients.
-func (d *Dice) ServiceDisable(serviceRef ServiceReference) error {
+func (d *Dice) DisableService(serviceRef ServiceReference) error {
 	service, err := d.findService(serviceRef)
 	if err != nil {
 		return err

@@ -21,15 +21,14 @@ type Scheduler interface {
 }
 
 type Service struct {
-	entity      *entity.Service
-	deployments []Deployment
-	scheduler   Scheduler
+	Entity      *entity.Service
+	Deployments []Deployment
+	Scheduler   Scheduler
 }
 
 type Deployment struct {
-	Node       *entity.Node
-	Instance   *entity.Instance
-	IsDangling bool
+	Node     *entity.Node
+	Instance *entity.Instance
 }
 
 func (d Deployment) isRemovable() bool {

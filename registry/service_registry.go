@@ -76,7 +76,7 @@ func (sr *ServiceRegistry) UpdateNodes(filter NodeFilter, updater NodeUpdater) e
 	}
 
 	for _, s := range sr.services {
-		for _, d := range s.deployments {
+		for _, d := range s.Deployments {
 			if filter(d.Node) {
 				if err := updater(d.Node); err != nil {
 					return err
@@ -94,8 +94,8 @@ func (sr *ServiceRegistry) UpdateServices(filter ServiceFilter, updater ServiceU
 	}
 
 	for _, s := range sr.services {
-		if filter(s.entity) {
-			if err := updater(s.entity); err != nil {
+		if filter(s.Entity) {
+			if err := updater(s.Entity); err != nil {
 				return err
 			}
 		}
@@ -110,7 +110,7 @@ func (sr *ServiceRegistry) UpdateInstances(filter InstanceFilter, updater Instan
 	}
 
 	for _, s := range sr.services {
-		for _, d := range s.deployments {
+		for _, d := range s.Deployments {
 			if filter(d.Instance) {
 				if err := updater(d.Instance); err != nil {
 					return err
@@ -128,7 +128,7 @@ func (sr *ServiceRegistry) UpdateDeployments(filter DeploymentFilter, updater De
 	}
 
 	for _, s := range sr.services {
-		for _, d := range s.deployments {
+		for _, d := range s.Deployments {
 			if filter(d) {
 				if err := updater(d); err != nil {
 					return err
@@ -141,13 +141,13 @@ func (sr *ServiceRegistry) UpdateDeployments(filter DeploymentFilter, updater De
 }
 
 func (sr *ServiceRegistry) RegisterService(service Service) error {
-	serviceID := service.entity.ID
+	serviceID := service.Entity.ID
 
 	if _, exists := sr.services[serviceID]; exists {
 		return ErrServiceAlreadyRegistered
 	}
 
-	for _, h := range service.entity.Hostnames {
+	for _, h := range service.Entity.Hostnames {
 		if err := sr.RegisterHostname(h, serviceID); err != nil {
 			return err
 		}
@@ -163,14 +163,14 @@ func (sr *ServiceRegistry) UnregisterService(serviceID string, mode UnregisterMo
 	}
 
 	if mode != HardUnregister {
-		for _, d := range sr.services[serviceID].deployments {
+		for _, d := range sr.services[serviceID].Deployments {
 			if !d.isRemovable() {
 				return ErrServiceNotRemovable
 			}
 		}
 	}
 
-	for _, h := range sr.services[serviceID].entity.Hostnames {
+	for _, h := range sr.services[serviceID].Entity.Hostnames {
 		if err := sr.UnregisterHostname(h); err != nil {
 			return err
 		}
@@ -187,7 +187,7 @@ func (sr *ServiceRegistry) RegisterDeployment(deployment Deployment) error {
 		return ErrUnregisteredService
 	}
 
-	deployments := sr.services[serviceID].deployments
+	deployments := sr.services[serviceID].Deployments
 	deployments = append(deployments, deployment)
 
 	return nil
@@ -213,7 +213,7 @@ func (sr *ServiceRegistry) UnregisterDeployment(deployment Deployment, mode Unre
 		}
 	}
 
-	deployments := sr.services[serviceID].deployments
+	deployments := sr.services[serviceID].Deployments
 	deployments[index] = deployments[len(deployments)-1]
 	deployments = deployments[:len(deployments)-1]
 
@@ -247,7 +247,7 @@ func (sr *ServiceRegistry) indexOfDeployment(serviceID string, deployment Deploy
 		return 0, ErrUnregisteredService
 	}
 
-	for i, d := range sr.services[serviceID].deployments {
+	for i, d := range sr.services[serviceID].Deployments {
 		if d.equals(deployment) {
 			return i, nil
 		}

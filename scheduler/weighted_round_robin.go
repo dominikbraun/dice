@@ -27,38 +27,38 @@ type WeightedRoundRobin struct {
 }
 
 func newWeightedRoundRobin(deployments *[]registry.Deployment) *WeightedRoundRobin {
-	w := WeightedRoundRobin{
+	wrr := WeightedRoundRobin{
 		deployments:   deployments,
 		currentIndex:  0,
 		currentWeight: uint8(0),
 	}
 
-	return &w
+	return &wrr
 }
 
-func (w *WeightedRoundRobin) Next() (*entity.Instance, error) {
+func (wrr *WeightedRoundRobin) Next() (*entity.Instance, error) {
 	attempts := 0
 
 lookup:
-	for attempts < len(*w.deployments) {
-		index := w.currentIndex % len(*w.deployments)
-		d := (*w.deployments)[index]
+	for attempts < len(*wrr.deployments) {
+		index := wrr.currentIndex % len(*wrr.deployments)
+		d := (*wrr.deployments)[index]
 
 		if !d.Instance.IsAttached || !d.Instance.IsAlive {
-			w.currentIndex++
+			wrr.currentIndex++
 			attempts++
 			continue lookup
 		}
 
-		if d.Node.Weight == w.currentWeight {
-			w.currentIndex++
-			w.currentWeight = uint8(0)
+		if d.Node.Weight == wrr.currentWeight {
+			wrr.currentIndex++
+			wrr.currentWeight = uint8(0)
 			attempts++
 			continue lookup
 		}
 
-		if d.Node.Weight > w.currentWeight {
-			w.currentWeight++
+		if d.Node.Weight > wrr.currentWeight {
+			wrr.currentWeight++
 			return d.Instance, nil
 		}
 

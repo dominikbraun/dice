@@ -22,6 +22,9 @@ import (
 	"time"
 )
 
+// NodeReference is a string that identifies a node, e. g. an ID or name.
+type NodeReference string
+
 // Node represents a network node that one or more applications run on,
 // for example a physical server, virtual machine or even a container.
 //

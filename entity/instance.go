@@ -21,6 +21,9 @@ import (
 	"time"
 )
 
+// InstanceReference is a string that identifies an instance, e. g. an ID.
+type InstanceReference string
+
 // Instance represents a service instance. It is an executable associated
 // with a service that has been deployed to a node. Any service can have
 // multiple instances, allowing redundancy and higher availability.

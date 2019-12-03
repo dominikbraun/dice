@@ -17,6 +17,9 @@ package entity
 
 import "github.com/dominikbraun/dice/types"
 
+// ServiceReference is a string that identifies a service, e. g. an ID.
+type ServiceReference string
+
 // Service represents an application or webservice. A Service itself is not
 // a running application. Instead, the running executables are represented
 // by service instances (see entity.Instance).

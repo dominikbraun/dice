@@ -16,6 +16,7 @@ package api
 
 import (
 	"context"
+	"github.com/dominikbraun/dice/controller"
 	"github.com/go-chi/chi"
 	"net/http"
 )
@@ -29,10 +30,10 @@ type Server struct {
 	config     ServerConfig
 	router     chi.Router
 	server     *http.Server
-	controller Controller
+	controller *controller.Controller
 }
 
-func NewServer(config ServerConfig) *Server {
+func NewServer(config ServerConfig, backend controller.Target) *Server {
 	s := Server{
 		config: config,
 		router: newRouter(),
@@ -42,6 +43,8 @@ func NewServer(config ServerConfig) *Server {
 		Addr:    s.config.Address,
 		Handler: s.router,
 	}
+
+	s.controller = controller.New(backend)
 
 	return &s
 }

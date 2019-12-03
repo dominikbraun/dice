@@ -14,20 +14,31 @@
 
 package controller
 
-import "net/http"
+import (
+	"errors"
+	"github.com/go-chi/render"
+	"net/http"
+)
 
-func (c Controller) CreateNode() http.HandlerFunc {
-	panic("implement me")
+var (
+	ErrInternalServerError = errors.New("an internal server error occurred")
+	ErrInvalidURL          = errors.New("the given URL is not valid")
+	ErrInvalidFormData     = errors.New("the provided form data is not valid")
+)
+
+type Controller struct {
+	backend Target
 }
 
-func (c Controller) AttachNode() http.HandlerFunc {
-	panic("implement me")
+func New(backend Target) *Controller {
+	c := Controller{
+		backend: backend,
+	}
+
+	return &c
 }
 
-func (c Controller) DetachNode() http.HandlerFunc {
-	panic("implement me")
-}
-
-func (c Controller) NodeInfo() http.HandlerFunc {
-	panic("implement me")
+func respond(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
+	w.WriteHeader(status)
+	render.JSON(w, r, v)
 }

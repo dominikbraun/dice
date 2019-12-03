@@ -33,3 +33,39 @@ func newRouter() chi.Router {
 
 	return r
 }
+
+func (s *Server) mountRoutes() {
+	r := chi.NewRouter()
+
+	r.Route("/nodes", func(r chi.Router) {
+		r.Post("/create", s.controller.CreateNode())
+
+		r.Route("/{ref}", func(r chi.Router) {
+			r.Post("/attach", s.controller.AttachNode())
+			r.Post("/detach", s.controller.DetachNode())
+			r.Post("/info", s.controller.NodeInfo())
+		})
+	})
+
+	r.Route("/services", func(r chi.Router) {
+		r.Post("/create", s.controller.CreateService())
+
+		r.Route("/{ref}", func(r chi.Router) {
+			r.Post("/enable", s.controller.EnableService())
+			r.Post("/disable", s.controller.DisableService())
+			r.Post("/info", s.controller.ServiceInfo())
+		})
+	})
+
+	r.Route("/instances", func(r chi.Router) {
+		r.Post("/create", s.controller.CreateInstance())
+
+		r.Route("/{ref}", func(r chi.Router) {
+			r.Post("/attach", s.controller.AttachInstance())
+			r.Post("/detach", s.controller.DetachInstance())
+			r.Post("/info", s.controller.InstanceInfo())
+		})
+	})
+
+	s.router.Mount("/v1", r)
+}

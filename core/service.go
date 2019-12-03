@@ -21,18 +21,15 @@ import (
 	"github.com/dominikbraun/dice/types"
 )
 
-// ServiceReference is a string that identifies a service, e. g. an ID.
-type ServiceReference string
-
 var (
 	ErrServiceNotFound      = errors.New("service could not be found")
 	ErrServiceAlreadyExists = errors.New("a service with the given ID or name already exists")
 )
 
-// ServiceCreate creates a new service with the provided name and stores
+// CreateService creates a new service with the provided name and stores
 // the service in the key-value store. If the `Enable` option is set, the
 // created service will be enabled immediately.
-func (d *Dice) ServiceCreate(name string, options types.ServiceCreateOptions) error {
+func (d *Dice) CreateService(name string, options types.ServiceCreateOptions) error {
 	service, err := entity.NewService(name, options)
 	if err != nil {
 		return err
@@ -51,16 +48,16 @@ func (d *Dice) ServiceCreate(name string, options types.ServiceCreateOptions) er
 	}
 
 	if options.Enable {
-		return d.ServiceEnable(ServiceReference(service.ID))
+		return d.EnableService(entity.ServiceReference(service.ID))
 	}
 
 	return nil
 }
 
-// ServiceEnable enables an existing service, making it available as request
+// EnableService enables an existing service, making it available as request
 // target. This function will update the service data and synchronize the
 // service with the service registry.
-func (d *Dice) ServiceEnable(serviceRef ServiceReference) error {
+func (d *Dice) EnableService(serviceRef entity.ServiceReference) error {
 	service, err := d.findService(serviceRef)
 	if err != nil {
 		return err
@@ -79,9 +76,9 @@ func (d *Dice) ServiceEnable(serviceRef ServiceReference) error {
 	return d.synchronizeService(service, Enabling)
 }
 
-// ServiceDisable disables a service, removing it as request target and
+// DisableService disables a service, removing it as request target and
 // therefore making it unavailable for any clients.
-func (d *Dice) ServiceDisable(serviceRef ServiceReference) error {
+func (d *Dice) DisableService(serviceRef entity.ServiceReference) error {
 	service, err := d.findService(serviceRef)
 	if err != nil {
 		return err
@@ -101,7 +98,7 @@ func (d *Dice) ServiceDisable(serviceRef ServiceReference) error {
 }
 
 // ServiceInfo returns user-relevant information for an existing service.
-func (d *Dice) ServiceInfo(serviceRef ServiceReference) (types.ServiceInfoOutput, error) {
+func (d *Dice) ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInfoOutput, error) {
 	service, err := d.findService(serviceRef)
 	if err != nil {
 		return types.ServiceInfoOutput{}, err
@@ -124,7 +121,7 @@ func (d *Dice) ServiceInfo(serviceRef ServiceReference) (types.ServiceInfoOutput
 //
 // If multiple services match, only the first one will be returned. If no
 // services match, `nil` - and no error - will be returned.
-func (d *Dice) findService(serviceRef ServiceReference) (*entity.Service, error) {
+func (d *Dice) findService(serviceRef entity.ServiceReference) (*entity.Service, error) {
 	servicesByID, err := d.kvStore.FindServices(func(service *entity.Service) bool {
 		return service.ID == string(serviceRef)
 	})
@@ -152,7 +149,7 @@ func (d *Dice) findService(serviceRef ServiceReference) (*entity.Service, error)
 // is unique if no service with equal identifiers has been found in the key
 // value store.
 func (d *Dice) serviceIsUnique(service *entity.Service) (bool, error) {
-	service, err := d.findService(ServiceReference(service.ID))
+	service, err := d.findService(entity.ServiceReference(service.ID))
 
 	if err != nil {
 		return false, err
@@ -161,7 +158,7 @@ func (d *Dice) serviceIsUnique(service *entity.Service) (bool, error) {
 	}
 
 	if service.Name != "" {
-		service, err = d.findService(ServiceReference(service.Name))
+		service, err = d.findService(entity.ServiceReference(service.Name))
 
 		if err != nil {
 			return false, err

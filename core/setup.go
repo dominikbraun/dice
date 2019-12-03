@@ -74,7 +74,7 @@ func (d *Dice) setupAPIServer() error {
 		Logfile: logfile,
 	}
 
-	d.apiServer = api.NewServer(serverConfig)
+	d.apiServer = api.NewServer(serverConfig, d)
 
 	return nil
 }

@@ -54,8 +54,8 @@ type Dice struct {
 	logger    log.Logger
 }
 
-// NewDice creates a new Dice instances and invokes all setup methods.
-func NewDice() (*Dice, chan<- os.Signal, error) {
+// NewDice creates a new Dice instance and invokes all setup methods.
+func NewDice() (*Dice, error) {
 	var d Dice
 
 	steps := []func() error{
@@ -70,30 +70,42 @@ func NewDice() (*Dice, chan<- os.Signal, error) {
 
 	for _, setup := range steps {
 		if err := setup(); err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 
-	return &d, d.interrupt, nil
+	return &d, nil
 }
 
 // Run starts the API and proxy servers. To shut them down gracefully, send
-// a signal through the interrupt channel returned by NewDice.
+// an interrupt signal (SIGINT) to the Dice executable. If an error happens
+// while running one of the servers, Dice will be stopped entirely.
 func (d *Dice) Run() error {
 	errors := make(chan error)
 
 	go func() {
-		if err := d.proxy.Run(d.interrupt); err != nil {
+		if err := d.proxy.Run(); err != nil {
 			errors <- err
 		}
 	}()
 
 	go func() {
-		if err := d.apiServer.Run(d.interrupt); err != nil {
+		if err := d.apiServer.Run(); err != nil {
 			errors <- err
 		}
 	}()
 
-	err := <-errors
-	return err
+	select {
+	case <-d.interrupt:
+		if err := d.proxy.Shutdown(); err != nil {
+			d.logger.Errorf("Proxy shutdown error: %v", err)
+		}
+		if err := d.apiServer.Shutdown(); err != nil {
+			d.logger.Errorf("API server shutdown error: %v", err)
+		}
+	case err := <-errors:
+		return err
+	}
+
+	return nil
 }

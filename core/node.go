@@ -22,18 +22,15 @@ import (
 	"net/url"
 )
 
-// NodeReference is a string that identifies a node, e. g. an ID or name.
-type NodeReference string
-
 var (
 	ErrNodeNotFound      = errors.New("node could not be found")
 	ErrNodeAlreadyExists = errors.New("a node with the given ID already exists")
 )
 
-// NodeCreate creates a new node with the provided URL and stores the node
+// CreateNode creates a new node with the provided URL and stores the node
 // in the key-value store. If the `Attach` option is set, the created node
 // will be attached immediately.
-func (d *Dice) NodeCreate(url *url.URL, options types.NodeCreateOptions) error {
+func (d *Dice) CreateNode(url *url.URL, options types.NodeCreateOptions) error {
 	node, err := entity.NewNode(url, options)
 	if err != nil {
 		return err
@@ -52,16 +49,16 @@ func (d *Dice) NodeCreate(url *url.URL, options types.NodeCreateOptions) error {
 	}
 
 	if options.Attach {
-		return d.NodeAttach(NodeReference(node.ID))
+		return d.AttachNode(entity.NodeReference(node.ID))
 	}
 
 	return nil
 }
 
-// NodeAttach attaches an existing node to Dice, making it available as a
+// AttachNode attaches an existing node to Dice, making it available as a
 // target for load balancing. This function will update the node data and
 // synchronize the node with the service registry.
-func (d *Dice) NodeAttach(nodeRef NodeReference) error {
+func (d *Dice) AttachNode(nodeRef entity.NodeReference) error {
 	node, err := d.findNode(nodeRef)
 	if err != nil {
 		return err
@@ -80,10 +77,10 @@ func (d *Dice) NodeAttach(nodeRef NodeReference) error {
 	return d.synchronizeNode(node, Attachment)
 }
 
-// NodeDetach detaches an existing node from Dice, removing it as a target
+// DetachNode detaches an existing node from Dice, removing it as a target
 // for load balancing. Detaching a node will make all instances deployed to
 // that node unavailable until it gets attached again.
-func (d *Dice) NodeDetach(nodeRef NodeReference) error {
+func (d *Dice) DetachNode(nodeRef entity.NodeReference) error {
 	node, err := d.findNode(nodeRef)
 	if err != nil {
 		return err
@@ -103,7 +100,7 @@ func (d *Dice) NodeDetach(nodeRef NodeReference) error {
 }
 
 // NodeInfo returns user-relevant information for an existing node.
-func (d *Dice) NodeInfo(nodeRef NodeReference) (types.NodeInfoOutput, error) {
+func (d *Dice) NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, error) {
 	node, err := d.findNode(nodeRef)
 	if err != nil {
 		return types.NodeInfoOutput{}, err
@@ -125,7 +122,7 @@ func (d *Dice) NodeInfo(nodeRef NodeReference) (types.NodeInfoOutput, error) {
 //
 // If multiple nodes match, only the first one will be returned. If no nodes
 // match, `nil` - and no error - will be returned.
-func (d *Dice) findNode(nodeRef NodeReference) (*entity.Node, error) {
+func (d *Dice) findNode(nodeRef entity.NodeReference) (*entity.Node, error) {
 	nodesByID, err := d.kvStore.FindNodes(func(node *entity.Node) bool {
 		return node.ID == string(nodeRef)
 	})
@@ -162,7 +159,7 @@ func (d *Dice) findNode(nodeRef NodeReference) (*entity.Node, error) {
 // nodeIsUnique checks if a newly created node is unique. A node is unique
 // if no node with equal identifiers has been found in the key value store.
 func (d *Dice) nodeIsUnique(node *entity.Node) (bool, error) {
-	node, err := d.findNode(NodeReference(node.ID))
+	node, err := d.findNode(entity.NodeReference(node.ID))
 
 	if err != nil {
 		return false, err
@@ -170,7 +167,7 @@ func (d *Dice) nodeIsUnique(node *entity.Node) (bool, error) {
 		return false, nil
 	}
 
-	node, err = d.findNode(NodeReference(node.Name))
+	node, err = d.findNode(entity.NodeReference(node.Name))
 
 	if err != nil {
 		return false, err
@@ -178,7 +175,7 @@ func (d *Dice) nodeIsUnique(node *entity.Node) (bool, error) {
 		return false, nil
 	}
 
-	node, err = d.findNode(NodeReference(node.URL.String()))
+	node, err = d.findNode(entity.NodeReference(node.URL.String()))
 
 	if err != nil {
 		return false, err

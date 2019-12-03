@@ -18,7 +18,6 @@ import (
 	"context"
 	"github.com/dominikbraun/dice/registry"
 	"net/http"
-	"os"
 )
 
 type Config struct {
@@ -40,32 +39,24 @@ func New(config Config, registry *registry.ServiceRegistry) *Proxy {
 
 	p.server = &http.Server{
 		Addr:    p.config.Address,
-		Handler: nil,
+		Handler: p.handleRequest(),
 	}
 
 	return &p
 }
 
-func (p *Proxy) Run(interrupt <-chan os.Signal) error {
-	errors := make(chan error)
+func (p *Proxy) Run() error {
+	err := p.server.ListenAndServe()
 
-	go func() {
-		err := p.server.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			errors <- err
-		}
-		close(errors)
-	}()
+	if err != nil && err != http.ErrServerClosed {
+		return err
+	}
 
-	go func() {
-		<-interrupt
-		if err := p.server.Shutdown(context.Background()); err != nil {
-			errors <- err
-		}
-	}()
+	return nil
+}
 
-	err := <-errors
-	return err
+func (p *Proxy) Shutdown() error {
+	return p.server.Shutdown(context.Background())
 }
 
 func (p *Proxy) handleRequest() http.Handler {

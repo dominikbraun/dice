@@ -22,19 +22,32 @@ import (
 	"net/url"
 )
 
-// InstanceReference is a string that identifies an instance, e. g. an ID.
-type InstanceReference string
-
 var (
 	ErrInstanceNotFound      = errors.New("instance could not be found")
 	ErrInstanceAlreadyExists = errors.New("a instance with the given ID, name or URL already exists")
 )
 
-// InstanceCreate creates a new instance with the provided service ID,
-// node ID and URL. If the `Attach` option is set, the created instance
-// will be attached immediately.
-func (d *Dice) InstanceCreate(serviceID, nodeID string, url *url.URL, options types.InstanceCreateOptions) error {
-	instance, err := entity.NewInstance(serviceID, nodeID, url, options)
+// CreateInstance creates a new instance with the provided service ID, node
+// ID and URL. If the `Attach` option is set, the created instance will be
+// attached immediately.
+func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, url *url.URL, options types.InstanceCreateOptions) error {
+	service, err := d.findService(serviceRef)
+
+	if err != nil {
+		return err
+	} else if service == nil {
+		return ErrServiceNotFound
+	}
+
+	node, err := d.findNode(nodeRef)
+
+	if err != nil {
+		return err
+	} else if node == nil {
+		return ErrNodeNotFound
+	}
+
+	instance, err := entity.NewInstance(service.ID, node.ID, url, options)
 	if err != nil {
 		return err
 	}
@@ -52,16 +65,16 @@ func (d *Dice) InstanceCreate(serviceID, nodeID string, url *url.URL, options ty
 	}
 
 	if options.Attach {
-		return d.InstanceAttach(InstanceReference(instance.ID))
+		return d.AttachInstance(entity.InstanceReference(instance.ID))
 	}
 
 	return nil
 }
 
-// InstanceAttach attaches an existing instance to Dice, making it available
+// AttachInstance attaches an existing instance to Dice, making it available
 // as a target for load balancing. This function will update the instance
 // data and synchronize the instance with the service registry.
-func (d *Dice) InstanceAttach(instanceRef InstanceReference) error {
+func (d *Dice) AttachInstance(instanceRef entity.InstanceReference) error {
 	instance, err := d.findInstance(instanceRef)
 	if err != nil {
 		return err
@@ -80,10 +93,10 @@ func (d *Dice) InstanceAttach(instanceRef InstanceReference) error {
 	return d.synchronizeInstance(instance, Attachment)
 }
 
-// InstanceDetach detaches an existing instance from Dice, removing it as
+// DetachInstance detaches an existing instance from Dice, removing it as
 // a target for load balancing. Detaching an instance will leave all other
 // instances of the service untouched.
-func (d *Dice) InstanceDetach(instanceRef InstanceReference) error {
+func (d *Dice) DetachInstance(instanceRef entity.InstanceReference) error {
 	instance, err := d.findInstance(instanceRef)
 	if err != nil {
 		return err
@@ -103,7 +116,7 @@ func (d *Dice) InstanceDetach(instanceRef InstanceReference) error {
 }
 
 // InstanceInfo returns user-relevant information for an existing instance.
-func (d *Dice) InstanceInfo(instanceRef InstanceReference) (types.InstanceInfoOutput, error) {
+func (d *Dice) InstanceInfo(instanceRef entity.InstanceReference) (types.InstanceInfoOutput, error) {
 	instance, err := d.findInstance(instanceRef)
 	if err != nil {
 		return types.InstanceInfoOutput{}, err
@@ -129,7 +142,7 @@ func (d *Dice) InstanceInfo(instanceRef InstanceReference) (types.InstanceInfoOu
 //
 // If multiple instances match, only the first one will be returned. If no
 // instances match, `nil` - and no error - will be returned.
-func (d *Dice) findInstance(instanceRef InstanceReference) (*entity.Instance, error) {
+func (d *Dice) findInstance(instanceRef entity.InstanceReference) (*entity.Instance, error) {
 	instancesByID, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
 		return instance.ID == string(instanceRef)
 	})
@@ -167,7 +180,7 @@ func (d *Dice) findInstance(instanceRef InstanceReference) (*entity.Instance, er
 // is unique if no instanceIsUnique with equal identifiers has been found in
 // the key value store.
 func (d *Dice) instanceIsUnique(instance *entity.Instance) (bool, error) {
-	instance, err := d.findInstance(InstanceReference(instance.ID))
+	instance, err := d.findInstance(entity.InstanceReference(instance.ID))
 
 	if err != nil {
 		return false, err
@@ -175,7 +188,7 @@ func (d *Dice) instanceIsUnique(instance *entity.Instance) (bool, error) {
 		return false, nil
 	}
 
-	instance, err = d.findInstance(InstanceReference(instance.Name))
+	instance, err = d.findInstance(entity.InstanceReference(instance.Name))
 
 	if err != nil {
 		return false, err
@@ -183,7 +196,7 @@ func (d *Dice) instanceIsUnique(instance *entity.Instance) (bool, error) {
 		return false, nil
 	}
 
-	instance, err = d.findInstance(InstanceReference(instance.URL.String()))
+	instance, err = d.findInstance(entity.InstanceReference(instance.URL.String()))
 
 	if err != nil {
 		return false, err

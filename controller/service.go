@@ -22,6 +22,8 @@ import (
 	"net/http"
 )
 
+// CreateService handles a POST request for creating a new service. The
+// request body has to contain the service's name and associated options.
 func (c *Controller) CreateService() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := r.ParseForm(); err != nil {
@@ -47,13 +49,10 @@ func (c *Controller) CreateService() http.HandlerFunc {
 	}
 }
 
+// EnableService handles a POST request for enabling an existing service.
+// The request URL has to contain a valid service reference.
 func (c *Controller) EnableService() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
-
 		serviceRef := entity.ServiceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.EnableService(serviceRef); err != nil {
@@ -64,13 +63,10 @@ func (c *Controller) EnableService() http.HandlerFunc {
 	}
 }
 
+// DisableService handles a POST request for disabling an existing service.
+// The request URL has to contain a valid service reference.
 func (c *Controller) DisableService() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
-
 		serviceRef := entity.ServiceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.DisableService(serviceRef); err != nil {
@@ -81,13 +77,10 @@ func (c *Controller) DisableService() http.HandlerFunc {
 	}
 }
 
+// ServiceInfo handles a POST request for retrieving information for a
+// service. The request URL has to contain a valid service reference.
 func (c *Controller) ServiceInfo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
-
 		serviceRef := entity.ServiceReference(chi.URLParam(r, "ref"))
 
 		serviceInfo, err := c.backend.ServiceInfo(serviceRef)

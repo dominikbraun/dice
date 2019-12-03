@@ -41,9 +41,9 @@ func (s *Server) mountRoutes() {
 		r.Post("/create", s.controller.CreateNode())
 
 		r.Route("/{ref}", func(r chi.Router) {
-			r.Get("/attach", s.controller.AttachNode())
-			r.Get("/detach", s.controller.DetachNode())
-			r.Get("/info", s.controller.NodeInfo())
+			r.Post("/attach", s.controller.AttachNode())
+			r.Post("/detach", s.controller.DetachNode())
+			r.Post("/info", s.controller.NodeInfo())
 		})
 	})
 
@@ -51,9 +51,9 @@ func (s *Server) mountRoutes() {
 		r.Post("/create", s.controller.CreateService())
 
 		r.Route("/{ref}", func(r chi.Router) {
-			r.Get("/enable", s.controller.EnableService())
-			r.Get("/disable", s.controller.DisableService())
-			r.Get("/info", s.controller.ServiceInfo())
+			r.Post("/enable", s.controller.EnableService())
+			r.Post("/disable", s.controller.DisableService())
+			r.Post("/info", s.controller.ServiceInfo())
 		})
 	})
 
@@ -61,9 +61,9 @@ func (s *Server) mountRoutes() {
 		r.Post("/create", s.controller.CreateInstance())
 
 		r.Route("/{ref}", func(r chi.Router) {
-			r.Get("/attach", s.controller.AttachInstance())
-			r.Get("/detach", s.controller.DetachInstance())
-			r.Get("/info", s.controller.InstanceInfo())
+			r.Post("/attach", s.controller.AttachInstance())
+			r.Post("/detach", s.controller.DetachInstance())
+			r.Post("/info", s.controller.InstanceInfo())
 		})
 	})
 

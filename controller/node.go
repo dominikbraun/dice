@@ -23,6 +23,8 @@ import (
 	"net/url"
 )
 
+// CreateNode handles a POST request for creating a new node. The request
+// body has to contain the node's URL and associated options.
 func (c *Controller) CreateNode() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := r.ParseForm(); err != nil {
@@ -52,13 +54,10 @@ func (c *Controller) CreateNode() http.HandlerFunc {
 	}
 }
 
+// AttachNode handles a POST request for attaching an existing node. The
+// request URL has to contain a valid node reference.
 func (c *Controller) AttachNode() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
-
 		nodeRef := entity.NodeReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.AttachNode(nodeRef); err != nil {
@@ -69,13 +68,10 @@ func (c *Controller) AttachNode() http.HandlerFunc {
 	}
 }
 
+// AttachNode handles a POST request for detaching an existing node. The
+// request URL has to contain a valid node reference.
 func (c *Controller) DetachNode() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
-
 		nodeRef := entity.NodeReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.DetachNode(nodeRef); err != nil {
@@ -86,13 +82,10 @@ func (c *Controller) DetachNode() http.HandlerFunc {
 	}
 }
 
+// NodeInfo handles a POST request for retrieving information for a node. The
+// request URL has to contain a valid node reference.
 func (c *Controller) NodeInfo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
-
 		nodeRef := entity.NodeReference(chi.URLParam(r, "ref"))
 
 		nodeInfo, err := c.backend.NodeInfo(nodeRef)

@@ -23,6 +23,9 @@ import (
 	"net/url"
 )
 
+// CreateInstance handles a POST request for creating a new instance. The
+// request body has to contain a valid service reference, node reference
+// and instance URL as well as associated options.
 func (c *Controller) CreateInstance() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := r.ParseForm(); err != nil {
@@ -55,13 +58,10 @@ func (c *Controller) CreateInstance() http.HandlerFunc {
 	}
 }
 
+// AttachInstance handles a POST request for attaching an existing instance.
+// The request URL has to contain a valid instance reference.
 func (c *Controller) AttachInstance() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
-
 		instanceRef := entity.InstanceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.AttachInstance(instanceRef); err != nil {
@@ -72,13 +72,10 @@ func (c *Controller) AttachInstance() http.HandlerFunc {
 	}
 }
 
+// DetachInstance handles a POST request for detaching an existing instance.
+// The request URL has to contain a valid instance reference.
 func (c *Controller) DetachInstance() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
-
 		instanceRef := entity.InstanceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.DetachInstance(instanceRef); err != nil {
@@ -89,13 +86,10 @@ func (c *Controller) DetachInstance() http.HandlerFunc {
 	}
 }
 
+// InstanceInfo handles a POST request for retrieving information for an
+// instance. The request URL has to contain a valid node reference.
 func (c *Controller) InstanceInfo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
-
 		instanceRef := entity.InstanceReference(chi.URLParam(r, "ref"))
 
 		instanceInfo, err := c.backend.InstanceInfo(instanceRef)

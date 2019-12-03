@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package controller provides methods for handling REST requests.
 package controller
 
 import (
@@ -26,10 +27,14 @@ var (
 	ErrInvalidFormData     = errors.New("the provided form data is not valid")
 )
 
+// Controller is a REST interface that controls the Dice core. It provides
+// HTTP handling methods which will read all required data from the request,
+// invoke the core functions and eventually return the core's responses.
 type Controller struct {
 	backend Target
 }
 
+// New creates a new Controller instance that uses the provided Target.
 func New(backend Target) *Controller {
 	c := Controller{
 		backend: backend,
@@ -38,6 +43,8 @@ func New(backend Target) *Controller {
 	return &c
 }
 
+// respond sets an HTTP status code and renders any given response value.
+// Note that a return statement is required after calling respond.
 func respond(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
 	w.WriteHeader(status)
 	render.JSON(w, r, v)

@@ -21,12 +21,15 @@ import (
 	"net/url"
 )
 
+// Target concludes all *Target interfaces. Any Target implementation is
+// a wholesome implementation of the Dice core.
 type Target interface {
 	NodeTarget
 	ServiceTarget
 	InstanceTarget
 }
 
+// NodeTarget prescribes methods for backends working with nodes.
 type NodeTarget interface {
 	CreateNode(url *url.URL, options types.NodeCreateOptions) error
 	AttachNode(nodeRef entity.NodeReference) error
@@ -34,6 +37,7 @@ type NodeTarget interface {
 	NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, error)
 }
 
+// ServiceTarget prescribes methods for backends working with services.
 type ServiceTarget interface {
 	CreateService(name string, options types.ServiceCreateOptions) error
 	EnableService(serviceRef entity.ServiceReference) error
@@ -41,6 +45,7 @@ type ServiceTarget interface {
 	ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInfoOutput, error)
 }
 
+// InstanceTarget prescribes methods for backends working with instances.
 type InstanceTarget interface {
 	CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, url *url.URL, options types.InstanceCreateOptions) error
 	AttachInstance(instanceRef entity.InstanceReference) error

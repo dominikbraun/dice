@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package api provides an API server for controlling the Dice core.
 package api
 
 import (
@@ -20,6 +21,7 @@ import (
 	"github.com/go-chi/render"
 )
 
+// newRouter creates a new Router instance and sets default middleware.
 func newRouter() chi.Router {
 	r := chi.NewRouter()
 
@@ -34,6 +36,9 @@ func newRouter() chi.Router {
 	return r
 }
 
+// mountRoutes mounts all known routes to the server's existing router.
+// It creates a sub-router, registers all routes on that router and mounts
+// them to the main router's version route.
 func (s *Server) mountRoutes() {
 	r := chi.NewRouter()
 

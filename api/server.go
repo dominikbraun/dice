@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package api provides an API server for controlling the Dice core.
 package api
 
 import (
@@ -21,11 +22,16 @@ import (
 	"net/http"
 )
 
+// ServerConfig concludes properties that are configurable by the user.
 type ServerConfig struct {
 	Address string `json:"address"`
 	Logfile string `json:"logfile"`
 }
 
+// Server is the actual HTTP server exposing a REST API. It will accept
+// requests on the specified TCP address and handles these requests using
+// the provided controller.Controller instance. The listening port has to
+// be secured against remote access.
 type Server struct {
 	config     ServerConfig
 	router     chi.Router
@@ -33,10 +39,12 @@ type Server struct {
 	controller *controller.Controller
 }
 
-func NewServer(config ServerConfig, backend controller.Target) *Server {
+// NewServer creates a new Server instance and initializes all routes.
+func NewServer(config ServerConfig, controller *controller.Controller) *Server {
 	s := Server{
-		config: config,
-		router: newRouter(),
+		config:     config,
+		router:     newRouter(),
+		controller: controller,
 	}
 
 	s.server = &http.Server{
@@ -44,11 +52,15 @@ func NewServer(config ServerConfig, backend controller.Target) *Server {
 		Handler: s.router,
 	}
 
-	s.controller = controller.New(backend)
-
 	return &s
 }
 
+// Run makes the API server listen on the specified TCP address and accept
+// incoming requests. This function should be called in an extra goroutine
+// since Run is a blocking function.
+//
+// Unlike ListenAndServe from net/http, Run only returns real errors, meaning
+// that it won't return an error when shutting down.
 func (s *Server) Run() error {
 	err := s.server.ListenAndServe()
 
@@ -59,6 +71,8 @@ func (s *Server) Run() error {
 	return nil
 }
 
+// Shutdown attempts a graceful shutdown. Active connections will not be
+// interrupted until the context used inside Shutdown expires.
 func (s *Server) Shutdown() error {
 	return s.server.Shutdown(context.Background())
 }

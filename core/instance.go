@@ -27,11 +27,27 @@ var (
 	ErrInstanceAlreadyExists = errors.New("a instance with the given ID, name or URL already exists")
 )
 
-// CreateInstance creates a new instance with the provided service ID,
-// node ID and URL. If the `Attach` option is set, the created instance
-// will be attached immediately.
-func (d *Dice) CreateInstance(serviceID, nodeID string, url *url.URL, options types.InstanceCreateOptions) error {
-	instance, err := entity.NewInstance(serviceID, nodeID, url, options)
+// CreateInstance creates a new instance with the provided service ID, node
+// ID and URL. If the `Attach` option is set, the created instance will be
+// attached immediately.
+func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, url *url.URL, options types.InstanceCreateOptions) error {
+	service, err := d.findService(serviceRef)
+
+	if err != nil {
+		return err
+	} else if service == nil {
+		return ErrServiceNotFound
+	}
+
+	node, err := d.findNode(nodeRef)
+
+	if err != nil {
+		return err
+	} else if node == nil {
+		return ErrNodeNotFound
+	}
+
+	instance, err := entity.NewInstance(service.ID, node.ID, url, options)
 	if err != nil {
 		return err
 	}

@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/dominikbraun/dice/api"
 	"github.com/dominikbraun/dice/config"
+	"github.com/dominikbraun/dice/controller"
 	"github.com/dominikbraun/dice/log"
 	"github.com/dominikbraun/dice/proxy"
 	"github.com/dominikbraun/dice/registry"
@@ -62,6 +63,13 @@ func (d *Dice) setupRegistry() error {
 	return nil
 }
 
+// setupController creates a new Controller instance that utilizes Dice
+// itself as a controller target. It will be used by the API server.
+func (d *Dice) setupController() error {
+	d.controller = controller.New(d)
+	return nil
+}
+
 // setupAPIServer configures the API server, however it won't be started.
 func (d *Dice) setupAPIServer() error {
 	port := d.config.GetString("api-server-port")
@@ -74,7 +82,7 @@ func (d *Dice) setupAPIServer() error {
 		Logfile: logfile,
 	}
 
-	d.apiServer = api.NewServer(serverConfig, d)
+	d.apiServer = api.NewServer(serverConfig, d.controller)
 
 	return nil
 }

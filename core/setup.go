@@ -20,12 +20,14 @@ import (
 	"github.com/dominikbraun/dice/api"
 	"github.com/dominikbraun/dice/config"
 	"github.com/dominikbraun/dice/controller"
+	"github.com/dominikbraun/dice/healthcheck"
 	"github.com/dominikbraun/dice/log"
 	"github.com/dominikbraun/dice/proxy"
 	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"os"
 	"os/signal"
+	"time"
 )
 
 // setupConfig parses the configuration file and sets all default values
@@ -60,6 +62,26 @@ func (d *Dice) setupKVStore() error {
 // where existing services and instances are acquainted to the registry.
 func (d *Dice) setupRegistry() error {
 	d.registry = registry.NewServiceRegistry()
+	return nil
+}
+
+// setupHealthCheck initializes the default health checker. If no interval
+// or timeout has been configured, Dice's default values will be used.
+func (d *Dice) setupHealthCheck() error {
+	var err error
+
+	interval := d.config.GetInt("healthcheck-interval")
+	timeout := d.config.GetInt("healthcheck-timeout")
+
+	hcConfig := healthcheck.Config{
+		Interval: time.Duration(interval) * time.Millisecond,
+		Timeout:  time.Duration(timeout) * time.Millisecond,
+	}
+
+	if d.healthCheck, err = healthcheck.New(hcConfig, &d.registry.Services); err != nil {
+		return err
+	}
+
 	return nil
 }
 

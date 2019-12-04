@@ -19,6 +19,7 @@ import (
 	"github.com/dominikbraun/dice/api"
 	"github.com/dominikbraun/dice/config"
 	"github.com/dominikbraun/dice/controller"
+	"github.com/dominikbraun/dice/healthcheck"
 	"github.com/dominikbraun/dice/log"
 	"github.com/dominikbraun/dice/proxy"
 	"github.com/dominikbraun/dice/registry"
@@ -46,14 +47,15 @@ const (
 //
 // Some deeper explanations can be found at the corresponding components.
 type Dice struct {
-	config     config.Reader
-	kvStore    store.EntityStore
-	registry   *registry.ServiceRegistry
-	controller *controller.Controller
-	interrupt  chan os.Signal
-	apiServer  *api.Server
-	proxy      *proxy.Proxy
-	logger     log.Logger
+	config      config.Reader
+	kvStore     store.EntityStore
+	registry    *registry.ServiceRegistry
+	healthCheck *healthcheck.HealthCheck
+	controller  *controller.Controller
+	interrupt   chan os.Signal
+	apiServer   *api.Server
+	proxy       *proxy.Proxy
+	logger      log.Logger
 }
 
 // NewDice creates a new Dice instance and invokes all setup methods.
@@ -64,6 +66,7 @@ func NewDice() (*Dice, error) {
 		d.setupConfig,
 		d.setupKVStore,
 		d.setupRegistry,
+		d.setupHealthCheck,
 		d.setupController,
 		d.setupAPIServer,
 		d.setupProxy,

@@ -7,6 +7,7 @@ executors:
         environment:
           CGO_ENABLED: 0
           GO111MODULE: "on"
+
 jobs:
   dice-build:
     executor: go-container
@@ -33,8 +34,28 @@ jobs:
           command: go build -v -ldflags="-s -w" -o .target/dice cmd/dice/main.go
       - run: touch dice.yml
       - run:
+          name: Copy artifacts into temporary directory
+          command: |
+            mkdir -p workspace
+            cp .target/dice workspace/
+            cp dice.yml workspace/
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - dice
+            - dice.yml
+
+  dice-exec:
+    executor:
+      go-container
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
           name: Run the Dice load balancer
-          command: ./.target/dice
+          command: |
+            cd /tmp/workspace
+            ./dice
           background: true
       - run:
           name: Check if Dice is up and running
@@ -46,6 +67,9 @@ jobs:
 
 workflows:
   version: 2
-  all-builds:
+  dice-ci:
     jobs:
       - dice-build
+      - dice-exec:
+          requires:
+            - dice-build

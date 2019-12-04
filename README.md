@@ -40,6 +40,7 @@ There are the services _A_, _B_ and _C_. These might be web applications or auth
 <br>
 <img src="https://sternentstehung.de/dice-example.png">
 <br>
+<br>
 </p>
 
 Service _A_, _B_ and _C_ have an instance deployed on the _MainServer_. A service instance is a concrete executable. Additionally, there are instances of _A_ and _B_ deployed on _AnotherServer_ because they're under heavy load.

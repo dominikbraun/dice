@@ -7,6 +7,7 @@ executors:
         environment:
           CGO_ENABLED: 0
           GO111MODULE: "on"
+        working_directory: /tmp
 jobs:
   dice-build:
     executor: go-container
@@ -35,13 +36,13 @@ jobs:
       - run:
           name: Copy artifacts into temporary directory
           command: |
-            mkdir -p /tmp/workspace
-            cp ./target/dice /tmp/workspace
-            cp dice.yml /tmp/workspace
+            mkdir -p workspace
+            cp .target/dice workspace/
+            cp dice.yml workspace/
       - persist_to_workspace:
-          root: .
+          root: workspace
           paths:
-            - .target/dice
+            - dice
             - dice.yml
 
   dice-exec:

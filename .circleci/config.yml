@@ -32,6 +32,18 @@ jobs:
           name: Build the Dice binary
           command: go build -v -ldflags="-s -w" -o .target/dice cmd/dice/main.go
       - run: touch dice.yml
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - .target/dice
+            - dice.yml
+
+  dice-exec:
+    executor:
+      go-container
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
           name: Run the Dice load balancer
           command: ./.target/dice
@@ -49,3 +61,5 @@ workflows:
   all-builds:
     jobs:
       - dice-build
+      - dice-exec
+        - requires: dice-build

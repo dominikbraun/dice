@@ -62,5 +62,5 @@ workflows:
     jobs:
       - dice-build
       - dice-exec
-        - requires:
-          - dice-build
+          requires:
+            - dice-build

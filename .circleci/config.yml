@@ -50,6 +50,7 @@ jobs:
     steps:
       - attach_workspace:
           at: /tmp/workspace
+      - run: pwd
       - run:
           name: Run the Dice load balancer
           command: ./tmp/workspace/dice

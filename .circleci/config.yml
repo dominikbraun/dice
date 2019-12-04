@@ -32,6 +32,7 @@ jobs:
           name: Build the Dice binary
           command: go build -v -ldflags="-s -w" -o .target/dice cmd/dice/main.go
       - run: touch dice.yml
+      - run: mkdir -p /tmp/workspace
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
@@ -58,7 +59,7 @@ jobs:
 
 workflows:
   version: 2
-  all-builds:
+  dice-ci:
     jobs:
       - dice-build
       - dice-exec:

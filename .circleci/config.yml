@@ -61,6 +61,6 @@ workflows:
   all-builds:
     jobs:
       - dice-build
-      - dice-exec
+      - dice-exec:
           requires:
             - dice-build

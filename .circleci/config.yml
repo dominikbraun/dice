@@ -59,7 +59,7 @@ jobs:
       - run:
           name: Check if Dice is up and running
           environment:
-            PORT: 8080
+            PORT: 8089
           command: |
             sleep 1
             curl --retry 15 --retry-delay 1 -X GET http://localhost:$PORT

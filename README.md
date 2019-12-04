@@ -37,7 +37,9 @@ Features include:
 There are the services _A_, _B_ and _C_. These might be web applications or authentication services. Our infrastructure is simple: We've got a _MainServer_ and _AnotherServer_. Servers, virtual machines etc. are known to Dice as _nodes_.
 
 <p align="center">
+<br>
 <img src="https://sternentstehung.de/dice-example.png">
+<br>
 </p>
 
 Service _A_, _B_ and _C_ have an instance deployed on the _MainServer_. A service instance is a concrete executable. Additionally, there are instances of _A_ and _B_ deployed on _AnotherServer_ because they're under heavy load.

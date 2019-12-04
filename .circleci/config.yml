@@ -32,6 +32,12 @@ jobs:
           name: Build the Dice binary
           command: go build -v -ldflags="-s -w" -o .target/dice cmd/dice/main.go
       - run: touch dice.yml
+      - run:
+          name: Copy artifacts into temporary directory
+          command: |
+            mkdir -p /tmp/workspace
+            cp ./target/dice /tmp/workspace
+            cp dice.yml /tmp/workspace
       - persist_to_workspace:
           root: .
           paths:
@@ -46,7 +52,7 @@ jobs:
           at: /tmp/workspace
       - run:
           name: Run the Dice load balancer
-          command: ./.target/dice
+          command: ./tmp/workspace/dice
           background: true
       - run:
           name: Check if Dice is up and running

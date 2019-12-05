@@ -75,7 +75,7 @@ Now we attach the created instance to Dice, which will make it available as a ta
 $ dice instance attach MyInstance
 ````
 
-We could also use the full instance URL here. `MyInstance` will now receive incoming requests for service `A`.
+We could also use the full instance URL here. `MyInstance` will now receive incoming requests for service _A_.
 
 ### Installation
 

@@ -44,7 +44,7 @@ We've got the services _A_, _B_ and _C_. These services may be web applications 
 <br>
 </p>
 
-Service _A_, _B_ and _C_ have an instance deployed on _MainServer_. A service instance is a concrete executable. Additionally, there are instances of _A_ and _B_ deployed on _AnotherServer_ because they're under heavy load.
+Service _A_, _B_ and _C_ have an instance deployed to _MainServer_. A service instance is a concrete executable. Additionally, there are instances of _A_ and _B_ deployed to _AnotherServer_ because they're under heavy load.
 
 First of all we register our servers to Dice:
 

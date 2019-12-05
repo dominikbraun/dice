@@ -30,6 +30,7 @@ Dice is an ergonomic, flexible, easy to use load balancer designed for non-micro
 * Configuration changes without restart
 * Nodes with less computing resources receive less requests
 * Attachment and detachment of instances on the fly
+* Manage deployments by logical and physical affiliation
 * Dice is passive: Making a service available for load balancing is up to you
 
 ### Example

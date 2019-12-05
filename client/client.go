@@ -26,21 +26,23 @@ const (
 )
 
 type Client struct {
-	internal   *http.Client
-	apiAddress string
+	internal    *http.Client
+	apiProtocol string
+	apiAddress  string
 }
 
-func New(apiAddress string) *Client {
+func New(apiProtocol, apiAddress string) *Client {
 	c := Client{
-		internal:   &http.Client{},
-		apiAddress: apiAddress,
+		internal:    &http.Client{},
+		apiProtocol: apiProtocol,
+		apiAddress:  apiAddress,
 	}
 
 	return &c
 }
 
 func (c *Client) GET(route string, dest interface{}) error {
-	address := fmt.Sprintf("%s%s", c.apiAddress, route)
+	address := fmt.Sprintf("%s://%s%s", c.apiProtocol, c.apiAddress, route)
 
 	response, err := c.internal.Get(address)
 	if err != nil {
@@ -55,7 +57,7 @@ func (c *Client) GET(route string, dest interface{}) error {
 }
 
 func (c *Client) POST(route string, v interface{}, dest interface{}) error {
-	address := fmt.Sprintf("%s%s", c.apiAddress, route)
+	address := fmt.Sprintf("%s://%s%s", c.apiProtocol, c.apiAddress, route)
 	body := new(bytes.Buffer)
 
 	if err := json.NewEncoder(body).Encode(v); err != nil {

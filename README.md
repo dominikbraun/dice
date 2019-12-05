@@ -35,7 +35,7 @@ Dice is an ergonomic, flexible, easy to use load balancer designed for non-micro
 
 ### Example
 
-We've got the services _A_, _B_ and _C_. These services may be web applications or authentication services for example. Our infrastructure is quite simple: There is a _MainServer_ and _AnotherServer_. Servers, virtual machines etc. are known to Dice as _nodes_.
+We've got the services _A_, _B_ and _C_. These services may be web applications or authentication services for example. Our infrastructure is simple: There is a _MainServer_ and _AnotherServer_. Servers, virtual machines etc. are known to Dice as _nodes_.
 
 <p align="center">
 <br>

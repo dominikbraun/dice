@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package healthcheck provides types and methods for periodic health checks.
 package healthcheck
 
 import (
@@ -26,18 +27,25 @@ var (
 	ErrInvalidDeployments = errors.New("provided deployments are invalid")
 )
 
+// Config concludes the user-configurable properties for health checks.
 type Config struct {
 	Interval time.Duration `json:"interval"`
-	Timeout  time.Duration `json:"timeout"`
+	// When Timeout expires without response, an instance is considered dead.
+	Timeout time.Duration `json:"timeout"`
 }
 
+// HealthCheck is a simple health checker that can run checks periodically as
+// well as manually. It will ping all instances of a provided service map and
+// mark each instance as dead or alive on each check.
 type HealthCheck struct {
 	config   Config
-	services map[string]registry.Service
+	services *map[string]registry.Service
 	stop     chan bool
 }
 
-func New(config Config, services map[string]registry.Service) (*HealthCheck, error) {
+// New creates a new HealthCheck instance. It will take all service instances
+// from a service map into account.
+func New(config Config, services *map[string]registry.Service) (*HealthCheck, error) {
 	if services == nil {
 		return nil, ErrInvalidDeployments
 	}
@@ -51,6 +59,8 @@ func New(config Config, services map[string]registry.Service) (*HealthCheck, err
 	return &hc, nil
 }
 
+// RunPeriodically runs periodic health checks that will start every time the
+// configured interval expires. This function should run in an own goroutine.
 func (hc *HealthCheck) RunPeriodically() error {
 	intervalTick := time.NewTicker(hc.config.Interval)
 
@@ -67,8 +77,17 @@ healthcheck:
 	return nil
 }
 
+// RunManually triggers a manual, single health check. This function should be
+// called in an own goroutine as well, since the health check can take a while.
+func (hc *HealthCheck) RunManually() error {
+	hc.checkServices()
+	return nil
+}
+
+// checkServices loops over all services and their deployments. Each instance
+// will be pinged and marked as dead or alive after the timeout expires.
 func (hc *HealthCheck) checkServices() {
-	for _, s := range hc.services {
+	for _, s := range *hc.services {
 		if s.Entity.IsEnabled {
 			for _, d := range s.Deployments {
 				d.Instance.IsAlive = hc.pingInstance(d.Instance)
@@ -78,6 +97,8 @@ func (hc *HealthCheck) checkServices() {
 	}
 }
 
+// pingInstance reads the address from an instance and attempts to establish a
+// connection to that address. The dialer will use the configured timeout.
 func (hc *HealthCheck) pingInstance(instance *entity.Instance) bool {
 	address := instance.URL.String()
 
@@ -90,6 +111,7 @@ func (hc *HealthCheck) pingInstance(instance *entity.Instance) bool {
 	return true
 }
 
+// Stop gracefully stops an health check. Running checks will not be affected.
 func (hc *HealthCheck) Stop() error {
 	hc.stop <- true
 	return nil

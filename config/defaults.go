@@ -15,9 +15,11 @@
 package config
 
 var Defaults = map[string]interface{}{
-	"dice-logfile":       "dice.log",
-	"api-server-logfile": "dice.log",
-	"proxy-logfile":      "dice.log",
-	"api-server-port":    "9292",
-	"proxy-port":         "8080",
+	"dice-logfile":         "dice.log",
+	"api-server-logfile":   "dice.log",
+	"proxy-logfile":        "dice.log",
+	"api-server-port":      "9292",
+	"proxy-port":           "8080",
+	"healthcheck-interval": 15000,
+	"healthcheck-timeout":  5000,
 }

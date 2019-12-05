@@ -21,7 +21,7 @@ import (
 	"github.com/dominikbraun/dice/types"
 	"github.com/go-chi/chi"
 	"net/http"
-	"net/url"
+	"strconv"
 )
 
 // CreateInstance handles a POST request for creating a new instance. The
@@ -37,7 +37,7 @@ func (c *Controller) CreateInstance() http.HandlerFunc {
 		serviceRef := entity.ServiceReference(r.Form.Get("service_ref"))
 		nodeRef := entity.NodeReference(r.Form.Get("node_ref"))
 
-		instanceURL, err := url.Parse(r.Form.Get("url"))
+		port, err := strconv.ParseUint(r.Form.Get("url"), 0, 16)
 		if err != nil {
 			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidURL.Error())
 			return
@@ -50,7 +50,7 @@ func (c *Controller) CreateInstance() http.HandlerFunc {
 			return
 		}
 
-		if err := c.backend.CreateInstance(serviceRef, nodeRef, instanceURL, options); err != nil {
+		if err := c.backend.CreateInstance(serviceRef, nodeRef, uint16(port), options); err != nil {
 			respond(w, r, http.StatusUnprocessableEntity, err.Error())
 			return
 		}

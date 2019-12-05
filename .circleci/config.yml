@@ -3,18 +3,73 @@ version: 2.1
 executors:
   go-container:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
         environment:
           CGO_ENABLED: 0
           GO111MODULE: "on"
+
 jobs:
   dice-build:
     executor: go-container
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ .Branch }}-{{ checksum "go.mod" }}
+            - go-mod-v1-{{ .Branch }}-
+            - go-mod-v1-
+            - git-v1-{{ .Branch }}-{{ .Revision }}
+            - git-v1-{{ .Branch }}
+      - run: go mod download
+      - save_cache:
+          key: go-mod-v1-{{ .Branch }}-{{ checksum "go.mod" }}
+          paths:
+            - /go/pkg
+      - save_cache:
+          key: git-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
+      - run:
+          name: Build the Dice binary
+          command: go build -v -ldflags="-s -w" -o .target/dice cmd/dice/main.go
+      - run: touch dice.yml
+      - run:
+          name: Copy artifacts into temporary directory
+          command: |
+            mkdir -p workspace
+            cp .target/dice workspace/
+            cp dice.yml workspace/
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - dice
+            - dice.yml
+
+  dice-exec:
+    executor:
+      go-container
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Run the Dice load balancer
+          command: |
+            cd /tmp/workspace
+            ./dice
+          background: true
+      - run:
+          name: Check if Dice is up and running
+          environment:
+            PORT: 8080
+          command: |
+            sleep 1
+            curl --retry 15 --retry-delay 1 -X GET http://localhost:$PORT
 
 workflows:
   version: 2
-  all-builds:
+  dice-ci:
     jobs:
       - dice-build
+      - dice-exec:
+          requires:
+            - dice-build

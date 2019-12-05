@@ -36,12 +36,12 @@ type ServiceInfoOutput struct {
 }
 
 type InstanceInfoOutput struct {
-	ID         string   `json:"id"`
-	Name       string   `json:"name"`
-	ServiceID  string   `json:"service_id"`
-	NodeID     string   `json:"node_id"`
-	URL        *url.URL `json:"url"`
-	Version    string   `json:"version"`
-	IsAttached bool     `json:"is_attached"`
-	IsAlive    bool     `json:"is_alive"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	ServiceID  string `json:"service_id"`
+	NodeID     string `json:"node_id"`
+	Port       uint16 `json:"port"`
+	Version    string `json:"version"`
+	IsAttached bool   `json:"is_attached"`
+	IsAlive    bool   `json:"is_alive"`
 }

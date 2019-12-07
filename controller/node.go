@@ -21,32 +21,20 @@ import (
 	"github.com/dominikbraun/dice/types"
 	"github.com/go-chi/chi"
 	"net/http"
-	"net/url"
 )
 
 // CreateNode handles a POST request for creating a new node. The request
 // body has to contain the node's URL and associated options.
 func (c *Controller) CreateNode() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
+		var nodeCreate types.NodeCreate
 
-		nodeURL, err := url.Parse(r.Form.Get("url"))
-		if err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidURL.Error())
-			return
-		}
-
-		var options types.NodeCreateOptions
-
-		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&nodeCreate); err != nil {
 			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData.Error())
 			return
 		}
 
-		if err := c.backend.CreateNode(nodeURL, options); err != nil {
+		if err := c.backend.CreateNode(nodeCreate.URL, nodeCreate.NodeCreateOptions); err != nil {
 			respond(w, r, http.StatusUnprocessableEntity, err.Error())
 			return
 		}

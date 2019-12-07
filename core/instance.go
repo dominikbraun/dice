@@ -220,19 +220,19 @@ func (d *Dice) findInstanceByURL(url *url.URL) (*entity.Instance, error) {
 // is unique if no instanceIsUnique with equal identifiers has been found in
 // the key value store.
 func (d *Dice) instanceIsUnique(instance *entity.Instance) (bool, error) {
-	instance, err := d.findInstance(entity.InstanceReference(instance.ID))
+	storedInstance, err := d.findInstance(entity.InstanceReference(instance.ID))
 
 	if err != nil {
 		return false, err
-	} else if instance != nil {
+	} else if storedInstance != nil {
 		return false, nil
 	}
 
-	instance, err = d.findInstance(entity.InstanceReference(instance.Name))
+	storedInstance, err = d.findInstance(entity.InstanceReference(instance.Name))
 
 	if err != nil {
 		return false, err
-	} else if instance != nil {
+	} else if storedInstance != nil {
 		return false, nil
 	}
 

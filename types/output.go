@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package types provides common types shared across packages.
 package types
 
 import (
 	"net/url"
 )
 
+// NodeInfoOutput is the output printed by the `node info` command.
 type NodeInfoOutput struct {
 	ID         string   `json:"id"`
 	Name       string   `json:"name"`
@@ -26,6 +28,7 @@ type NodeInfoOutput struct {
 	IsAlive    bool     `json:"is_alive"`
 }
 
+// ServiceInfoOutput is the output printed by the `service info` command.
 type ServiceInfoOutput struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
@@ -35,6 +38,7 @@ type ServiceInfoOutput struct {
 	IsEnabled       bool     `json:"is_enabled"`
 }
 
+// InstanceInfoOutput is the output printed by the `instance info` command.
 type InstanceInfoOutput struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`

@@ -12,11 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package types provides common types shared across packages.
 package types
 
-import "net/url"
-
+// NodeCreate is a type exclusively used for the REST API. It holds all
+// information required to create a new node.
+//
+// The Dice core asks for an URL and some options when creating a new node.
+// It takes the URL and the options as separate parameters. However, for the
+// API use case, it is significantly simpler to read the request's JSON into
+// a single struct. This is NodeCreate's purpose: It combines all necessary
+// information and gets populated with the JSON from the request body.
 type NodeCreate struct {
-	URL *url.URL `json:"url"`
+	URL string `json:"url"`
 	NodeCreateOptions
+}
+
+// ServiceCreate is a type exclusively used for the REST API. It holds all
+// information required to create a new service.
+//
+// For further information, see the documentation for NodeCreate.
+type ServiceCreate struct {
+	Name string `json:"name"`
+	ServiceCreateOptions
+}
+
+// InstanceCreate is a type exclusively used for the REST API. It holds all
+// information required to create a new instance.
+//
+// For further information, see the documentation for NodeCreate.
+type InstanceCreate struct {
+	ServiceRef string `json:"service_ref"`
+	NodeRef    string `json:"node_ref"`
+	Port       uint16 `json:"port"`
+	InstanceCreateOptions
 }

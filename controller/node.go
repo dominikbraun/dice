@@ -21,6 +21,7 @@ import (
 	"github.com/dominikbraun/dice/types"
 	"github.com/go-chi/chi"
 	"net/http"
+	"net/url"
 )
 
 // CreateNode handles a POST request for creating a new node. The request
@@ -34,7 +35,13 @@ func (c *Controller) CreateNode() http.HandlerFunc {
 			return
 		}
 
-		if err := c.backend.CreateNode(nodeCreate.URL, nodeCreate.NodeCreateOptions); err != nil {
+		nodeURL, err := url.Parse(nodeCreate.URL)
+		if err != nil {
+			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidURL.Error())
+			return
+		}
+
+		if err := c.backend.CreateNode(nodeURL, nodeCreate.NodeCreateOptions); err != nil {
 			respond(w, r, http.StatusUnprocessableEntity, err.Error())
 			return
 		}

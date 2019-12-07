@@ -21,7 +21,6 @@ import (
 	"github.com/dominikbraun/dice/types"
 	"github.com/go-chi/chi"
 	"net/http"
-	"strconv"
 )
 
 // CreateInstance handles a POST request for creating a new instance. The
@@ -29,28 +28,17 @@ import (
 // and instance URL as well as associated options.
 func (c *Controller) CreateInstance() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
+		var instanceCreate types.InstanceCreate
 
-		serviceRef := entity.ServiceReference(r.Form.Get("service_ref"))
-		nodeRef := entity.NodeReference(r.Form.Get("node_ref"))
-
-		port, err := strconv.ParseUint(r.Form.Get("url"), 0, 16)
-		if err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidURL.Error())
-			return
-		}
-
-		var options types.InstanceCreateOptions
-
-		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&instanceCreate); err != nil {
 			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData.Error())
 			return
 		}
 
-		if err := c.backend.CreateInstance(serviceRef, nodeRef, uint16(port), options); err != nil {
+		serviceRef := entity.ServiceReference(instanceCreate.ServiceRef)
+		nodeRef := entity.NodeReference(instanceCreate.NodeRef)
+
+		if err := c.backend.CreateInstance(serviceRef, nodeRef, instanceCreate.Port, instanceCreate.InstanceCreateOptions); err != nil {
 			respond(w, r, http.StatusUnprocessableEntity, err.Error())
 			return
 		}

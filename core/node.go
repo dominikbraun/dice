@@ -159,27 +159,27 @@ func (d *Dice) findNode(nodeRef entity.NodeReference) (*entity.Node, error) {
 // nodeIsUnique checks if a newly created node is unique. A node is unique
 // if no node with equal identifiers has been found in the key value store.
 func (d *Dice) nodeIsUnique(node *entity.Node) (bool, error) {
-	node, err := d.findNode(entity.NodeReference(node.ID))
+	storedNode, err := d.findNode(entity.NodeReference(node.ID))
 
 	if err != nil {
 		return false, err
-	} else if node != nil {
+	} else if storedNode != nil {
 		return false, nil
 	}
 
-	node, err = d.findNode(entity.NodeReference(node.Name))
+	storedNode, err = d.findNode(entity.NodeReference(node.Name))
 
 	if err != nil {
 		return false, err
-	} else if node != nil {
+	} else if storedNode != nil {
 		return false, nil
 	}
 
-	node, err = d.findNode(entity.NodeReference(node.URL.String()))
+	storedNode, err = d.findNode(entity.NodeReference(node.URL.String()))
 
 	if err != nil {
 		return false, err
-	} else if node != nil {
+	} else if storedNode != nil {
 		return false, nil
 	}
 

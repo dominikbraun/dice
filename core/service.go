@@ -149,20 +149,20 @@ func (d *Dice) findService(serviceRef entity.ServiceReference) (*entity.Service,
 // is unique if no service with equal identifiers has been found in the key
 // value store.
 func (d *Dice) serviceIsUnique(service *entity.Service) (bool, error) {
-	service, err := d.findService(entity.ServiceReference(service.ID))
+	storedService, err := d.findService(entity.ServiceReference(service.ID))
 
 	if err != nil {
 		return false, err
-	} else if service != nil {
+	} else if storedService != nil {
 		return false, nil
 	}
 
 	if service.Name != "" {
-		service, err = d.findService(entity.ServiceReference(service.Name))
+		storedService, err = d.findService(entity.ServiceReference(service.Name))
 
 		if err != nil {
 			return false, err
-		} else if service != nil {
+		} else if storedService != nil {
 			return false, nil
 		}
 	}

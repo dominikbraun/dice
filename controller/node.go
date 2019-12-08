@@ -93,3 +93,24 @@ func (c *Controller) NodeInfo() http.HandlerFunc {
 		respond(w, r, http.StatusOK, nodeInfo)
 	}
 }
+
+// ListNodes handles a POST request for retrieving a list of nodes. The request
+// body has to contain valid NodeListOptions.
+func (c *Controller) ListNodes() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var options types.NodeListOptions
+
+		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData.Error())
+			return
+		}
+
+		nodeList, err := c.backend.ListNodes(options)
+		if err != nil {
+			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+
+		respond(w, r, http.StatusOK, nodeList)
+	}
+}

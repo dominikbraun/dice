@@ -29,6 +29,11 @@ type NodeInfoOptions struct {
 	Quiet bool `json:"quiet"`
 }
 
+// NodeInfoOptions combines all user options for listing nodes.
+type NodeListOptions struct {
+	All bool `json:"all"`
+}
+
 // ServiceCreateOptions combines all user options for creating a new
 // service. It serves as a Data Transfer Object for the Dice core.
 type ServiceCreateOptions struct {

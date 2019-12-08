@@ -35,6 +35,7 @@ type NodeTarget interface {
 	AttachNode(nodeRef entity.NodeReference) error
 	DetachNode(nodeRef entity.NodeReference) error
 	NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, error)
+	ListNodes(options types.NodeListOptions) ([]types.NodeInfoOutput, error)
 }
 
 // ServiceTarget prescribes methods for backends working with services.

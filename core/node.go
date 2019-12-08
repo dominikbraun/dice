@@ -18,6 +18,7 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
 	"net/url"
 )
@@ -115,6 +116,38 @@ func (d *Dice) NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, err
 	}
 
 	return nodeInfo, nil
+}
+
+// ListNodes returns a list of stored nodes. By default, detached nodes will
+// be ignored. They only will be returned if the options say to do so. In any
+// case, dead nodes will be returned.
+func (d *Dice) ListNodes(options types.NodeListOptions) ([]types.NodeInfoOutput, error) {
+	var filter store.NodeFilter
+
+	if !options.All {
+		filter = func(node *entity.Node) bool {
+			return node.IsAttached
+		}
+	}
+
+	nodes, err := d.kvStore.FindNodes(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	nodeList := make([]types.NodeInfoOutput, len(nodes))
+
+	for i, n := range nodes {
+		info := types.NodeInfoOutput{
+			ID:         n.ID,
+			Name:       n.Name,
+			IsAttached: n.IsAttached,
+			IsAlive:    n.IsAlive,
+		}
+		nodeList[i] = info
+	}
+
+	return nodeList, nil
 }
 
 // findNode attempts to find a node in the key-value store that matches the

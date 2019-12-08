@@ -167,15 +167,15 @@ func (kv *KVStore) FindNodes(filter NodeFilter) ([]*entity.Node, error) {
 
 	nodes := make([]*entity.Node, len(values))
 
-	for _, v := range values {
-		var node *entity.Node
+	for i, v := range values {
+		var node entity.Node
 
 		if err = json.Unmarshal(v, &node); err != nil {
 			return nil, ErrMarshallingFailed
 		}
 
-		if filter != nil && filter(node) || filter == nil {
-			nodes = append(nodes, node)
+		if filter != nil && filter(&node) || filter == nil {
+			nodes[i] = &node
 		}
 	}
 
@@ -188,13 +188,13 @@ func (kv *KVStore) FindNode(id string) (*entity.Node, error) {
 		return nil, err
 	}
 
-	var node *entity.Node
+	var node entity.Node
 
-	if err = json.Unmarshal(value, node); err != nil {
+	if err = json.Unmarshal(value, &node); err != nil {
 		return nil, ErrMarshallingFailed
 	}
 
-	return node, nil
+	return &node, nil
 }
 
 func (kv *KVStore) UpdateNode(id string, source *entity.Node) error {
@@ -222,15 +222,15 @@ func (kv *KVStore) FindServices(filter ServiceFilter) ([]*entity.Service, error)
 
 	services := make([]*entity.Service, len(values))
 
-	for _, v := range values {
-		var service *entity.Service
+	for i, v := range values {
+		var service entity.Service
 
 		if err = json.Unmarshal(v, &service); err != nil {
 			return nil, ErrMarshallingFailed
 		}
 
-		if filter != nil && filter(service) || filter == nil {
-			services = append(services, service)
+		if filter != nil && filter(&service) || filter == nil {
+			services[i] = &service
 		}
 	}
 
@@ -243,13 +243,13 @@ func (kv *KVStore) FindService(id string) (*entity.Service, error) {
 		return nil, err
 	}
 
-	var service *entity.Service
+	var service entity.Service
 
-	if err = json.Unmarshal(value, service); err != nil {
+	if err = json.Unmarshal(value, &service); err != nil {
 		return nil, ErrMarshallingFailed
 	}
 
-	return service, nil
+	return &service, nil
 }
 
 func (kv *KVStore) UpdateService(id string, source *entity.Service) error {
@@ -277,15 +277,15 @@ func (kv *KVStore) FindInstances(filter InstanceFilter) ([]*entity.Instance, err
 
 	instances := make([]*entity.Instance, len(values))
 
-	for _, v := range values {
-		var instance *entity.Instance
+	for i, v := range values {
+		var instance entity.Instance
 
 		if err = json.Unmarshal(v, &instance); err != nil {
 			return nil, ErrMarshallingFailed
 		}
 
-		if filter != nil && filter(instance) || filter == nil {
-			instances = append(instances, instance)
+		if filter != nil && filter(&instance) || filter == nil {
+			instances[i] = &instance
 		}
 	}
 
@@ -298,13 +298,13 @@ func (kv *KVStore) FindInstance(id string) (*entity.Instance, error) {
 		return nil, err
 	}
 
-	var instance *entity.Instance
+	var instance entity.Instance
 
-	if err = json.Unmarshal(value, instance); err != nil {
+	if err = json.Unmarshal(value, &instance); err != nil {
 		return nil, ErrMarshallingFailed
 	}
 
-	return instance, nil
+	return &instance, nil
 }
 
 func (kv *KVStore) UpdateInstance(id string, source *entity.Instance) error {

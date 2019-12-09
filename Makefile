@@ -9,7 +9,7 @@ build: always
 
 .PHONY: clean
 clean:
-    rm -rf .target
+	rm -rf .target
 
 .PHONY: test
 test:

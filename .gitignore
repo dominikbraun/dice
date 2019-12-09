@@ -8,9 +8,11 @@ dice.yml
 # Dice log
 dice.log
 
-# Dice KV store
+# Dice KV stores
 dice-store
 dice-store.lock
+dice-test-store
+dice-test-store.lock
 
 # Directory for compiled binaries
 .target/

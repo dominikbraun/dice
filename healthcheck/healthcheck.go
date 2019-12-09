@@ -17,6 +17,7 @@ package healthcheck
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dominikbraun/dice/entity"
 	"github.com/dominikbraun/dice/registry"
 	"net"
@@ -90,7 +91,7 @@ func (hc *HealthCheck) checkServices() {
 	for _, s := range *hc.services {
 		if s.Entity.IsEnabled {
 			for _, d := range s.Deployments {
-				d.Instance.IsAlive = hc.pingInstance(d.Instance)
+				d.Instance.IsAlive = hc.pingInstance(d.Node, d.Instance)
 				// ToDo: If all instances are dead, check if the node is alive
 			}
 		}
@@ -99,8 +100,8 @@ func (hc *HealthCheck) checkServices() {
 
 // pingInstance reads the address from an instance and attempts to establish a
 // connection to that address. The dialer will use the configured timeout.
-func (hc *HealthCheck) pingInstance(instance *entity.Instance) bool {
-	address := instance.URL.String()
+func (hc *HealthCheck) pingInstance(node *entity.Node, instance *entity.Instance) bool {
+	address := fmt.Sprintf("%s:%v", node.URL.Hostname(), instance.Port)
 
 	conn, err := net.DialTimeout("tcp", address, hc.config.Timeout)
 	if err != nil {

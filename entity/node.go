@@ -16,8 +16,9 @@
 package entity
 
 import (
+	"crypto/rand"
+	"fmt"
 	"github.com/dominikbraun/dice/types"
-	"github.com/sony/sonyflake"
 	"net/url"
 	"time"
 )
@@ -66,13 +67,12 @@ func NewNode(url *url.URL, options types.NodeCreateOptions) (*Node, error) {
 // generateEntityID generates a random, time-based ID. Even though an ID
 // collision is unlikely, you have to check if the ID really is unique.
 func generateEntityID() (string, error) {
-	flakeSettings := sonyflake.Settings{}
-	generator := sonyflake.NewSonyflake(flakeSettings)
+	b := make([]byte, 8)
 
-	uuid, err := generator.NextID()
-	if err != nil {
+	if _, err := rand.Read(b); err != nil {
 		return "", err
 	}
+	uuid := fmt.Sprintf("%x", b)
 
-	return string(uuid), nil
+	return uuid, nil
 }

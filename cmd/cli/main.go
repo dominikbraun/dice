@@ -18,12 +18,10 @@ import (
 	"github.com/dominikbraun/dice/cli"
 	"github.com/dominikbraun/dice/client"
 	"log"
-	"net/url"
 )
 
 func main() {
-	apiURL, _ := url.Parse("localhost:8080")
-	diceClient := client.New(apiURL)
+	diceClient := client.New("http", "localhost:8080")
 
 	diceCLI := cli.New(diceClient)
 

@@ -27,21 +27,14 @@ import (
 // request body has to contain the service's name and associated options.
 func (c *Controller) CreateService() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
-			return
-		}
+		var serviceCreate types.ServiceCreate
 
-		name := r.Form.Get("name")
-
-		var options types.ServiceCreateOptions
-
-		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&serviceCreate); err != nil {
 			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData.Error())
 			return
 		}
 
-		if err := c.backend.CreateService(name, options); err != nil {
+		if err := c.backend.CreateService(serviceCreate.Name, serviceCreate.ServiceCreateOptions); err != nil {
 			respond(w, r, http.StatusUnprocessableEntity, err.Error())
 			return
 		}

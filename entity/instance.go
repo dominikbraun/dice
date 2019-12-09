@@ -17,7 +17,6 @@ package entity
 
 import (
 	"github.com/dominikbraun/dice/types"
-	"net/url"
 	"time"
 )
 
@@ -36,7 +35,7 @@ type Instance struct {
 	Name          string    `json:"name"`
 	ServiceID     string    `json:"service_id"`
 	NodeID        string    `json:"node_id"`
-	URL           *url.URL  `json:"url"`
+	Port          uint16    `json:"port"`
 	Version       string    `json:"version"`
 	IsAttached    bool      `json:"is_attached"`
 	IsUpdated     bool      `json:"is_updated"`
@@ -46,7 +45,7 @@ type Instance struct {
 }
 
 // NewInstance creates a new Instance instance. It doesn't guarantee uniqueness.
-func NewInstance(serviceID, nodeID string, url *url.URL, options types.InstanceCreateOptions) (*Instance, error) {
+func NewInstance(serviceID, nodeID string, port uint16, options types.InstanceCreateOptions) (*Instance, error) {
 	uuid, err := generateEntityID()
 	if err != nil {
 		return nil, err
@@ -57,7 +56,7 @@ func NewInstance(serviceID, nodeID string, url *url.URL, options types.InstanceC
 		Name:          options.Name,
 		ServiceID:     serviceID,
 		NodeID:        nodeID,
-		URL:           url,
+		Port:          port,
 		Version:       options.Version,
 		IsAttached:    options.Attach,
 		IsUpdated:     false,

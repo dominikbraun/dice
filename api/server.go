@@ -52,6 +52,8 @@ func NewServer(config ServerConfig, controller *controller.Controller) *Server {
 		Handler: s.router,
 	}
 
+	s.mountRoutes()
+
 	return &s
 }
 

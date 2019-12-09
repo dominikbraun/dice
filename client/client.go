@@ -15,20 +15,63 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"net/http"
-	"net/url"
+)
+
+const (
+	contentType string = "application/json"
 )
 
 type Client struct {
-	internal *http.Client
-	apiURL   *url.URL
+	internal    *http.Client
+	apiProtocol string
+	apiAddress  string
 }
 
-func New(apiURL *url.URL) *Client {
+func New(apiProtocol, apiAddress string) *Client {
 	c := Client{
-		internal: &http.Client{},
-		apiURL:   apiURL,
+		internal:    &http.Client{},
+		apiProtocol: apiProtocol,
+		apiAddress:  apiAddress,
 	}
 
 	return &c
+}
+
+func (c *Client) GET(route string, dest interface{}) error {
+	address := fmt.Sprintf("%s://%s%s", c.apiProtocol, c.apiAddress, route)
+
+	response, err := c.internal.Get(address)
+	if err != nil {
+		return err
+	}
+
+	if dest == nil {
+		return nil
+	}
+
+	return json.NewDecoder(response.Body).Decode(&dest)
+}
+
+func (c *Client) POST(route string, v interface{}, dest interface{}) error {
+	address := fmt.Sprintf("%s://%s%s", c.apiProtocol, c.apiAddress, route)
+	body := new(bytes.Buffer)
+
+	if err := json.NewEncoder(body).Encode(v); err != nil {
+		return err
+	}
+
+	response, err := c.internal.Post(address, contentType, body)
+	if err != nil {
+		return err
+	}
+
+	if dest == nil {
+		return nil
+	}
+
+	return json.NewDecoder(response.Body).Decode(&dest)
 }

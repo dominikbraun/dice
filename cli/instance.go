@@ -36,7 +36,7 @@ func (c *CLI) instanceCreateCmd() *cobra.Command {
 	var options types.InstanceCreateOptions
 
 	instanceCreateCmd := cobra.Command{
-		Use:   "create <SERVICE> <NODE> <URL>",
+		Use:   "create <SERVICE> <NODE> <PORT>",
 		Short: `Create a new service instance`,
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {

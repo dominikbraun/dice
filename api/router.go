@@ -44,6 +44,7 @@ func (s *Server) mountRoutes() {
 
 	r.Route("/nodes", func(r chi.Router) {
 		r.Post("/create", s.controller.CreateNode())
+		r.Post("/list", s.controller.ListNodes())
 
 		r.Route("/{ref}", func(r chi.Router) {
 			r.Post("/attach", s.controller.AttachNode())

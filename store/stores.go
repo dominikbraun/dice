@@ -22,6 +22,12 @@ type (
 	InstanceFilter func(instance *entity.Instance) bool
 )
 
+var (
+	AllNodesFilter     NodeFilter     = func(node *entity.Node) bool { return true }
+	AllServicesFilter  ServiceFilter  = func(service *entity.Service) bool { return true }
+	AllInstancesFilter InstanceFilter = func(instance *entity.Instance) bool { return true }
+)
+
 type EntityStore interface {
 	NodeStore
 	ServiceStore

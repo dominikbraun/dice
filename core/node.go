@@ -110,7 +110,7 @@ func (d *Dice) NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, err
 	nodeInfo := types.NodeInfoOutput{
 		ID:         node.ID,
 		Name:       node.Name,
-		URL:        node.URL,
+		URL:        node.URL.String(),
 		IsAttached: node.IsAttached,
 		IsAlive:    node.IsAlive,
 	}
@@ -122,7 +122,7 @@ func (d *Dice) NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, err
 // be ignored. They only will be returned if the options say to do so. In any
 // case, dead nodes will be returned.
 func (d *Dice) ListNodes(options types.NodeListOptions) ([]types.NodeInfoOutput, error) {
-	var filter store.NodeFilter
+	filter := store.AllNodesFilter
 
 	if !options.All {
 		filter = func(node *entity.Node) bool {
@@ -141,6 +141,7 @@ func (d *Dice) ListNodes(options types.NodeListOptions) ([]types.NodeInfoOutput,
 		info := types.NodeInfoOutput{
 			ID:         n.ID,
 			Name:       n.Name,
+			URL:        n.URL.String(),
 			IsAttached: n.IsAttached,
 			IsAlive:    n.IsAlive,
 		}

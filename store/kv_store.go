@@ -36,7 +36,7 @@ type KVStore struct {
 	internal *bolt.DB
 }
 
-func NewKV(path string) (*KVStore, error) {
+func NewKVStore(path string) (*KVStore, error) {
 	var kv KVStore
 	var err error
 

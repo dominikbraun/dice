@@ -12,6 +12,7 @@ jobs:
   dice-test:
     executor: go-container
     steps:
+      - checkout
       - restore_cache:
           keys:
             - go-mod-v1-{{ .Branch }}-{{ checksum "go.mod" }}
@@ -19,7 +20,6 @@ jobs:
             - go-mod-v1-
             - git-v1-{{ .Branch }}-{{ .Revision }}
             - git-v1-{{ .Branch }}
-      - checkout
       - run: go mod download
       - save_cache:
           key: go-mod-v1-{{ .Branch }}-{{ checksum "go.mod" }}
@@ -34,14 +34,14 @@ jobs:
   dice-build:
     executor: go-container
     steps:
+      - checkout
       - restore_cache:
           keys:
-            - go-mod-v1-{{ .Branch }}-{{ checksum "go.mod" }}
-            - go-mod-v1-{{ .Branch }}-
-            - go-mod-v1-
-            - git-v1-{{ .Branch }}-{{ .Revision }}
-            - git-v1-{{ .Branch }}
-      - checkout
+          - go-mod-v1-{{ .Branch }}-{{ checksum "go.mod" }}
+          - go-mod-v1-{{ .Branch }}-
+          - go-mod-v1-
+          - git-v1-{{ .Branch }}-{{ .Revision }}
+          - git-v1-{{ .Branch }}
       - run: go mod download
       - save_cache:
           key: go-mod-v1-{{ .Branch }}-{{ checksum "go.mod" }}

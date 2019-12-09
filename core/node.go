@@ -107,6 +107,10 @@ func (d *Dice) NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, err
 		return types.NodeInfoOutput{}, err
 	}
 
+	if node == nil {
+		return types.NodeInfoOutput{}, ErrNodeNotFound
+	}
+
 	nodeInfo := types.NodeInfoOutput{
 		ID:         node.ID,
 		Name:       node.Name,

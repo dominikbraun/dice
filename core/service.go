@@ -104,6 +104,10 @@ func (d *Dice) ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInf
 		return types.ServiceInfoOutput{}, err
 	}
 
+	if service == nil {
+		return types.ServiceInfoOutput{}, ErrServiceNotFound
+	}
+
 	serviceInfo := types.ServiceInfoOutput{
 		ID:              service.ID,
 		Name:            service.Name,

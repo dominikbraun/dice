@@ -122,6 +122,10 @@ func (d *Dice) InstanceInfo(instanceRef entity.InstanceReference) (types.Instanc
 		return types.InstanceInfoOutput{}, err
 	}
 
+	if instance == nil {
+		return types.InstanceInfoOutput{}, err
+	}
+
 	instanceInfo := types.InstanceInfoOutput{
 		ID:         instance.ID,
 		Name:       instance.Name,

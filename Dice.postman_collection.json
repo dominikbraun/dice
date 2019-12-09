@@ -1,0 +1,162 @@
+{
+	"info": {
+		"_postman_id": "303c3101-3833-4373-8f9e-682af12f81fc",
+		"name": "Dice",
+		"description": "Requests for the Dice REST API.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create Node",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"url\": \"172.21.21.1\",\n\t\"name\": \"main-server\",\n\t\"weight\": 2,\n\t\"attach\": false\n}"
+				},
+				"url": {
+					"raw": "http://localhost:9292/v1/nodes/create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9292",
+					"path": [
+						"v1",
+						"nodes",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Nodes",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"all\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9292/v1/nodes/list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9292",
+					"path": [
+						"v1",
+						"nodes",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Attach Node",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9292/v1/nodes/172.21.21.1/attach",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9292",
+					"path": [
+						"v1",
+						"nodes",
+						"172.21.21.1",
+						"attach"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Detach Node",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9292/v1/nodes/616b3706a4c4de71/detach",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9292",
+					"path": [
+						"v1",
+						"nodes",
+						"616b3706a4c4de71",
+						"detach"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Node Info",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9292/v1/nodes/main-server/info",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9292",
+					"path": [
+						"v1",
+						"nodes",
+						"main-server",
+						"info"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

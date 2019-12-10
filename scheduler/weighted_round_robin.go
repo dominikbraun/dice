@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package scheduler provides scheduler implementations for load balancing.
 package scheduler
 
 import (

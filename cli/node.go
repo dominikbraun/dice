@@ -98,11 +98,11 @@ func (c *CLI) nodeDetachCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			nodeRef := args[0]
-			route := "/nodes/" + nodeRef + "/dettach"
+			route := "/nodes/" + nodeRef + "/detach"
 
 			var response types.Response
 
-			if err := c.client.POST(route, nil, response); err != nil {
+			if err := c.client.POST(route, nil, &response); err != nil {
 				return err
 			}
 
@@ -138,7 +138,7 @@ func (c *CLI) nodeInfoCmd() *cobra.Command {
 			if !nodeInfoResponse.Success {
 				fmt.Printf("%s\n", nodeInfoResponse.Message)
 			} else {
-				fmt.Printf("%s\n", nodeInfoResponse)
+				fmt.Printf("%v\n", nodeInfoResponse)
 			}
 			return nil
 		},

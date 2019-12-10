@@ -16,7 +16,6 @@ package cli
 
 import (
 	"fmt"
-	"github.com/dominikbraun/dice/controller"
 	"github.com/dominikbraun/dice/types"
 	"github.com/spf13/cobra"
 )
@@ -42,7 +41,20 @@ func (c *CLI) nodeCreateCmd() *cobra.Command {
 		Short: `Create a new node`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			route := "/nodes/create"
+
+			var response types.Response
+
+			if err := c.client.POST(route, types.NodeCreate{
+				URL:               args[0],
+				NodeCreateOptions: options,
+			}, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				fmt.Printf("%s\n", response.Message)
+			}
 			return nil
 		},
 	}
@@ -63,7 +75,7 @@ func (c *CLI) nodeAttachCmd() *cobra.Command {
 			nodeRef := args[0]
 			route := "/nodes/" + nodeRef + "/attach"
 
-			var response controller.Response
+			var response types.Response
 
 			if err := c.client.POST(route, nil, &response); err != nil {
 				return err
@@ -85,7 +97,19 @@ func (c *CLI) nodeDetachCmd() *cobra.Command {
 		Short: `Detach an existing node`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			nodeRef := args[0]
+			route := "/nodes/" + nodeRef + "/dettach"
+
+			var response types.Response
+
+			if err := c.client.POST(route, nil, response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				fmt.Printf("%s\n", response.Message)
+			}
+
 			return nil
 		},
 	}
@@ -101,7 +125,21 @@ func (c *CLI) nodeInfoCmd() *cobra.Command {
 		Short: `Print information for a node`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			nodeRef := args[0]
+			route := "/nodes/" + nodeRef + "/info"
+
+			var nodeInfoResponse types.NodeInfoOutputResponse
+
+			err := c.client.POST(route, options, &nodeInfoResponse)
+			if err != nil {
+				return err
+			}
+
+			if !nodeInfoResponse.Success {
+				fmt.Printf("%s\n", nodeInfoResponse.Message)
+			} else {
+				fmt.Printf("%s\n", nodeInfoResponse)
+			}
 			return nil
 		},
 	}

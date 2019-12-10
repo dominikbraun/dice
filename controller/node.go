@@ -46,7 +46,7 @@ func (c *Controller) CreateNode() http.HandlerFunc {
 			return
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true})
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -60,7 +60,7 @@ func (c *Controller) AttachNode() http.HandlerFunc {
 			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true})
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -74,7 +74,7 @@ func (c *Controller) DetachNode() http.HandlerFunc {
 			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true})
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -90,7 +90,7 @@ func (c *Controller) NodeInfo() http.HandlerFunc {
 			return
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true, Data: nodeInfo})
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: nodeInfo})
 	}
 }
 
@@ -111,6 +111,6 @@ func (c *Controller) ListNodes() http.HandlerFunc {
 			return
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true, Data: nodeList})
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: nodeList})
 	}
 }

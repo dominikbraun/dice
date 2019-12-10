@@ -47,3 +47,10 @@ type InstanceCreate struct {
 	Port       uint16 `json:"port"`
 	InstanceCreateOptions
 }
+
+// Response represents an API response that will be returned to the client.
+type Response struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}

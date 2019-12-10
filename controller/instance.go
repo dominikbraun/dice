@@ -43,7 +43,7 @@ func (c *Controller) CreateInstance() http.HandlerFunc {
 			return
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true})
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -57,7 +57,7 @@ func (c *Controller) AttachInstance() http.HandlerFunc {
 			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true})
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -71,7 +71,7 @@ func (c *Controller) DetachInstance() http.HandlerFunc {
 			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true})
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -87,6 +87,6 @@ func (c *Controller) InstanceInfo() http.HandlerFunc {
 			return
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true, Data: instanceInfo})
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: instanceInfo})
 	}
 }

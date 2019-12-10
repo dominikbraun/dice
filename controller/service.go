@@ -39,7 +39,7 @@ func (c *Controller) CreateService() http.HandlerFunc {
 			return
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true})
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -53,7 +53,7 @@ func (c *Controller) EnableService() http.HandlerFunc {
 			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true})
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -67,7 +67,7 @@ func (c *Controller) DisableService() http.HandlerFunc {
 			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true})
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -83,6 +83,6 @@ func (c *Controller) ServiceInfo() http.HandlerFunc {
 			return
 		}
 
-		respond(w, r, http.StatusOK, Response{Success: true, Data: serviceInfo})
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: serviceInfo})
 	}
 }

@@ -24,6 +24,11 @@ type NodeInfoOutput struct {
 	IsAlive    bool   `json:"is_alive"`
 }
 
+type NodeInfoOutputResponse struct {
+	Response
+	Data NodeInfoOutput `json:"data"`
+}
+
 // ServiceInfoOutput is the output printed by the `service info` command.
 type ServiceInfoOutput struct {
 	ID              string   `json:"id"`

@@ -94,7 +94,11 @@ func (c *Client) POST(route string, v interface{}, dest interface{}) error {
 		return err
 	}
 
-	_ = response.Body.Close()
+	err = response.Body.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -17,6 +17,7 @@ package controller
 
 import (
 	"errors"
+	"github.com/dominikbraun/dice/types"
 	"github.com/go-chi/render"
 	"net/http"
 )
@@ -26,13 +27,6 @@ var (
 	ErrInvalidURL          = errors.New("the given URL is not valid")
 	ErrInvalidFormData     = errors.New("the provided form data is not valid")
 )
-
-// Response represents an API response that will be returned to the client.
-type Response struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
-}
 
 // Controller is a REST interface that controls the Dice core. It provides
 // HTTP handling methods which will read all required data from the request,
@@ -52,7 +46,7 @@ func New(backend Target) *Controller {
 
 // respond sets an HTTP status code and renders any given response value.
 // Note that a return statement is required after calling respond.
-func respond(w http.ResponseWriter, r *http.Request, status int, response Response) {
+func respond(w http.ResponseWriter, r *http.Request, status int, response types.Response) {
 	w.WriteHeader(status)
 	render.JSON(w, r, response)
 }
@@ -60,7 +54,7 @@ func respond(w http.ResponseWriter, r *http.Request, status int, response Respon
 // respondError does the same as respond, however it takes an error as value
 // and creates an appropriate response on its own using that error.
 func respondError(w http.ResponseWriter, r *http.Request, status int, err error) {
-	response := Response{
+	response := types.Response{
 		Success: false,
 		Message: err.Error(),
 	}

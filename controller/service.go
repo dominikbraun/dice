@@ -30,16 +30,16 @@ func (c *Controller) CreateService() http.HandlerFunc {
 		var serviceCreate types.ServiceCreate
 
 		if err := json.NewDecoder(r.Body).Decode(&serviceCreate); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
 			return
 		}
 
 		if err := c.backend.CreateService(serviceCreate.Name, serviceCreate.ServiceCreateOptions); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, Response{Success: true})
 	}
 }
 
@@ -50,10 +50,10 @@ func (c *Controller) EnableService() http.HandlerFunc {
 		serviceRef := entity.ServiceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.EnableService(serviceRef); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, Response{Success: true})
 	}
 }
 
@@ -64,10 +64,10 @@ func (c *Controller) DisableService() http.HandlerFunc {
 		serviceRef := entity.ServiceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.DisableService(serviceRef); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, Response{Success: true})
 	}
 }
 
@@ -79,10 +79,10 @@ func (c *Controller) ServiceInfo() http.HandlerFunc {
 
 		serviceInfo, err := c.backend.ServiceInfo(serviceRef)
 		if err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		respond(w, r, http.StatusOK, serviceInfo)
+		respond(w, r, http.StatusOK, Response{Success: true, Data: serviceInfo})
 	}
 }

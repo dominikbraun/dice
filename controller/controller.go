@@ -27,6 +27,13 @@ var (
 	ErrInvalidFormData     = errors.New("the provided form data is not valid")
 )
 
+// Response represents an API response that will be returned to the client.
+type Response struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
 // Controller is a REST interface that controls the Dice core. It provides
 // HTTP handling methods which will read all required data from the request,
 // invoke the core functions and eventually return the core's responses.
@@ -45,7 +52,17 @@ func New(backend Target) *Controller {
 
 // respond sets an HTTP status code and renders any given response value.
 // Note that a return statement is required after calling respond.
-func respond(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
+func respond(w http.ResponseWriter, r *http.Request, status int, response Response) {
 	w.WriteHeader(status)
-	render.JSON(w, r, v)
+	render.JSON(w, r, response)
+}
+
+// respondError does the same as respond, however it takes an error as value
+// and creates an appropriate response on its own using that error.
+func respondError(w http.ResponseWriter, r *http.Request, status int, err error) {
+	response := Response{
+		Success: false,
+		Message: err.Error(),
+	}
+	respond(w, r, status, response)
 }

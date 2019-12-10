@@ -21,9 +21,11 @@ import (
 )
 
 func main() {
-	diceClient := client.New("http", "localhost:8080")
+	diceClient := client.New("http", "localhost:9292", "/v1")
 
 	diceCLI := cli.New(diceClient)
 
-	log.Fatal(diceCLI.Execute())
+	if err := diceCLI.Execute(); err != nil {
+		log.Fatal(err)
+	}
 }

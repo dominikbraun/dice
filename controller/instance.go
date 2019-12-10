@@ -31,7 +31,7 @@ func (c *Controller) CreateInstance() http.HandlerFunc {
 		var instanceCreate types.InstanceCreate
 
 		if err := json.NewDecoder(r.Body).Decode(&instanceCreate); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
 			return
 		}
 
@@ -39,11 +39,11 @@ func (c *Controller) CreateInstance() http.HandlerFunc {
 		nodeRef := entity.NodeReference(instanceCreate.NodeRef)
 
 		if err := c.backend.CreateInstance(serviceRef, nodeRef, instanceCreate.Port, instanceCreate.InstanceCreateOptions); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, Response{Success: true})
 	}
 }
 
@@ -54,10 +54,10 @@ func (c *Controller) AttachInstance() http.HandlerFunc {
 		instanceRef := entity.InstanceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.AttachInstance(instanceRef); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, Response{Success: true})
 	}
 }
 
@@ -68,10 +68,10 @@ func (c *Controller) DetachInstance() http.HandlerFunc {
 		instanceRef := entity.InstanceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.DetachInstance(instanceRef); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, Response{Success: true})
 	}
 }
 
@@ -83,10 +83,10 @@ func (c *Controller) InstanceInfo() http.HandlerFunc {
 
 		instanceInfo, err := c.backend.InstanceInfo(instanceRef)
 		if err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		respond(w, r, http.StatusOK, instanceInfo)
+		respond(w, r, http.StatusOK, Response{Success: true, Data: instanceInfo})
 	}
 }

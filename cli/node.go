@@ -15,6 +15,8 @@
 package cli
 
 import (
+	"fmt"
+	"github.com/dominikbraun/dice/controller"
 	"github.com/dominikbraun/dice/types"
 	"github.com/spf13/cobra"
 )
@@ -58,7 +60,18 @@ func (c *CLI) nodeAttachCmd() *cobra.Command {
 		Short: `Attach an existing node`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			nodeRef := args[0]
+			route := "/nodes/" + nodeRef + "/attach"
+
+			var response controller.Response
+
+			if err := c.client.POST(route, nil, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				fmt.Printf("%s\n", response.Message)
+			}
 			return nil
 		},
 	}

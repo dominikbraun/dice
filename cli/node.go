@@ -138,7 +138,6 @@ func (c *CLI) nodeInfoCmd() *cobra.Command {
 			if !nodeInfoResponse.Success {
 				fmt.Printf("%s\n", nodeInfoResponse.Message)
 			} else {
-
 				fmt.Printf("%s\n", nodeInfoResponse)
 			}
 			return nil

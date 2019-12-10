@@ -94,10 +94,8 @@ func (c *Client) POST(route string, v interface{}, dest interface{}) error {
 		return err
 	}
 
-	err = response.Body.Close()
-	if err != nil {
-		return err
-	}
+	// Do not handle the error since it is not relevant anymore. The json is already decoded and the user is happy.
+	_ = response.Body.Close()
 
 	return nil
 }

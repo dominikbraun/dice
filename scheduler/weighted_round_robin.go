@@ -20,12 +20,24 @@ import (
 	"github.com/dominikbraun/dice/registry"
 )
 
+// WeightedRoundRobin is a scheduler that basically implements the Round
+// Robin algorithm under consideration of node weights.
+//
+// Taking the node weights into account means that a node of weight 2 will
+// be selected twice as often as a node of weight 1 - more exactly, the
+// instance deployed to that node will be selected. If there are two service
+// instances deployed to a node of weight 2, the node will receive four times
+// more requests as a consequence.
+//
+// Instances that are either detached or considered dead won't be selected,
+// just as instances that are deployed to a detached or dead node.
 type WeightedRoundRobin struct {
 	deployments   *[]registry.Deployment
 	currentIndex  int
 	currentWeight uint8
 }
 
+// newWeightedRoundRobin creates a new WeightedRoundRobin instance.
 func newWeightedRoundRobin(deployments *[]registry.Deployment) *WeightedRoundRobin {
 	wrr := WeightedRoundRobin{
 		deployments:   deployments,
@@ -36,6 +48,8 @@ func newWeightedRoundRobin(deployments *[]registry.Deployment) *WeightedRoundRob
 	return &wrr
 }
 
+// Next implements registry.Scheduler.Next. It is an implementation of the
+// Weighted Round Robin algorithm, respecting the rules described above.
 func (wrr *WeightedRoundRobin) Next() (*entity.Instance, error) {
 	attempts := 0
 

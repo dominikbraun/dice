@@ -52,6 +52,10 @@ func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity
 		return err
 	}
 
+	if ok, message := validateInstance(instance); !ok {
+		return errors.New(message)
+	}
+
 	isUnique, err := d.instanceIsUnique(instance)
 
 	if err != nil {

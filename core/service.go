@@ -35,6 +35,10 @@ func (d *Dice) CreateService(name string, options types.ServiceCreateOptions) er
 		return err
 	}
 
+	if ok, message := validateService(service); !ok {
+		return errors.New(message)
+	}
+
 	isUnique, err := d.serviceIsUnique(service)
 
 	if err != nil {

@@ -37,6 +37,10 @@ func (d *Dice) CreateNode(url *url.URL, options types.NodeCreateOptions) error {
 		return err
 	}
 
+	if ok, message := validateNode(node); !ok {
+		return errors.New(message)
+	}
+
 	isUnique, err := d.nodeIsUnique(node)
 
 	if err != nil {

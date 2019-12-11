@@ -54,3 +54,16 @@ type Response struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
+
+// NodeInfoOutputResponse is an API response that carries a NodeInfoOutput.
+type NodeInfoOutputResponse struct {
+	Response
+	Data NodeInfoOutput `json:"data"`
+}
+
+// NodeListResponse is an API response that carries a list of nodes. At the
+// moment, this is a list of NodeInfoOutput as returned by the Dice core.
+type NodeListResponse struct {
+	Response
+	Data []NodeInfoOutput `json:"data"`
+}

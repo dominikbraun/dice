@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package cli provides the Dice CLI commands and their implementation.
 package cli
 
 import "github.com/spf13/cobra"
 
+// diceCmd creates and implements the `dice` command, which is also the
+// root command. The dice command itself does not have any functionality.
 func (c *CLI) diceCmd() *cobra.Command {
 	diceCmd := cobra.Command{
 		Use:   "dice",

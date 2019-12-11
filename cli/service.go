@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package cli provides the Dice CLI commands and their implementation.
 package cli
 
 import (
@@ -19,6 +20,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// serviceCmd creates and implements the `service` command. The service
+// command itself does not have any functionality.
 func (c *CLI) serviceCmd() *cobra.Command {
 	serviceCmd := cobra.Command{
 		Use:   "service",
@@ -32,6 +35,7 @@ func (c *CLI) serviceCmd() *cobra.Command {
 	return &serviceCmd
 }
 
+// serviceCreateCmd creates and implements the `service create` command.
 func (c *CLI) serviceCreateCmd() *cobra.Command {
 	var options types.ServiceCreateOptions
 
@@ -51,6 +55,7 @@ func (c *CLI) serviceCreateCmd() *cobra.Command {
 	return &serviceCreateCmd
 }
 
+// serviceEnableCmd creates and implements the `service enable` command.
 func (c *CLI) serviceEnableCmd() *cobra.Command {
 	serviceEnableCmd := cobra.Command{
 		Use:   "enable <ID|NAME>",
@@ -65,6 +70,7 @@ func (c *CLI) serviceEnableCmd() *cobra.Command {
 	return &serviceEnableCmd
 }
 
+// serviceDisableCmd creates and implements the `service disable` command.
 func (c *CLI) serviceDisableCmd() *cobra.Command {
 	serviceDisableCmd := cobra.Command{
 		Use:   "disable <ID|NAME>",
@@ -79,6 +85,7 @@ func (c *CLI) serviceDisableCmd() *cobra.Command {
 	return &serviceDisableCmd
 }
 
+// serviceInfoCmd creates and implements the `service info` command.
 func (c *CLI) serviceInfoCmd() *cobra.Command {
 	var options types.ServiceInfoOptions
 

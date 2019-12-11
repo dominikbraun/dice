@@ -12,14 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package cli provides the Dice CLI commands and their implementation.
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dominikbraun/dice/types"
 	"github.com/spf13/cobra"
 )
 
+// nodeCmd creates and implements the `node` command. The node command
+// itself does not have any functionality.
 func (c *CLI) nodeCmd() *cobra.Command {
 	nodeCmd := cobra.Command{
 		Use:   "node",
@@ -33,6 +37,7 @@ func (c *CLI) nodeCmd() *cobra.Command {
 	return &nodeCmd
 }
 
+// nodeCreateCmd creates and implements the `node create` command.
 func (c *CLI) nodeCreateCmd() *cobra.Command {
 	var options types.NodeCreateOptions
 
@@ -53,8 +58,9 @@ func (c *CLI) nodeCreateCmd() *cobra.Command {
 			}
 
 			if !response.Success {
-				fmt.Printf("%s\n", response.Message)
+				return errors.New(response.Message)
 			}
+
 			return nil
 		},
 	}
@@ -66,6 +72,7 @@ func (c *CLI) nodeCreateCmd() *cobra.Command {
 	return &nodeCreateCmd
 }
 
+// nodeAttachCmd creates and implements the `node attach` command.
 func (c *CLI) nodeAttachCmd() *cobra.Command {
 	nodeAttachCmd := cobra.Command{
 		Use:   "attach <ID|NAME|URL>",
@@ -82,8 +89,9 @@ func (c *CLI) nodeAttachCmd() *cobra.Command {
 			}
 
 			if !response.Success {
-				fmt.Printf("%s\n", response.Message)
+				return errors.New(response.Message)
 			}
+
 			return nil
 		},
 	}
@@ -91,6 +99,7 @@ func (c *CLI) nodeAttachCmd() *cobra.Command {
 	return &nodeAttachCmd
 }
 
+// nodeDetachCmd creates and implements the `node detach` command.
 func (c *CLI) nodeDetachCmd() *cobra.Command {
 	nodeDetachCmd := cobra.Command{
 		Use:   "detach <ID|NAME|URL>",
@@ -107,7 +116,7 @@ func (c *CLI) nodeDetachCmd() *cobra.Command {
 			}
 
 			if !response.Success {
-				fmt.Printf("%s\n", response.Message)
+				return errors.New(response.Message)
 			}
 
 			return nil
@@ -117,6 +126,7 @@ func (c *CLI) nodeDetachCmd() *cobra.Command {
 	return &nodeDetachCmd
 }
 
+// nodeInfoCmd creates and implements the `node info` command.
 func (c *CLI) nodeInfoCmd() *cobra.Command {
 	var options types.NodeInfoOptions
 
@@ -130,16 +140,15 @@ func (c *CLI) nodeInfoCmd() *cobra.Command {
 
 			var nodeInfoResponse types.NodeInfoOutputResponse
 
-			err := c.client.POST(route, options, &nodeInfoResponse)
-			if err != nil {
+			if err := c.client.POST(route, options, &nodeInfoResponse); err != nil {
 				return err
 			}
 
 			if !nodeInfoResponse.Success {
-				fmt.Printf("%s\n", nodeInfoResponse.Message)
-			} else {
-				fmt.Printf("%v\n", nodeInfoResponse)
+				return errors.New(nodeInfoResponse.Message)
 			}
+
+			fmt.Printf("%v\n", nodeInfoResponse)
 			return nil
 		},
 	}
@@ -147,4 +156,37 @@ func (c *CLI) nodeInfoCmd() *cobra.Command {
 	nodeInfoCmd.Flags().BoolVarP(&options.Quiet, "quiet", "q", false, `only print the ID`)
 
 	return &nodeInfoCmd
+}
+
+// nodeListCmd creates and implements the `node list` command.
+func (c *CLI) nodeListCmd() *cobra.Command {
+	var options types.NodeListOptions
+
+	nodeListCmd := cobra.Command{
+		Use:   "list",
+		Short: `List attached nodes`,
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			route := "/nodes/list"
+			var nodeListResponse types.NodeListResponse
+
+			if err := c.client.POST(route, options, &nodeListResponse); err != nil {
+				return err
+			}
+
+			if !nodeListResponse.Success {
+				return errors.New(nodeListResponse.Message)
+			}
+
+			for _, n := range nodeListResponse.Data {
+				fmt.Printf("%v\n", n)
+			}
+
+			return nil
+		},
+	}
+
+	nodeListCmd.Flags().BoolVarP(&options.All, "all", "a", false, `list all nodes`)
+
+	return &nodeListCmd
 }

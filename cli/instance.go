@@ -19,6 +19,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// instanceCmd creates and implements the `instance` command. The instance
+// command itself does not have any functionality.
 func (c *CLI) instanceCmd() *cobra.Command {
 	instanceCmd := cobra.Command{
 		Use:   "instance",
@@ -32,6 +34,7 @@ func (c *CLI) instanceCmd() *cobra.Command {
 	return &instanceCmd
 }
 
+// instanceCreateCmd creates and implements the `instance create` command.
 func (c *CLI) instanceCreateCmd() *cobra.Command {
 	var options types.InstanceCreateOptions
 
@@ -52,6 +55,7 @@ func (c *CLI) instanceCreateCmd() *cobra.Command {
 	return &instanceCreateCmd
 }
 
+// instanceAttachCmd creates and implements the `instance attach` command.
 func (c *CLI) instanceAttachCmd() *cobra.Command {
 	instanceAttachCmd := cobra.Command{
 		Use:   "attach <ID|NAME|URL>",
@@ -66,6 +70,7 @@ func (c *CLI) instanceAttachCmd() *cobra.Command {
 	return &instanceAttachCmd
 }
 
+// instanceDetachCmd creates and implements the `instance detach` command.
 func (c *CLI) instanceDetachCmd() *cobra.Command {
 	instanceDetachCmd := cobra.Command{
 		Use:   "detach <ID|NAME|URL>",
@@ -80,6 +85,7 @@ func (c *CLI) instanceDetachCmd() *cobra.Command {
 	return &instanceDetachCmd
 }
 
+// instanceInfoCmd creates and implements the `instance info` command.
 func (c *CLI) instanceInfoCmd() *cobra.Command {
 	var options types.InstanceInfoOptions
 

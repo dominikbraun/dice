@@ -102,6 +102,12 @@ func TestKVStore_FindNodes(t *testing.T) {
 		t.Errorf("%v nodes found, %v expected", len(nodesByURL), 1)
 	}
 
+	for _, n := range nodesByURL {
+		if n == nil {
+			t.Errorf("node is nil")
+		}
+	}
+
 	nodesByWeight, err := kvStore.FindNodes(func(node *entity.Node) bool {
 		return node.Weight == 255
 	})

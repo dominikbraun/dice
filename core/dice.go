@@ -28,12 +28,7 @@ import (
 )
 
 const (
-	configName  string = "dice"
-	kvStorePath string = "./dice-store"
-	logfilePath string = "./dice.log"
-)
-const (
-	DefaultAPIServerPort = "8080"
+	configName string = "dice"
 )
 
 // Dice represents the Dice load balancer and wires up all the components.

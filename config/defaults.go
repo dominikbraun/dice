@@ -18,6 +18,7 @@ var Defaults = map[string]interface{}{
 	"dice-logfile":         "dice.log",
 	"api-server-logfile":   "dice.log",
 	"proxy-logfile":        "dice.log",
+	"kv-store-file":        "dice-store",
 	"api-server-port":      "9292",
 	"proxy-port":           "8080",
 	"healthcheck-interval": 15000,

@@ -46,12 +46,13 @@ func (c *CLI) nodeCreateCmd() *cobra.Command {
 		Short: `Create a new node`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			url := args[0]
 			route := "/nodes/create"
 
 			var response types.Response
 
 			if err := c.client.POST(route, types.NodeCreate{
-				URL:               args[0],
+				URL:               url,
 				NodeCreateOptions: options,
 			}, &response); err != nil {
 				return err
@@ -148,7 +149,7 @@ func (c *CLI) nodeInfoCmd() *cobra.Command {
 				return errors.New(nodeInfoResponse.Message)
 			}
 
-			fmt.Printf("%v\n", nodeInfoResponse)
+			fmt.Printf("%v\n", nodeInfoResponse.Data)
 			return nil
 		},
 	}

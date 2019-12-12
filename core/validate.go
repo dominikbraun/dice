@@ -50,6 +50,10 @@ func validateService(service *entity.Service) (bool, string) {
 		return false, "ID must only contain _ and - as special characters"
 	}
 
+	if service.Name == "" {
+		return false, "Name must not be empty"
+	}
+
 	if !urlSafe.MatchString(service.Name) {
 		return false, "Name must only contain _ and - as special characters"
 	}

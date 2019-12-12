@@ -67,3 +67,15 @@ type NodeListResponse struct {
 	Response
 	Data []NodeInfoOutput `json:"data"`
 }
+
+// ServiceInfoOutputResponse carrying a ServiceInfoOutput.
+type ServiceInfoOutputResponse struct {
+	Response
+	Data ServiceInfoOutput `json:"data"`
+}
+
+// InstanceInfoOutputResponse carrying a InstanceInfoOutput.
+type InstanceInfoOutputResponse struct {
+	Response
+	Data InstanceInfoOutput `json:"data"`
+}

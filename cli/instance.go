@@ -15,8 +15,11 @@
 package cli
 
 import (
+	"errors"
+	"fmt"
 	"github.com/dominikbraun/dice/types"
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 // instanceCmd creates and implements the `instance` command. The instance
@@ -43,7 +46,31 @@ func (c *CLI) instanceCreateCmd() *cobra.Command {
 		Short: `Create a new service instance`,
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			serviceRef := args[0]
+			nodeRef := args[1]
+
+			port, err := strconv.ParseUint(args[2], 0, 16)
+			if err != nil {
+				return fmt.Errorf("`%s` is not a valid port", args[2])
+			}
+
+			route := "/instances/create"
+
+			var response types.Response
+
+			if err := c.client.POST(route, types.InstanceCreate{
+				ServiceRef:            serviceRef,
+				NodeRef:               nodeRef,
+				Port:                  uint16(port),
+				InstanceCreateOptions: options,
+			}, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
 			return nil
 		},
 	}
@@ -62,7 +89,19 @@ func (c *CLI) instanceAttachCmd() *cobra.Command {
 		Short: `Attach an existing service instance`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			instanceRef := args[0]
+			route := "/instances/" + instanceRef + "/attach"
+
+			var response types.Response
+
+			if err := c.client.POST(route, nil, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
 			return nil
 		},
 	}
@@ -77,7 +116,19 @@ func (c *CLI) instanceDetachCmd() *cobra.Command {
 		Short: `Detach an existing service instance`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			instanceRef := args[0]
+			route := "/instances/" + instanceRef + "/detach"
+
+			var response types.Response
+
+			if err := c.client.POST(route, nil, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
 			return nil
 		},
 	}
@@ -94,7 +145,20 @@ func (c *CLI) instanceInfoCmd() *cobra.Command {
 		Short: `Print information for a service instance`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			instanceRef := args[0]
+			route := "/instances/" + instanceRef + "/info"
+
+			var instanceInfoResponse types.InstanceInfoOutputResponse
+
+			if err := c.client.POST(route, nil, &instanceInfoResponse); err != nil {
+				return err
+			}
+
+			if !instanceInfoResponse.Success {
+				return errors.New(instanceInfoResponse.Message)
+			}
+
+			fmt.Printf("%v\n", instanceInfoResponse.Data)
 			return nil
 		},
 	}

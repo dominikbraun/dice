@@ -16,6 +16,8 @@
 package cli
 
 import (
+	"errors"
+	"fmt"
 	"github.com/dominikbraun/dice/types"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +46,22 @@ func (c *CLI) serviceCreateCmd() *cobra.Command {
 		Short: `Create a new service`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			name := args[0]
+			route := "/services/create"
+
+			var response types.Response
+
+			if err := c.client.POST(route, types.ServiceCreate{
+				Name:                 name,
+				ServiceCreateOptions: options,
+			}, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
 			return nil
 		},
 	}
@@ -62,7 +79,19 @@ func (c *CLI) serviceEnableCmd() *cobra.Command {
 		Short: `Enable an existing service`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			serviceRef := args[0]
+			route := "/services/" + serviceRef + "/enable"
+
+			var response types.Response
+
+			if err := c.client.POST(route, nil, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
 			return nil
 		},
 	}
@@ -77,7 +106,19 @@ func (c *CLI) serviceDisableCmd() *cobra.Command {
 		Short: `Disable an existing service`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			serviceRef := args[0]
+			route := "/services/" + serviceRef + "/disable"
+
+			var response types.Response
+
+			if err := c.client.POST(route, nil, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
 			return nil
 		},
 	}
@@ -94,7 +135,20 @@ func (c *CLI) serviceInfoCmd() *cobra.Command {
 		Short: `Print information for a service`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			serviceRef := args[0]
+			route := "/services/" + serviceRef + "/info"
+
+			var serviceInfoResponse types.ServiceInfoOutputResponse
+
+			if err := c.client.POST(route, nil, &serviceInfoResponse); err != nil {
+				return err
+			}
+
+			if !serviceInfoResponse.Success {
+				return errors.New(serviceInfoResponse.Message)
+			}
+
+			fmt.Printf("%v\n", serviceInfoResponse.Data)
 			return nil
 		},
 	}

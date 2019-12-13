@@ -101,7 +101,7 @@ func (hc *HealthCheck) checkServices() {
 // pingInstance reads the address from an instance and attempts to establish a
 // connection to that address. The dialer will use the configured timeout.
 func (hc *HealthCheck) pingInstance(node *entity.Node, instance *entity.Instance) bool {
-	address := fmt.Sprintf("%s:%v", node.URL.Hostname(), instance.Port)
+	address := fmt.Sprintf("%s:%v", node.URL.Hostname(), instance.URL)
 
 	conn, err := net.DialTimeout("tcp", address, hc.config.Timeout)
 	if err != nil {

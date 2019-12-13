@@ -25,7 +25,7 @@ import (
 
 var (
 	ErrNodeNotFound      = errors.New("node could not be found")
-	ErrNodeAlreadyExists = errors.New("a node with the given ID already exists")
+	ErrNodeAlreadyExists = errors.New("the given node already exists")
 )
 
 // CreateNode creates a new node with the provided URL and stores the node
@@ -209,12 +209,14 @@ func (d *Dice) nodeIsUnique(node *entity.Node) (bool, error) {
 		return false, nil
 	}
 
-	storedNode, err = d.findNode(entity.NodeReference(node.Name))
+	if node.Name != "" {
+		storedNode, err = d.findNode(entity.NodeReference(node.Name))
 
-	if err != nil {
-		return false, err
-	} else if storedNode != nil {
-		return false, nil
+		if err != nil {
+			return false, err
+		} else if storedNode != nil {
+			return false, nil
+		}
 	}
 
 	storedNode, err = d.findNode(entity.NodeReference(node.URL.String()))

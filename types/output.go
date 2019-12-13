@@ -40,7 +40,7 @@ type InstanceInfoOutput struct {
 	Name       string `json:"name"`
 	ServiceID  string `json:"service_id"`
 	NodeID     string `json:"node_id"`
-	Port       uint16 `json:"port"`
+	URL        string `json:"url"`
 	Version    string `json:"version"`
 	IsAttached bool   `json:"is_attached"`
 	IsAlive    bool   `json:"is_alive"`

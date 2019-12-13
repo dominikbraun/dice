@@ -44,7 +44,7 @@ type ServiceCreate struct {
 type InstanceCreate struct {
 	ServiceRef string `json:"service_ref"`
 	NodeRef    string `json:"node_ref"`
-	Port       uint16 `json:"port"`
+	URL        string `json:"url"`
 	InstanceCreateOptions
 }
 

@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"github.com/dominikbraun/dice/types"
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 // instanceCmd creates and implements the `instance` command. The instance
@@ -48,11 +47,7 @@ func (c *CLI) instanceCreateCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceRef := args[0]
 			nodeRef := args[1]
-
-			port, err := strconv.ParseUint(args[2], 0, 16)
-			if err != nil {
-				return fmt.Errorf("`%s` is not a valid port", args[2])
-			}
+			nodeURL := args[2]
 
 			route := "/instances/create"
 
@@ -61,7 +56,7 @@ func (c *CLI) instanceCreateCmd() *cobra.Command {
 			if err := c.client.POST(route, types.InstanceCreate{
 				ServiceRef:            serviceRef,
 				NodeRef:               nodeRef,
-				Port:                  uint16(port),
+				URL:                   nodeURL,
 				InstanceCreateOptions: options,
 			}, &response); err != nil {
 				return err

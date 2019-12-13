@@ -38,7 +38,7 @@ func (c *Controller) CreateInstance() http.HandlerFunc {
 		serviceRef := entity.ServiceReference(instanceCreate.ServiceRef)
 		nodeRef := entity.NodeReference(instanceCreate.NodeRef)
 
-		if err := c.backend.CreateInstance(serviceRef, nodeRef, instanceCreate.Port, instanceCreate.InstanceCreateOptions); err != nil {
+		if err := c.backend.CreateInstance(serviceRef, nodeRef, instanceCreate.URL, instanceCreate.InstanceCreateOptions); err != nil {
 			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}

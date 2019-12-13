@@ -48,7 +48,7 @@ type ServiceTarget interface {
 
 // InstanceTarget prescribes methods for backends working with instances.
 type InstanceTarget interface {
-	CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, port uint16, options types.InstanceCreateOptions) error
+	CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, url string, options types.InstanceCreateOptions) error
 	AttachInstance(instanceRef entity.InstanceReference) error
 	DetachInstance(instanceRef entity.InstanceReference) error
 	InstanceInfo(instanceRef entity.InstanceReference) (types.InstanceInfoOutput, error)

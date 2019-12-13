@@ -162,23 +162,23 @@ func (c *CLI) serviceInfoCmd() *cobra.Command {
 func (c *CLI) serviceListCmd() *cobra.Command {
 	var options types.ServiceListOptions
 
-	nodeListCmd := cobra.Command{
+	serviceListCmd := cobra.Command{
 		Use:   "list",
 		Short: `List enabled services`,
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			route := "/services/list"
-			var serviceListReponse types.ServiceListResponse
+			var serviceListResponse types.ServiceListResponse
 
-			if err := c.client.POST(route, options, &serviceListReponse); err != nil {
+			if err := c.client.POST(route, options, &serviceListResponse); err != nil {
 				return err
 			}
 
-			if !serviceListReponse.Success {
-				return errors.New(serviceListReponse.Message)
+			if !serviceListResponse.Success {
+				return errors.New(serviceListResponse.Message)
 			}
 
-			for _, n := range serviceListReponse.Data {
+			for _, n := range serviceListResponse.Data {
 				fmt.Printf("%v\n", n)
 			}
 
@@ -186,7 +186,7 @@ func (c *CLI) serviceListCmd() *cobra.Command {
 		},
 	}
 
-	nodeListCmd.Flags().BoolVarP(&options.All, "all", "a", false, `list all services`)
+	serviceListCmd.Flags().BoolVarP(&options.All, "all", "a", false, `list all services`)
 
-	return &nodeListCmd
+	return &serviceListCmd
 }

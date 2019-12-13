@@ -86,3 +86,24 @@ func (c *Controller) ServiceInfo() http.HandlerFunc {
 		respond(w, r, http.StatusOK, types.Response{Success: true, Data: serviceInfo})
 	}
 }
+
+// ListServices handles a POST request for retrieving a list of services. The
+// request body has to contain valid ServiceListOptions.
+func (c *Controller) ListServices() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var options types.ServiceListOptions
+
+		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
+			return
+		}
+
+		nodeList, err := c.backend.ListServices(options)
+		if err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: nodeList})
+	}
+}

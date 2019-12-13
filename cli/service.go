@@ -157,3 +157,36 @@ func (c *CLI) serviceInfoCmd() *cobra.Command {
 
 	return &serviceInfoCmd
 }
+
+// serviceListCmd creates and implements the `service list` command.
+func (c *CLI) serviceListCmd() *cobra.Command {
+	var options types.ServiceListOptions
+
+	nodeListCmd := cobra.Command{
+		Use:   "list",
+		Short: `List enabled services`,
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			route := "/services/list"
+			var serviceListReponse types.ServiceListResponse
+
+			if err := c.client.POST(route, options, &serviceListReponse); err != nil {
+				return err
+			}
+
+			if !serviceListReponse.Success {
+				return errors.New(serviceListReponse.Message)
+			}
+
+			for _, n := range serviceListReponse.Data {
+				fmt.Printf("%v\n", n)
+			}
+
+			return nil
+		},
+	}
+
+	nodeListCmd.Flags().BoolVarP(&options.All, "all", "a", false, `list all services`)
+
+	return &nodeListCmd
+}

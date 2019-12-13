@@ -47,6 +47,11 @@ type ServiceInfoOptions struct {
 	Quiet bool `json:"quiet"`
 }
 
+// ServiceListOptions combines all user options for listing services.
+type ServiceListOptions struct {
+	All bool `json:"all"`
+}
+
 // InstanceCreateOptions combines all user options for creating a new
 // instance. It serves as a Data Transfer Object for the Dice core.
 type InstanceCreateOptions struct {

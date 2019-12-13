@@ -74,6 +74,14 @@ type ServiceInfoOutputResponse struct {
 	Data ServiceInfoOutput `json:"data"`
 }
 
+// ServiceListResponse is an API response that carries a list of services.
+// At the moment, this is a list of ServiceInfoOutput as returned by the
+// Dice core.
+type ServiceListResponse struct {
+	Response
+	Data []ServiceInfoOutput `json:"data"`
+}
+
 // InstanceInfoOutputResponse carrying a InstanceInfoOutput.
 type InstanceInfoOutputResponse struct {
 	Response

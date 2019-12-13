@@ -18,6 +18,7 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
 )
 
@@ -122,6 +123,40 @@ func (d *Dice) ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInf
 	}
 
 	return serviceInfo, nil
+}
+
+// ListServices returns a list of stored services. By default, disabled
+// services will be ignored. They only will be returned if the options say
+// to do so.
+func (d *Dice) ListServices(options types.ServiceListOptions) ([]types.ServiceInfoOutput, error) {
+	filter := store.AllServicesFilter
+
+	if !options.All {
+		filter = func(service *entity.Service) bool {
+			return service.IsEnabled
+		}
+	}
+
+	services, err := d.kvStore.FindServices(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	serviceList := make([]types.ServiceInfoOutput, len(services))
+
+	for i, s := range services {
+		info := types.ServiceInfoOutput{
+			ID:              s.ID,
+			Name:            s.Name,
+			Hostnames:       s.Hostnames,
+			TargetVersion:   s.TargetVersion,
+			BalancingMethod: s.BalancingMethod,
+			IsEnabled:       s.IsEnabled,
+		}
+		serviceList[i] = info
+	}
+
+	return serviceList, nil
 }
 
 // findService attempts to find a node in the key-value store that matches

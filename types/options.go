@@ -12,33 +12,61 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package types provides common types shared across packages.
 package types
 
+// NodeCreateOptions combines all user options for creating a new node.
+// It serves as a Data Transfer Object for the Dice core.
 type NodeCreateOptions struct {
 	Name   string `json:"name"`
 	Weight uint8  `json:"weight"`
 	Attach bool   `json:"attach"`
 }
 
+// NodeInfoOptions combines all user options for printing information
+// about a node.
 type NodeInfoOptions struct {
 	Quiet bool `json:"quiet"`
 }
 
+// NodeInfoOptions combines all user options for listing nodes.
+type NodeListOptions struct {
+	All bool `json:"all"`
+}
+
+// ServiceCreateOptions combines all user options for creating a new
+// service. It serves as a Data Transfer Object for the Dice core.
 type ServiceCreateOptions struct {
 	Balancing string `json:"balancing"`
 	Enable    bool   `json:"enable"`
 }
 
+// ServiceInfoOptions combines all user options for printing information
+// about an service.
 type ServiceInfoOptions struct {
 	Quiet bool `json:"quiet"`
 }
 
+// ServiceListOptions combines all user options for listing services.
+type ServiceListOptions struct {
+	All bool `json:"all"`
+}
+
+// InstanceCreateOptions combines all user options for creating a new
+// instance. It serves as a Data Transfer Object for the Dice core.
 type InstanceCreateOptions struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 	Attach  bool   `json:"attach"`
 }
 
+// InstanceInfoOptions combines all user options for printing information
+// about an instance.
 type InstanceInfoOptions struct {
 	Quiet bool `json:"quiet"`
+}
+
+// InstanceListOptions combines all user options for listing instances.
+type InstanceListOptions struct {
+	All bool `json:"all"`
 }

@@ -21,7 +21,6 @@ import (
 	"github.com/dominikbraun/dice/types"
 	"github.com/go-chi/chi"
 	"net/http"
-	"strconv"
 )
 
 // CreateInstance handles a POST request for creating a new instance. The
@@ -29,33 +28,22 @@ import (
 // and instance URL as well as associated options.
 func (c *Controller) CreateInstance() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
+		var instanceCreate types.InstanceCreate
+
+		if err := json.NewDecoder(r.Body).Decode(&instanceCreate); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
 			return
 		}
 
-		serviceRef := entity.ServiceReference(r.Form.Get("service_ref"))
-		nodeRef := entity.NodeReference(r.Form.Get("node_ref"))
+		serviceRef := entity.ServiceReference(instanceCreate.ServiceRef)
+		nodeRef := entity.NodeReference(instanceCreate.NodeRef)
 
-		port, err := strconv.ParseUint(r.Form.Get("url"), 0, 16)
-		if err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidURL.Error())
+		if err := c.backend.CreateInstance(serviceRef, nodeRef, instanceCreate.URL, instanceCreate.InstanceCreateOptions); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		var options types.InstanceCreateOptions
-
-		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData.Error())
-			return
-		}
-
-		if err := c.backend.CreateInstance(serviceRef, nodeRef, uint16(port), options); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
-			return
-		}
-
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -66,10 +54,10 @@ func (c *Controller) AttachInstance() http.HandlerFunc {
 		instanceRef := entity.InstanceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.AttachInstance(instanceRef); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -80,10 +68,10 @@ func (c *Controller) DetachInstance() http.HandlerFunc {
 		instanceRef := entity.InstanceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.DetachInstance(instanceRef); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -95,10 +83,31 @@ func (c *Controller) InstanceInfo() http.HandlerFunc {
 
 		instanceInfo, err := c.backend.InstanceInfo(instanceRef)
 		if err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		respond(w, r, http.StatusOK, instanceInfo)
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: instanceInfo})
+	}
+}
+
+// ListServices handles a POST request for retrieving a list of services. The
+// request body has to contain valid ServiceListOptions.
+func (c *Controller) ListInstances() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var options types.InstanceListOptions
+
+		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
+			return
+		}
+
+		instanceList, err := c.backend.ListInstances(options)
+		if err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: instanceList})
 	}
 }

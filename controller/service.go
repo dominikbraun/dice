@@ -27,26 +27,19 @@ import (
 // request body has to contain the service's name and associated options.
 func (c *Controller) CreateService() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
+		var serviceCreate types.ServiceCreate
+
+		if err := json.NewDecoder(r.Body).Decode(&serviceCreate); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
 			return
 		}
 
-		name := r.Form.Get("name")
-
-		var options types.ServiceCreateOptions
-
-		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData.Error())
+		if err := c.backend.CreateService(serviceCreate.Name, serviceCreate.ServiceCreateOptions); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		if err := c.backend.CreateService(name, options); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
-			return
-		}
-
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -57,10 +50,10 @@ func (c *Controller) EnableService() http.HandlerFunc {
 		serviceRef := entity.ServiceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.EnableService(serviceRef); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -71,10 +64,10 @@ func (c *Controller) DisableService() http.HandlerFunc {
 		serviceRef := entity.ServiceReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.DisableService(serviceRef); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -86,10 +79,31 @@ func (c *Controller) ServiceInfo() http.HandlerFunc {
 
 		serviceInfo, err := c.backend.ServiceInfo(serviceRef)
 		if err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		respond(w, r, http.StatusOK, serviceInfo)
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: serviceInfo})
+	}
+}
+
+// ListServices handles a POST request for retrieving a list of services. The
+// request body has to contain valid ServiceListOptions.
+func (c *Controller) ListServices() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var options types.ServiceListOptions
+
+		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
+			return
+		}
+
+		serviceList, err := c.backend.ListServices(options)
+		if err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: serviceList})
 	}
 }

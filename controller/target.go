@@ -35,6 +35,7 @@ type NodeTarget interface {
 	AttachNode(nodeRef entity.NodeReference) error
 	DetachNode(nodeRef entity.NodeReference) error
 	NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, error)
+	ListNodes(options types.NodeListOptions) ([]types.NodeInfoOutput, error)
 }
 
 // ServiceTarget prescribes methods for backends working with services.
@@ -43,12 +44,14 @@ type ServiceTarget interface {
 	EnableService(serviceRef entity.ServiceReference) error
 	DisableService(serviceRef entity.ServiceReference) error
 	ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInfoOutput, error)
+	ListServices(options types.ServiceListOptions) ([]types.ServiceInfoOutput, error)
 }
 
 // InstanceTarget prescribes methods for backends working with instances.
 type InstanceTarget interface {
-	CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, port uint16, options types.InstanceCreateOptions) error
+	CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, url string, options types.InstanceCreateOptions) error
 	AttachInstance(instanceRef entity.InstanceReference) error
 	DetachInstance(instanceRef entity.InstanceReference) error
 	InstanceInfo(instanceRef entity.InstanceReference) (types.InstanceInfoOutput, error)
+	ListInstances(options types.InstanceListOptions) ([]types.InstanceInfoOutput, error)
 }

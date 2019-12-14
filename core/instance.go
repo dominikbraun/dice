@@ -18,6 +18,7 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
 	"net/url"
 )
@@ -30,7 +31,7 @@ var (
 // CreateInstance creates a new instance with the provided service ID, node
 // ID and port. If the `Attach` option is set, the created instance will be
 // attached immediately.
-func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, port uint16, options types.InstanceCreateOptions) error {
+func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, url string, options types.InstanceCreateOptions) error {
 	service, err := d.findService(serviceRef)
 
 	if err != nil {
@@ -47,9 +48,13 @@ func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity
 		return ErrNodeNotFound
 	}
 
-	instance, err := entity.NewInstance(service.ID, node.ID, port, options)
+	instance, err := entity.NewInstance(service.ID, node.ID, url, options)
 	if err != nil {
 		return err
+	}
+
+	if ok, message := validateInstance(instance); !ok {
+		return errors.New(message)
 	}
 
 	isUnique, err := d.instanceIsUnique(instance)
@@ -122,12 +127,16 @@ func (d *Dice) InstanceInfo(instanceRef entity.InstanceReference) (types.Instanc
 		return types.InstanceInfoOutput{}, err
 	}
 
+	if instance == nil {
+		return types.InstanceInfoOutput{}, err
+	}
+
 	instanceInfo := types.InstanceInfoOutput{
 		ID:         instance.ID,
 		Name:       instance.Name,
 		ServiceID:  instance.ServiceID,
 		NodeID:     instance.NodeID,
-		Port:       instance.Port,
+		URL:        instance.URL,
 		Version:    instance.Version,
 		IsAttached: instance.IsAttached,
 		IsAlive:    instance.IsAlive,
@@ -167,7 +176,7 @@ func (d *Dice) findInstance(instanceRef entity.InstanceReference) (*entity.Insta
 		return instancesByName[0], nil
 	}
 
-	if instanceURL, err := url.Parse(string(instanceRef)); err == nil {
+	if instanceURL, err := url.Parse("//" + string(instanceRef)); err == nil {
 		instanceByURL, err := d.findInstanceByURL(instanceURL)
 
 		if err != nil {
@@ -180,69 +189,79 @@ func (d *Dice) findInstance(instanceRef entity.InstanceReference) (*entity.Insta
 	return nil, nil
 }
 
+// ListInstances returns a list of stored instances. By default, detached
+// instances will be ignored. They only will be returned if the options say
+// to do so.
+func (d *Dice) ListInstances(options types.InstanceListOptions) ([]types.InstanceInfoOutput, error) {
+	filter := store.AllInstancesFilter
+
+	if !options.All {
+		filter = func(instance *entity.Instance) bool {
+			return instance.IsAttached
+		}
+	}
+
+	instances, err := d.kvStore.FindInstances(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	serviceList := make([]types.InstanceInfoOutput, len(instances))
+
+	for i, inst := range instances {
+		info := types.InstanceInfoOutput{
+			ID:         inst.ID,
+			Name:       inst.Name,
+			ServiceID:  inst.ServiceID,
+			NodeID:     inst.NodeID,
+			URL:        inst.URL,
+			Version:    inst.Version,
+			IsAttached: inst.IsAttached,
+			IsAlive:    inst.IsAlive,
+		}
+		serviceList[i] = info
+	}
+
+	return serviceList, nil
+}
+
 // findInstanceByURL takes an URL and searches for an instance that is
 // available under that URL.
-//
-// Unfortunately, an instance is not identified by a full URL, but by a node
-// ID and a port instead. This means that if you want to find an instance by
-// an URL, you have to find a node with the URL's hostname and check if there
-// is an instance with the URL's port deployed to that node.
 func (d *Dice) findInstanceByURL(url *url.URL) (*entity.Instance, error) {
-	nodesByURL, err := d.kvStore.FindNodes(func(node *entity.Node) bool {
-		return node.URL.Hostname() == url.Hostname()
-	})
-
-	if err != nil {
-		return nil, err
-	} else if len(nodesByURL) == 0 {
-		return nil, nil
-	}
-
-	node := nodesByURL[0]
-
 	instancesByNode, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
-		port := string(instance.Port)
-		return instance.NodeID == node.ID && port == url.Port()
+		return instance.URL == url.String()
 	})
 
 	if err != nil {
 		return nil, err
-	} else if len(instancesByNode) == 0 {
-		return nil, nil
+	} else if len(instancesByNode) > 0 {
+		return instancesByNode[0], nil
 	}
 
-	instance := instancesByNode[0]
-
-	return instance, nil
+	return nil, nil
 }
 
 // instanceIsUnique checks if a newly created instance is unique. An instance
 // is unique if no instanceIsUnique with equal identifiers has been found in
 // the key value store.
 func (d *Dice) instanceIsUnique(instance *entity.Instance) (bool, error) {
-	instance, err := d.findInstance(entity.InstanceReference(instance.ID))
-
-	if err != nil {
-		return false, err
-	} else if instance != nil {
-		return false, nil
-	}
-
-	instance, err = d.findInstance(entity.InstanceReference(instance.Name))
-
-	if err != nil {
-		return false, err
-	} else if instance != nil {
-		return false, nil
-	}
-
-	instancesByNode, err := d.kvStore.FindInstances(func(i *entity.Instance) bool {
-		return i.NodeID == instance.NodeID && i.Port == instance.Port
+	instancesByURL, err := d.kvStore.FindInstances(func(i *entity.Instance) bool {
+		return i.URL == instance.URL
 	})
 
 	if err != nil {
 		return false, err
-	} else if len(instancesByNode) > 0 {
+	} else if len(instancesByURL) > 0 {
+		return false, nil
+	}
+
+	instancesByName, err := d.kvStore.FindInstances(func(i *entity.Instance) bool {
+		return i.ServiceID == instance.ServiceID && i.Name == instance.Name
+	})
+
+	if err != nil {
+		return false, err
+	} else if len(instancesByName) > 0 {
 		return false, nil
 	}
 

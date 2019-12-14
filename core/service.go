@@ -18,6 +18,7 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
 )
 
@@ -33,6 +34,10 @@ func (d *Dice) CreateService(name string, options types.ServiceCreateOptions) er
 	service, err := entity.NewService(name, options)
 	if err != nil {
 		return err
+	}
+
+	if ok, message := validateService(service); !ok {
+		return errors.New(message)
 	}
 
 	isUnique, err := d.serviceIsUnique(service)
@@ -104,6 +109,10 @@ func (d *Dice) ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInf
 		return types.ServiceInfoOutput{}, err
 	}
 
+	if service == nil {
+		return types.ServiceInfoOutput{}, ErrServiceNotFound
+	}
+
 	serviceInfo := types.ServiceInfoOutput{
 		ID:              service.ID,
 		Name:            service.Name,
@@ -114,6 +123,40 @@ func (d *Dice) ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInf
 	}
 
 	return serviceInfo, nil
+}
+
+// ListServices returns a list of stored services. By default, disabled
+// services will be ignored. They only will be returned if the options say
+// to do so.
+func (d *Dice) ListServices(options types.ServiceListOptions) ([]types.ServiceInfoOutput, error) {
+	filter := store.AllServicesFilter
+
+	if !options.All {
+		filter = func(service *entity.Service) bool {
+			return service.IsEnabled
+		}
+	}
+
+	services, err := d.kvStore.FindServices(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	serviceList := make([]types.ServiceInfoOutput, len(services))
+
+	for i, s := range services {
+		info := types.ServiceInfoOutput{
+			ID:              s.ID,
+			Name:            s.Name,
+			Hostnames:       s.Hostnames,
+			TargetVersion:   s.TargetVersion,
+			BalancingMethod: s.BalancingMethod,
+			IsEnabled:       s.IsEnabled,
+		}
+		serviceList[i] = info
+	}
+
+	return serviceList, nil
 }
 
 // findService attempts to find a node in the key-value store that matches
@@ -149,20 +192,20 @@ func (d *Dice) findService(serviceRef entity.ServiceReference) (*entity.Service,
 // is unique if no service with equal identifiers has been found in the key
 // value store.
 func (d *Dice) serviceIsUnique(service *entity.Service) (bool, error) {
-	service, err := d.findService(entity.ServiceReference(service.ID))
+	storedService, err := d.findService(entity.ServiceReference(service.ID))
 
 	if err != nil {
 		return false, err
-	} else if service != nil {
+	} else if storedService != nil {
 		return false, nil
 	}
 
 	if service.Name != "" {
-		service, err = d.findService(entity.ServiceReference(service.Name))
+		storedService, err = d.findService(entity.ServiceReference(service.Name))
 
 		if err != nil {
 			return false, err
-		} else if service != nil {
+		} else if storedService != nil {
 			return false, nil
 		}
 	}

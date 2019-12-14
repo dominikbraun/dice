@@ -17,6 +17,7 @@ package controller
 
 import (
 	"errors"
+	"github.com/dominikbraun/dice/types"
 	"github.com/go-chi/render"
 	"net/http"
 )
@@ -31,7 +32,8 @@ var (
 // HTTP handling methods which will read all required data from the request,
 // invoke the core functions and eventually return the core's responses.
 type Controller struct {
-	backend Target
+	backend      Target
+	ReloadSignal chan bool
 }
 
 // New creates a new Controller instance that uses the provided Target.
@@ -45,7 +47,17 @@ func New(backend Target) *Controller {
 
 // respond sets an HTTP status code and renders any given response value.
 // Note that a return statement is required after calling respond.
-func respond(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
+func respond(w http.ResponseWriter, r *http.Request, status int, response types.Response) {
 	w.WriteHeader(status)
-	render.JSON(w, r, v)
+	render.JSON(w, r, response)
+}
+
+// respondError does the same as respond, however it takes an error as value
+// and creates an appropriate response on its own using that error.
+func respondError(w http.ResponseWriter, r *http.Request, status int, err error) {
+	response := types.Response{
+		Success: false,
+		Message: err.Error(),
+	}
+	respond(w, r, status, response)
 }

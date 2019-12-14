@@ -15,10 +15,14 @@
 package cli
 
 import (
+	"errors"
+	"fmt"
 	"github.com/dominikbraun/dice/types"
 	"github.com/spf13/cobra"
 )
 
+// instanceCmd creates and implements the `instance` command. The instance
+// command itself does not have any functionality.
 func (c *CLI) instanceCmd() *cobra.Command {
 	instanceCmd := cobra.Command{
 		Use:   "instance",
@@ -32,6 +36,7 @@ func (c *CLI) instanceCmd() *cobra.Command {
 	return &instanceCmd
 }
 
+// instanceCreateCmd creates and implements the `instance create` command.
 func (c *CLI) instanceCreateCmd() *cobra.Command {
 	var options types.InstanceCreateOptions
 
@@ -40,7 +45,27 @@ func (c *CLI) instanceCreateCmd() *cobra.Command {
 		Short: `Create a new service instance`,
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			serviceRef := args[0]
+			nodeRef := args[1]
+			nodeURL := args[2]
+
+			route := "/instances/create"
+
+			var response types.Response
+
+			if err := c.client.POST(route, types.InstanceCreate{
+				ServiceRef:            serviceRef,
+				NodeRef:               nodeRef,
+				URL:                   nodeURL,
+				InstanceCreateOptions: options,
+			}, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
 			return nil
 		},
 	}
@@ -52,13 +77,26 @@ func (c *CLI) instanceCreateCmd() *cobra.Command {
 	return &instanceCreateCmd
 }
 
+// instanceAttachCmd creates and implements the `instance attach` command.
 func (c *CLI) instanceAttachCmd() *cobra.Command {
 	instanceAttachCmd := cobra.Command{
 		Use:   "attach <ID|NAME|URL>",
 		Short: `Attach an existing service instance`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			instanceRef := args[0]
+			route := "/instances/" + instanceRef + "/attach"
+
+			var response types.Response
+
+			if err := c.client.POST(route, nil, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
 			return nil
 		},
 	}
@@ -66,13 +104,26 @@ func (c *CLI) instanceAttachCmd() *cobra.Command {
 	return &instanceAttachCmd
 }
 
+// instanceDetachCmd creates and implements the `instance detach` command.
 func (c *CLI) instanceDetachCmd() *cobra.Command {
 	instanceDetachCmd := cobra.Command{
 		Use:   "detach <ID|NAME|URL>",
 		Short: `Detach an existing service instance`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			instanceRef := args[0]
+			route := "/instances/" + instanceRef + "/detach"
+
+			var response types.Response
+
+			if err := c.client.POST(route, nil, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
 			return nil
 		},
 	}
@@ -80,6 +131,7 @@ func (c *CLI) instanceDetachCmd() *cobra.Command {
 	return &instanceDetachCmd
 }
 
+// instanceInfoCmd creates and implements the `instance info` command.
 func (c *CLI) instanceInfoCmd() *cobra.Command {
 	var options types.InstanceInfoOptions
 
@@ -88,7 +140,20 @@ func (c *CLI) instanceInfoCmd() *cobra.Command {
 		Short: `Print information for a service instance`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = cmd.Help()
+			instanceRef := args[0]
+			route := "/instances/" + instanceRef + "/info"
+
+			var instanceInfoResponse types.InstanceInfoOutputResponse
+
+			if err := c.client.POST(route, nil, &instanceInfoResponse); err != nil {
+				return err
+			}
+
+			if !instanceInfoResponse.Success {
+				return errors.New(instanceInfoResponse.Message)
+			}
+
+			fmt.Printf("%v\n", instanceInfoResponse.Data)
 			return nil
 		},
 	}
@@ -96,4 +161,37 @@ func (c *CLI) instanceInfoCmd() *cobra.Command {
 	instanceInfoCmd.Flags().BoolVarP(&options.Quiet, "quiet", "q", false, `only print the ID`)
 
 	return &instanceInfoCmd
+}
+
+// instanceListCmd creates and implements the `instance list` command.
+func (c *CLI) instanceListCmd() *cobra.Command {
+	var options types.InstanceListOptions
+
+	instanceListCmd := cobra.Command{
+		Use:   "list",
+		Short: `List attached instances`,
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			route := "/instances/list"
+			var instanceListResponse types.InstanceListResponse
+
+			if err := c.client.POST(route, options, &instanceListResponse); err != nil {
+				return err
+			}
+
+			if !instanceListResponse.Success {
+				return errors.New(instanceListResponse.Message)
+			}
+
+			for _, n := range instanceListResponse.Data {
+				fmt.Printf("%v\n", n)
+			}
+
+			return nil
+		},
+	}
+
+	instanceListCmd.Flags().BoolVarP(&options.All, "all", "a", false, `list all instances`)
+
+	return &instanceListCmd
 }

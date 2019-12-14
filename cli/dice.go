@@ -12,15 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package cli provides the Dice CLI commands and their implementation.
 package cli
 
 import "github.com/spf13/cobra"
 
+// diceCmd creates and implements the `dice` command, which is also the
+// root command. The dice command itself does not have any functionality.
 func (c *CLI) diceCmd() *cobra.Command {
 	diceCmd := cobra.Command{
-		Use:   "dice",
-		Short: `Simple load balancing for non-microservice infrastructures`,
-		Long:  `Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice infrastructures.`,
+		Use:          "dice",
+		Short:        `Simple load balancing for non-microservice infrastructures`,
+		Long:         `Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice infrastructures.`,
+		Version:      "0.0.0",
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_ = cmd.Help()
 			return nil

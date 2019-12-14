@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package cli provides the Dice CLI commands and their implementation.
 package cli
 
 import (
@@ -19,11 +20,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// CLI represents the Dice command line interface. It includes all commands
+// including arguments and options as well as the HTTP client to call the
+// Dice REST API. CLI provides all these commands in its methods.
 type CLI struct {
 	client  *client.Client
 	rootCmd *cobra.Command
 }
 
+// New creates a new CLI instance that uses the provided HTTP client.
 func New(client *client.Client) *CLI {
 	c := CLI{
 		client: client,
@@ -33,6 +38,9 @@ func New(client *client.Client) *CLI {
 	return &c
 }
 
+// buildCommands builds all CLI commands by calling the factory functions
+// and mounting the child commands to the main commands. All commands have
+// to be registered here, otherwise they won't be visible to the user.
 func (c *CLI) buildCommands() {
 	nodeCmd := c.nodeCmd()
 
@@ -40,6 +48,7 @@ func (c *CLI) buildCommands() {
 	nodeCmd.AddCommand(c.nodeAttachCmd())
 	nodeCmd.AddCommand(c.nodeDetachCmd())
 	nodeCmd.AddCommand(c.nodeInfoCmd())
+	nodeCmd.AddCommand(c.nodeListCmd())
 
 	serviceCmd := c.serviceCmd()
 
@@ -47,6 +56,7 @@ func (c *CLI) buildCommands() {
 	serviceCmd.AddCommand(c.serviceEnableCmd())
 	serviceCmd.AddCommand(c.serviceDisableCmd())
 	serviceCmd.AddCommand(c.serviceInfoCmd())
+	serviceCmd.AddCommand(c.serviceListCmd())
 
 	instanceCmd := c.instanceCmd()
 
@@ -54,16 +64,24 @@ func (c *CLI) buildCommands() {
 	instanceCmd.AddCommand(c.instanceAttachCmd())
 	instanceCmd.AddCommand(c.instanceDetachCmd())
 	instanceCmd.AddCommand(c.instanceInfoCmd())
+	instanceCmd.AddCommand(c.instanceListCmd())
+
+	configCmd := c.configCmd()
+
+	configCmd.AddCommand(c.configReloadCmd())
 
 	diceCmd := c.diceCmd()
 
 	diceCmd.AddCommand(nodeCmd)
 	diceCmd.AddCommand(serviceCmd)
 	diceCmd.AddCommand(instanceCmd)
+	diceCmd.AddCommand(configCmd)
 
 	c.rootCmd = diceCmd
 }
 
+// Execute runs the CLI. This means that the command line arguments used
+// for running the binary get parsed and processed by cobra.
 func (c *CLI) Execute() error {
 	return c.rootCmd.Execute()
 }

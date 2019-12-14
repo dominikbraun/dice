@@ -28,30 +28,25 @@ import (
 // body has to contain the node's URL and associated options.
 func (c *Controller) CreateNode() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			respond(w, r, http.StatusInternalServerError, ErrInternalServerError.Error())
+		var nodeCreate types.NodeCreate
+
+		if err := json.NewDecoder(r.Body).Decode(&nodeCreate); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
 			return
 		}
 
-		nodeURL, err := url.Parse(r.Form.Get("url"))
+		nodeURL, err := url.Parse(nodeCreate.URL)
 		if err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidURL.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidURL)
 			return
 		}
 
-		var options types.NodeCreateOptions
-
-		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData.Error())
+		if err := c.backend.CreateNode(nodeURL, nodeCreate.NodeCreateOptions); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		if err := c.backend.CreateNode(nodeURL, options); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
-			return
-		}
-
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -62,10 +57,10 @@ func (c *Controller) AttachNode() http.HandlerFunc {
 		nodeRef := entity.NodeReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.AttachNode(nodeRef); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -76,10 +71,10 @@ func (c *Controller) DetachNode() http.HandlerFunc {
 		nodeRef := entity.NodeReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.DetachNode(nodeRef); err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 
-		respond(w, r, http.StatusOK, true)
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }
 
@@ -91,10 +86,31 @@ func (c *Controller) NodeInfo() http.HandlerFunc {
 
 		nodeInfo, err := c.backend.NodeInfo(nodeRef)
 		if err != nil {
-			respond(w, r, http.StatusUnprocessableEntity, err.Error())
+			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		respond(w, r, http.StatusOK, nodeInfo)
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: nodeInfo})
+	}
+}
+
+// ListNodes handles a POST request for retrieving a list of nodes. The request
+// body has to contain valid NodeListOptions.
+func (c *Controller) ListNodes() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var options types.NodeListOptions
+
+		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
+			return
+		}
+
+		nodeList, err := c.backend.ListNodes(options)
+		if err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: nodeList})
 	}
 }

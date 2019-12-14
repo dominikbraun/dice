@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+// Package controller provides methods for handling REST requests.
+package controller
 
-var Defaults = map[string]interface{}{
-	"dice-logfile":         "dice.log",
-	"api-server-logfile":   "dice.log",
-	"proxy-logfile":        "dice.log",
-	"kv-store-file":        "dice-store",
-	"api-server-port":      "9292",
-	"proxy-port":           "8080",
-	"healthcheck-interval": 15000,
-	"healthcheck-timeout":  5000,
+import (
+	"github.com/dominikbraun/dice/types"
+	"net/http"
+)
+
+// ReloadConfig handles a POST request for reloading the configuration.
+func (c *Controller) ReloadConfig() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		c.ReloadSignal <- true
+		respond(w, r, http.StatusOK, types.Response{Success: true})
+	}
 }

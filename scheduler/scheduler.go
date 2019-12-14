@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package scheduler provides scheduler implementations for load balancing.
 package scheduler
 
 import (
@@ -19,6 +20,7 @@ import (
 	"github.com/dominikbraun/dice/registry"
 )
 
+// BalancingMethod describes a load balancing algorithm.
 type BalancingMethod string
 
 const (
@@ -32,6 +34,8 @@ var (
 	ErrUnsupportedMethod = errors.New("balancing method is not supported")
 )
 
+// New creates a new Scheduler instance depending on the provided balancing
+// method. The particular instance has read-only access to the deployments.
 func New(deployments *[]registry.Deployment, method BalancingMethod) (registry.Scheduler, error) {
 	switch method {
 	case WeightedRoundRobinBalancing:

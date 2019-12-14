@@ -15,11 +15,8 @@
 package config
 
 import (
-	"errors"
 	"github.com/spf13/viper"
 )
-
-var ErrConfigNotFound = errors.New("configuration file dice.yml not found")
 
 type Reader interface {
 	Get(key string) interface{}
@@ -39,7 +36,8 @@ func NewConfig(filename string) (Reader, error) {
 
 	if err := r.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return nil, ErrConfigNotFound
+			println("Warning: Configuration file not found. Using default values.")
+			return r, nil
 		}
 		return nil, err
 	}

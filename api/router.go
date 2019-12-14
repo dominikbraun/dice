@@ -44,6 +44,7 @@ func (s *Server) mountRoutes() {
 
 	r.Route("/nodes", func(r chi.Router) {
 		r.Post("/create", s.controller.CreateNode())
+		r.Post("/list", s.controller.ListNodes())
 
 		r.Route("/{ref}", func(r chi.Router) {
 			r.Post("/attach", s.controller.AttachNode())
@@ -54,6 +55,7 @@ func (s *Server) mountRoutes() {
 
 	r.Route("/services", func(r chi.Router) {
 		r.Post("/create", s.controller.CreateService())
+		r.Post("/list", s.controller.ListServices())
 
 		r.Route("/{ref}", func(r chi.Router) {
 			r.Post("/enable", s.controller.EnableService())
@@ -64,12 +66,17 @@ func (s *Server) mountRoutes() {
 
 	r.Route("/instances", func(r chi.Router) {
 		r.Post("/create", s.controller.CreateInstance())
+		r.Post("/list", s.controller.ListInstances())
 
 		r.Route("/{ref}", func(r chi.Router) {
 			r.Post("/attach", s.controller.AttachInstance())
 			r.Post("/detach", s.controller.DetachInstance())
 			r.Post("/info", s.controller.InstanceInfo())
 		})
+	})
+
+	r.Route("/config", func(r chi.Router) {
+		r.Post("/reload", s.controller.ReloadConfig())
 	})
 
 	s.router.Mount("/v1", r)

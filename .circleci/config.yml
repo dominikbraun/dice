@@ -9,7 +9,7 @@ executors:
           GO111MODULE: "on"
 
 jobs:
-  dice-build:
+  dice-test:
     executor: go-container
     steps:
       - checkout
@@ -20,6 +20,28 @@ jobs:
             - go-mod-v1-
             - git-v1-{{ .Branch }}-{{ .Revision }}
             - git-v1-{{ .Branch }}
+      - run: go mod download
+      - save_cache:
+          key: go-mod-v1-{{ .Branch }}-{{ checksum "go.mod" }}
+          paths:
+            - /go/pkg
+      - save_cache:
+          key: git-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
+      - run: make test
+
+  dice-build:
+    executor: go-container
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - go-mod-v1-{{ .Branch }}-{{ checksum "go.mod" }}
+          - go-mod-v1-{{ .Branch }}-
+          - go-mod-v1-
+          - git-v1-{{ .Branch }}-{{ .Revision }}
+          - git-v1-{{ .Branch }}
       - run: go mod download
       - save_cache:
           key: go-mod-v1-{{ .Branch }}-{{ checksum "go.mod" }}
@@ -69,6 +91,7 @@ workflows:
   version: 2
   dice-ci:
     jobs:
+      - dice-test
       - dice-build
       - dice-exec:
           requires:

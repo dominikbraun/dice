@@ -35,7 +35,7 @@ type Instance struct {
 	Name          string    `json:"name"`
 	ServiceID     string    `json:"service_id"`
 	NodeID        string    `json:"node_id"`
-	Port          uint16    `json:"port"`
+	URL           string    `json:"url"`
 	Version       string    `json:"version"`
 	IsAttached    bool      `json:"is_attached"`
 	IsUpdated     bool      `json:"is_updated"`
@@ -45,7 +45,7 @@ type Instance struct {
 }
 
 // NewInstance creates a new Instance instance. It doesn't guarantee uniqueness.
-func NewInstance(serviceID, nodeID string, port uint16, options types.InstanceCreateOptions) (*Instance, error) {
+func NewInstance(serviceID, nodeID string, url string, options types.InstanceCreateOptions) (*Instance, error) {
 	uuid, err := generateEntityID()
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func NewInstance(serviceID, nodeID string, port uint16, options types.InstanceCr
 		Name:          options.Name,
 		ServiceID:     serviceID,
 		NodeID:        nodeID,
-		Port:          port,
+		URL:           url,
 		Version:       options.Version,
 		IsAttached:    options.Attach,
 		IsUpdated:     false,

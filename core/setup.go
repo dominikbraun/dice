@@ -51,7 +51,13 @@ func (d *Dice) setupConfig() error {
 func (d *Dice) setupKVStore() error {
 	var err error
 
-	if d.kvStore, err = store.NewKV(kvStorePath); err != nil {
+	if d.kvStore != nil {
+		d.kvStore.Close()
+	}
+
+	path := d.config.GetString("kv-store-file")
+
+	if d.kvStore, err = store.NewKVStore(path); err != nil {
 		return err
 	}
 

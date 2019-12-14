@@ -65,11 +65,16 @@ func (c *CLI) buildCommands() {
 	instanceCmd.AddCommand(c.instanceDetachCmd())
 	instanceCmd.AddCommand(c.instanceInfoCmd())
 
+	configCmd := c.configCmd()
+
+	configCmd.AddCommand(c.configReloadCmd())
+
 	diceCmd := c.diceCmd()
 
 	diceCmd.AddCommand(nodeCmd)
 	diceCmd.AddCommand(serviceCmd)
 	diceCmd.AddCommand(instanceCmd)
+	diceCmd.AddCommand(configCmd)
 
 	c.rootCmd = diceCmd
 }

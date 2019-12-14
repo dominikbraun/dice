@@ -56,7 +56,12 @@ type Dice struct {
 // NewDice creates a new Dice instance and invokes all setup methods.
 func NewDice() (*Dice, error) {
 	var d Dice
+	d.setup()
 
+	return &d, nil
+}
+
+func (d *Dice) setup() error {
 	steps := []func() error{
 		d.setupConfig,
 		d.setupKVStore,
@@ -71,41 +76,61 @@ func NewDice() (*Dice, error) {
 
 	for _, setup := range steps {
 		if err := setup(); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	return &d, nil
+	return nil
 }
 
 // Run starts the API and proxy servers. To shut them down gracefully, send
 // an interrupt signal (SIGINT) to the Dice executable. If an error happens
 // while running one of the servers, Dice will be stopped entirely.
 func (d *Dice) Run() error {
-	errors := make(chan error)
+	reloading := true
 
-	go func() {
-		if err := d.proxy.Run(); err != nil {
-			errors <- err
-		}
-	}()
+	for reloading {
+		reloading = false
+		reloadSignal := make(chan bool, 1)
+		errors := make(chan error)
 
-	go func() {
-		if err := d.apiServer.Run(); err != nil {
-			errors <- err
-		}
-	}()
+		go func() {
+			if err := d.proxy.Run(); err != nil {
+				errors <- err
+			}
+		}()
 
-	select {
-	case <-d.interrupt:
-		if err := d.proxy.Shutdown(); err != nil {
-			d.logger.Errorf("Proxy shutdown error: %v", err)
+		go func() {
+			if err := d.apiServer.Run(reloadSignal); err != nil {
+				errors <- err
+			}
+		}()
+
+		select {
+		case <-d.interrupt:
+			if err := d.proxy.Shutdown(); err != nil {
+				d.logger.Errorf("Proxy shutdown error: %v", err)
+			}
+			if err := d.apiServer.Shutdown(); err != nil {
+				d.logger.Errorf("API server shutdown error: %v", err)
+			}
+		case doReload := <-reloadSignal:
+			d.logger.Info("reloading dice")
+			reloadSignal <- false
+
+			if doReload {
+				if err := d.proxy.Shutdown(); err != nil {
+					d.logger.Errorf("Proxy shutdown error: %v", err)
+				}
+				if err := d.apiServer.Shutdown(); err != nil {
+					d.logger.Errorf("API server shutdown error: %v", err)
+				}
+				d.setup()
+				reloading = true
+			}
+		case err := <-errors:
+			return err
 		}
-		if err := d.apiServer.Shutdown(); err != nil {
-			d.logger.Errorf("API server shutdown error: %v", err)
-		}
-	case err := <-errors:
-		return err
 	}
 
 	return nil

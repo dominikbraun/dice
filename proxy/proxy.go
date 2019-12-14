@@ -56,7 +56,10 @@ func (p *Proxy) Run() error {
 }
 
 func (p *Proxy) Shutdown() error {
-	return p.server.Shutdown(context.Background())
+	err := p.server.Shutdown(context.Background())
+	_ = p.server.Close()
+
+	return err
 }
 
 func (p *Proxy) handleRequest() http.Handler {

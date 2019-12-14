@@ -33,11 +33,10 @@ type ServerConfig struct {
 // the provided controller.Controller instance. The listening port has to
 // be secured against remote access.
 type Server struct {
-	config       ServerConfig
-	router       chi.Router
-	server       *http.Server
-	controller   *controller.Controller
-	reloadSignal chan bool
+	config     ServerConfig
+	router     chi.Router
+	server     *http.Server
+	controller *controller.Controller
 }
 
 // NewServer creates a new Server instance and initializes all routes.
@@ -64,8 +63,7 @@ func NewServer(config ServerConfig, controller *controller.Controller) *Server {
 //
 // Unlike ListenAndServe from net/http, Run only returns real errors, meaning
 // that it won't return an error when shutting down.
-func (s *Server) Run(reloadSignal chan bool) error {
-	s.controller.ReloadSignal = reloadSignal
+func (s *Server) Run() error {
 	err := s.server.ListenAndServe()
 
 	if err != nil && err != http.ErrServerClosed {

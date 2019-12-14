@@ -33,13 +33,14 @@ var (
 // invoke the core functions and eventually return the core's responses.
 type Controller struct {
 	backend      Target
-	ReloadSignal chan bool
+	reloadConfig chan<- bool
 }
 
 // New creates a new Controller instance that uses the provided Target.
-func New(backend Target) *Controller {
+func New(backend Target, reloadConfig chan<- bool) *Controller {
 	c := Controller{
-		backend: backend,
+		backend:      backend,
+		reloadConfig: reloadConfig,
 	}
 
 	return &c

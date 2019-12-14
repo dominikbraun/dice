@@ -42,21 +42,25 @@ const (
 //
 // Some deeper explanations can be found at the corresponding components.
 type Dice struct {
-	config      config.Reader
-	kvStore     store.EntityStore
-	registry    *registry.ServiceRegistry
-	healthCheck *healthcheck.HealthCheck
-	controller  *controller.Controller
-	interrupt   chan os.Signal
-	apiServer   *api.Server
-	proxy       *proxy.Proxy
-	logger      log.Logger
+	config       config.Reader
+	reloadConfig chan bool
+	kvStore      store.EntityStore
+	registry     *registry.ServiceRegistry
+	healthCheck  *healthcheck.HealthCheck
+	controller   *controller.Controller
+	interrupt    chan os.Signal
+	apiServer    *api.Server
+	proxy        *proxy.Proxy
+	logger       log.Logger
 }
 
 // NewDice creates a new Dice instance and invokes all setup methods.
 func NewDice() (*Dice, error) {
 	var d Dice
-	d.setup()
+
+	if err := d.setup(); err != nil {
+		return nil, err
+	}
 
 	return &d, nil
 }
@@ -64,6 +68,7 @@ func NewDice() (*Dice, error) {
 func (d *Dice) setup() error {
 	steps := []func() error{
 		d.setupConfig,
+		d.setupReloadConfig,
 		d.setupKVStore,
 		d.setupRegistry,
 		d.setupHealthCheck,
@@ -87,11 +92,9 @@ func (d *Dice) setup() error {
 // an interrupt signal (SIGINT) to the Dice executable. If an error happens
 // while running one of the servers, Dice will be stopped entirely.
 func (d *Dice) Run() error {
-	reloading := true
+	listenForReload := true
 
-	for reloading {
-		reloading = false
-		reloadSignal := make(chan bool, 1)
+	for listenForReload {
 		errors := make(chan error)
 
 		go func() {
@@ -101,10 +104,12 @@ func (d *Dice) Run() error {
 		}()
 
 		go func() {
-			if err := d.apiServer.Run(reloadSignal); err != nil {
+			if err := d.apiServer.Run(); err != nil {
 				errors <- err
 			}
 		}()
+
+		listenForReload = false
 
 		select {
 		case <-d.interrupt:
@@ -114,20 +119,24 @@ func (d *Dice) Run() error {
 			if err := d.apiServer.Shutdown(); err != nil {
 				d.logger.Errorf("API server shutdown error: %v", err)
 			}
-		case doReload := <-reloadSignal:
-			d.logger.Info("reloading dice")
-			reloadSignal <- false
 
-			if doReload {
+		case reload := <-d.reloadConfig:
+			d.logger.Info("reloading Dice")
+
+			if reload {
 				if err := d.proxy.Shutdown(); err != nil {
-					d.logger.Errorf("Proxy shutdown error: %v", err)
+					d.logger.Errorf("proxy shutdown error: %v", err)
 				}
 				if err := d.apiServer.Shutdown(); err != nil {
 					d.logger.Errorf("API server shutdown error: %v", err)
 				}
-				d.setup()
-				reloading = true
+				if err := d.setup(); err != nil {
+					return err
+				}
+
+				listenForReload = true
 			}
+
 		case err := <-errors:
 			return err
 		}

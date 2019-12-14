@@ -47,12 +47,20 @@ func (d *Dice) setupConfig() error {
 	return nil
 }
 
+// setupReloadConfig sets up the channel for triggering a config reload.
+func (d *Dice) setupReloadConfig() error {
+	d.reloadConfig = make(chan bool)
+	return nil
+}
+
 // setupKVStore opens or, if it doesn't exist, creates the key-value store.
 func (d *Dice) setupKVStore() error {
 	var err error
 
 	if d.kvStore != nil {
-		d.kvStore.Close()
+		if err := d.kvStore.Close(); err != nil {
+			return err
+		}
 	}
 
 	path := d.config.GetString("kv-store-file")
@@ -94,7 +102,7 @@ func (d *Dice) setupHealthCheck() error {
 // setupController creates a new Controller instance that utilizes Dice
 // itself as a controller target. It will be used by the API server.
 func (d *Dice) setupController() error {
-	d.controller = controller.New(d)
+	d.controller = controller.New(d, d.reloadConfig)
 	return nil
 }
 

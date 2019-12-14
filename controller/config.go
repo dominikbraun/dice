@@ -23,7 +23,7 @@ import (
 // ReloadConfig handles a POST request for reloading the configuration.
 func (c *Controller) ReloadConfig() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		c.ReloadSignal <- true
+		c.reloadConfig <- true
 		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
 }

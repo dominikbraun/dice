@@ -98,12 +98,12 @@ func (c *Controller) ListServices() http.HandlerFunc {
 			return
 		}
 
-		nodeList, err := c.backend.ListServices(options)
+		serviceList, err := c.backend.ListServices(options)
 		if err != nil {
 			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 
-		respond(w, r, http.StatusOK, types.Response{Success: true, Data: nodeList})
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: serviceList})
 	}
 }

@@ -65,3 +65,8 @@ type InstanceCreateOptions struct {
 type InstanceInfoOptions struct {
 	Quiet bool `json:"quiet"`
 }
+
+// InstanceListOptions combines all user options for listing instances.
+type InstanceListOptions struct {
+	All bool `json:"all"`
+}

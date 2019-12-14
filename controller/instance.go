@@ -90,3 +90,24 @@ func (c *Controller) InstanceInfo() http.HandlerFunc {
 		respond(w, r, http.StatusOK, types.Response{Success: true, Data: instanceInfo})
 	}
 }
+
+// ListServices handles a POST request for retrieving a list of services. The
+// request body has to contain valid ServiceListOptions.
+func (c *Controller) ListInstances() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var options types.InstanceListOptions
+
+		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
+			return
+		}
+
+		instanceList, err := c.backend.ListInstances(options)
+		if err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		respond(w, r, http.StatusOK, types.Response{Success: true, Data: instanceList})
+	}
+}

@@ -162,3 +162,36 @@ func (c *CLI) instanceInfoCmd() *cobra.Command {
 
 	return &instanceInfoCmd
 }
+
+// instanceListCmd creates and implements the `instance list` command.
+func (c *CLI) instanceListCmd() *cobra.Command {
+	var options types.InstanceListOptions
+
+	instanceListCmd := cobra.Command{
+		Use:   "list",
+		Short: `List attached instances`,
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			route := "/instances/list"
+			var instanceListResponse types.InstanceListResponse
+
+			if err := c.client.POST(route, options, &instanceListResponse); err != nil {
+				return err
+			}
+
+			if !instanceListResponse.Success {
+				return errors.New(instanceListResponse.Message)
+			}
+
+			for _, n := range instanceListResponse.Data {
+				fmt.Printf("%v\n", n)
+			}
+
+			return nil
+		},
+	}
+
+	instanceListCmd.Flags().BoolVarP(&options.All, "all", "a", false, `list all instances`)
+
+	return &instanceListCmd
+}

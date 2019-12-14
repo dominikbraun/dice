@@ -53,4 +53,5 @@ type InstanceTarget interface {
 	AttachInstance(instanceRef entity.InstanceReference) error
 	DetachInstance(instanceRef entity.InstanceReference) error
 	InstanceInfo(instanceRef entity.InstanceReference) (types.InstanceInfoOutput, error)
+	ListInstances(options types.InstanceListOptions) ([]types.InstanceInfoOutput, error)
 }

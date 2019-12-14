@@ -62,7 +62,7 @@ type NodeInfoOutputResponse struct {
 }
 
 // NodeListResponse is an API response that carries a list of nodes. At the
-// moment, this is a list of NodeInfoOutput as returned by the Dice core.
+// moment, this is a list of NodeInfoOutputs as returned by the Dice core.
 type NodeListResponse struct {
 	Response
 	Data []NodeInfoOutput `json:"data"`
@@ -75,7 +75,7 @@ type ServiceInfoOutputResponse struct {
 }
 
 // ServiceListResponse is an API response that carries a list of services.
-// At the moment, this is a list of ServiceInfoOutput as returned by the
+// At the moment, this is a list of ServiceInfoOutputs as returned by the
 // Dice core.
 type ServiceListResponse struct {
 	Response
@@ -86,4 +86,12 @@ type ServiceListResponse struct {
 type InstanceInfoOutputResponse struct {
 	Response
 	Data InstanceInfoOutput `json:"data"`
+}
+
+// InstanceListResponse is an API response that carries a list of instances.
+// At the moment, this is a list of InstanceInfoOutputs as returned by the
+// Dice core.
+type InstanceListResponse struct {
+	Response
+	Data []InstanceInfoOutput `json:"data"`
 }

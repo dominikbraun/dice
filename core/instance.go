@@ -18,6 +18,7 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
 	"net/url"
 )
@@ -186,6 +187,42 @@ func (d *Dice) findInstance(instanceRef entity.InstanceReference) (*entity.Insta
 	}
 
 	return nil, nil
+}
+
+// ListInstances returns a list of stored instances. By default, detached
+// instances will be ignored. They only will be returned if the options say
+// to do so.
+func (d *Dice) ListInstances(options types.InstanceListOptions) ([]types.InstanceInfoOutput, error) {
+	filter := store.AllInstancesFilter
+
+	if !options.All {
+		filter = func(instance *entity.Instance) bool {
+			return instance.IsAttached
+		}
+	}
+
+	instances, err := d.kvStore.FindInstances(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	serviceList := make([]types.InstanceInfoOutput, len(instances))
+
+	for i, inst := range instances {
+		info := types.InstanceInfoOutput{
+			ID:         inst.ID,
+			Name:       inst.Name,
+			ServiceID:  inst.ServiceID,
+			NodeID:     inst.NodeID,
+			URL:        inst.URL,
+			Version:    inst.Version,
+			IsAttached: inst.IsAttached,
+			IsAlive:    inst.IsAlive,
+		}
+		serviceList[i] = info
+	}
+
+	return serviceList, nil
 }
 
 // findInstanceByURL takes an URL and searches for an instance that is

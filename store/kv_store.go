@@ -150,6 +150,10 @@ func (kv *KVStore) delete(bucket Bucket, key string) error {
 	return kv.internal.Update(fn)
 }
 
+func (kv *KVStore) Close() error {
+	return kv.internal.Close()
+}
+
 func (kv *KVStore) CreateNode(node *entity.Node) error {
 	value, err := json.Marshal(node)
 	if err != nil {

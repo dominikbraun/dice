@@ -12,35 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+// Package controller provides methods for handling REST requests.
+package controller
 
 import (
-	"github.com/spf13/viper"
+	"github.com/dominikbraun/dice/types"
+	"net/http"
 )
 
-type Reader interface {
-	Get(key string) interface{}
-	GetString(key string) string
-	GetInt(key string) int
-	GetBool(key string) bool
-	SetDefault(key string, value interface{})
-}
-
-func NewConfig(filename string) (Reader, error) {
-	r := viper.New()
-
-	r.SetConfigName(filename)
-	r.AddConfigPath("/etc/dice/")
-	r.AddConfigPath("$HOME/.dice")
-	r.AddConfigPath(".")
-
-	if err := r.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			println("Warning: Configuration file not found. Using default values.")
-			return r, nil
-		}
-		return nil, err
+// ReloadConfig handles a POST request for reloading the configuration.
+func (c *Controller) ReloadConfig() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		c.ReloadSignal <- true
+		respond(w, r, http.StatusOK, types.Response{Success: true})
 	}
-
-	return r, nil
 }

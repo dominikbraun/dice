@@ -32,6 +32,7 @@ type EntityStore interface {
 	NodeStore
 	ServiceStore
 	InstanceStore
+	Close() error
 }
 
 type NodeStore interface {

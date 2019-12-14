@@ -32,7 +32,8 @@ var (
 // HTTP handling methods which will read all required data from the request,
 // invoke the core functions and eventually return the core's responses.
 type Controller struct {
-	backend Target
+	backend      Target
+	ReloadSignal chan bool
 }
 
 // New creates a new Controller instance that uses the provided Target.

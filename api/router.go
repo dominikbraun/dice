@@ -75,5 +75,9 @@ func (s *Server) mountRoutes() {
 		})
 	})
 
+	r.Route("/config", func(r chi.Router) {
+		r.Post("/reload", s.controller.ReloadConfig())
+	})
+
 	s.router.Mount("/v1", r)
 }

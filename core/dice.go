@@ -92,9 +92,7 @@ func (d *Dice) setup() error {
 // an interrupt signal (SIGINT) to the Dice executable. If an error happens
 // while running one of the servers, Dice will be stopped entirely.
 func (d *Dice) Run() error {
-	listenForReload := true
-
-	for listenForReload {
+	for {
 		errors := make(chan error)
 
 		go func() {
@@ -109,8 +107,6 @@ func (d *Dice) Run() error {
 			}
 		}()
 
-		listenForReload = false
-
 		select {
 		case <-d.interrupt:
 			if err := d.proxy.Shutdown(); err != nil {
@@ -119,6 +115,7 @@ func (d *Dice) Run() error {
 			if err := d.apiServer.Shutdown(); err != nil {
 				d.logger.Errorf("API server shutdown error: %v", err)
 			}
+			return nil
 
 		case reload := <-d.reloadConfig:
 			d.logger.Info("reloading Dice")
@@ -133,14 +130,10 @@ func (d *Dice) Run() error {
 				if err := d.setup(); err != nil {
 					return err
 				}
-
-				listenForReload = true
 			}
 
 		case err := <-errors:
 			return err
 		}
 	}
-
-	return nil
 }

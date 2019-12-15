@@ -22,7 +22,7 @@
 
 :bridge_at_night::game_die: Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
 
-### :small_blue_diamond: Included Features
+### :small_blue_diamond::small_orange_diamond: Included Features
 
 * Different load balancing methods for each application
 * Periodic health checks for deployed instances

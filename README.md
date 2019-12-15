@@ -5,7 +5,7 @@
 <br>
 </p>
 
-<h3 align="center">:bridge_at_night::game_die: Dice &ndash; Simple load balancing for non-microservice infrastructures.</h3>
+<h3 align="center">Dice &ndash; Simple load balancing for non-microservice infrastructures.</h3>
 
 <p align="center">
 <br>
@@ -20,7 +20,7 @@
 
 ---
 
-Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
+:bridge_at_night::game_die: Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
 
 ### Included Features
 

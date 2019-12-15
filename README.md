@@ -22,7 +22,7 @@
 
 :bridge_at_night::game_die: Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
 
-### Included Features
+### :small_blue_diamond: Included Features
 
 * Different load balancing methods for each application
 * Periodic health checks for deployed instances
@@ -33,7 +33,7 @@
 * Manage deployments by logical and physical affiliation
 * Dice is passive: Making a service available for load balancing is up to you
 
-### Example
+### :small_blue_diamond: Example
 
 We've got the services _A_, _B_ and _C_. These services may be web applications or authentication services for example. Our infrastructure is simple: There is a _MainServer_ and _AnotherServer_. Servers, virtual machines etc. are known to Dice as _nodes_.
 
@@ -77,12 +77,12 @@ $ dice instance attach MyInstance
 
 We could also use the full instance URL here. `MyInstance` will now receive incoming requests for service _A_.
 
-### Installation
+### :small_blue_diamond: Installation
 
 Download the [latest release of Dice](https://github.com/dominikbraun/dice/releases).
 
 ... Install instructions here ...
 
-### Usage
+### :small_blue_diamond: Usage
 
 Dice is a passive tool. This means that you 

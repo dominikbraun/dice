@@ -37,6 +37,8 @@
 
 ## :small_orange_diamond: Simple Example
 
+### Scenario
+
 We've got the services _A_, _B_ and _C_. These services may be web applications or authentication services for example. Our infrastructure is simple: There is a _MainServer_ and _AnotherServer_. Servers, virtual machines etc. are known to Dice as _nodes_.
 
 <p align="center">
@@ -47,6 +49,8 @@ We've got the services _A_, _B_ and _C_. These services may be web applications 
 </p>
 
 Service _A_, _B_ and _C_ have an instance deployed to _MainServer_. A service instance is a concrete executable. Additionally, there are instances of _A_ and _B_ deployed to _AnotherServer_ because they're under heavy load.
+
+### Get started
 
 First of all we register our servers to Dice:
 

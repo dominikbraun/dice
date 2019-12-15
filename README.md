@@ -5,7 +5,7 @@
 <br>
 </p>
 
-<h3 align="center">Dice &ndash; Simple load balancing for non-microservice infrastructures.</h3>
+<h3 align="center">:bridge_at_night::game_die: Dice &ndash; Simple load balancing for non-microservice infrastructures.</h3>
 
 <p align="center">
 <br>

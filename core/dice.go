@@ -54,7 +54,7 @@ type Dice struct {
 	logger       log.Logger
 }
 
-// NewDice creates a new Dice instance and invokes all setup methods.
+// NewDice creates a new Dice instance and sets up all components.
 func NewDice() (*Dice, error) {
 	var d Dice
 
@@ -65,6 +65,7 @@ func NewDice() (*Dice, error) {
 	return &d, nil
 }
 
+// setup runs the Dice setup by invoking all setup* methods.
 func (d *Dice) setup() error {
 	steps := []func() error{
 		d.setupConfig,

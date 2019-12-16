@@ -20,7 +20,6 @@ import (
 )
 
 func main() {
-	diceClient := client.New("http", "localhost:9292", "/v1")
-
+	diceClient, _ := client.New()
 	_ = cli.New(diceClient).Execute()
 }

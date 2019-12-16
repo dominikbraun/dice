@@ -1,5 +1,6 @@
 <p align="center">
-<br>   
+<br>
+<br>
 <img src="https://sternentstehung.de/dice-black-100.png">
 <br>
 <br>

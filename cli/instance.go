@@ -144,7 +144,7 @@ func (c *CLI) instanceInfoCmd() *cobra.Command {
 			instanceRef := args[0]
 			route := "/instances/" + instanceRef + "/info"
 
-			var instanceInfoResponse types.InstanceInfoOutputResponse
+			var instanceInfoResponse types.InstanceInfoResponse
 
 			if err := c.client.POST(route, nil, &instanceInfoResponse); err != nil {
 				return err

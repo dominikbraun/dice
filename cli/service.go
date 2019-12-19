@@ -138,7 +138,7 @@ func (c *CLI) serviceInfoCmd() *cobra.Command {
 			serviceRef := args[0]
 			route := "/services/" + serviceRef + "/info"
 
-			var serviceInfoResponse types.ServiceInfoOutputResponse
+			var serviceInfoResponse types.ServiceInfoResponse
 
 			if err := c.client.POST(route, nil, &serviceInfoResponse); err != nil {
 				return err

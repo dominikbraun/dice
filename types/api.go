@@ -55,8 +55,8 @@ type Response struct {
 	Data    interface{} `json:"data"`
 }
 
-// NodeInfoOutputResponse is an API response that carries a NodeInfoOutput.
-type NodeInfoOutputResponse struct {
+// NodeInfoResponse is an API response that carries a NodeInfoOutput.
+type NodeInfoResponse struct {
 	Response
 	Data NodeInfoOutput `json:"data"`
 }
@@ -68,8 +68,8 @@ type NodeListResponse struct {
 	Data []NodeInfoOutput `json:"data"`
 }
 
-// ServiceInfoOutputResponse carrying a ServiceInfoOutput.
-type ServiceInfoOutputResponse struct {
+// ServiceInfoResponse carrying a ServiceInfoOutput.
+type ServiceInfoResponse struct {
 	Response
 	Data ServiceInfoOutput `json:"data"`
 }
@@ -82,8 +82,8 @@ type ServiceListResponse struct {
 	Data []ServiceInfoOutput `json:"data"`
 }
 
-// InstanceInfoOutputResponse carrying a InstanceInfoOutput.
-type InstanceInfoOutputResponse struct {
+// InstanceInfoResponse carrying a InstanceInfoOutput.
+type InstanceInfoResponse struct {
 	Response
 	Data InstanceInfoOutput `json:"data"`
 }

@@ -139,7 +139,7 @@ func (c *CLI) nodeInfoCmd() *cobra.Command {
 			nodeRef := args[0]
 			route := "/nodes/" + nodeRef + "/info"
 
-			var nodeInfoResponse types.NodeInfoOutputResponse
+			var nodeInfoResponse types.NodeInfoResponse
 
 			if err := c.client.POST(route, options, &nodeInfoResponse); err != nil {
 				return err

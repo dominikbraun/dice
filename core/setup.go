@@ -36,11 +36,11 @@ import (
 func (d *Dice) setupConfig() error {
 	var err error
 
-	if d.config, err = config.NewConfig(configName); err != nil {
+	if d.config, err = config.NewFile(configName); err != nil {
 		return err
 	}
 
-	for key, value := range config.Defaults {
+	for key, value := range config.DiceDefaults {
 		d.config.SetDefault(key, value)
 	}
 

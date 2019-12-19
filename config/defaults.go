@@ -12,9 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package config provides configuration reader implementations.
 package config
 
-var Defaults = map[string]interface{}{
+// CLIDefaults sets the defaults for CLI-related configuration values.
+// They serve as defaults in case the user hasn't specified any other
+// values - for the CLI, this can be done with environment variables.
+var CLIDefaults = map[string]interface{}{
+	"dice-address":     "http://127.0.0.1:9292",
+	"dice-api-version": "v1",
+}
+
+// DiceDefaults sets the defaults for core-related configuration values.
+// They serve as defaults in case the user hasn't specified any other
+// values - for the core, this can be done in the Dice config file.
+var DiceDefaults = map[string]interface{}{
 	"dice-logfile":         "dice.log",
 	"api-server-logfile":   "dice.log",
 	"proxy-logfile":        "dice.log",

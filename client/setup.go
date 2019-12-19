@@ -21,17 +21,17 @@ import (
 	"net/http"
 )
 
-// setupConfig parses the configuration file and sets all default values
-// so that other components can rely on the keys. This step also powers
-// Dice's zero-configuration ability.
+// setupConfig sets up the environment variable reader and sets all default
+// values so that other components can rely on the configuration keys. This
+// step also powers the CLI's zero-configuration ability.
 func (c *Client) setupConfig() error {
 	var err error
 
-	if c.config, err = config.NewConfig(configName); err != nil {
+	if c.config, err = config.NewEnvironment(); err != nil {
 		return err
 	}
 
-	for key, value := range config.Defaults {
+	for key, value := range config.CLIDefaults {
 		c.config.SetDefault(key, value)
 	}
 
@@ -44,13 +44,16 @@ func (c *Client) setupInternal() error {
 	return nil
 }
 
-// setupAPIConnection reads the configured API connection data.
+// setupAPIConnection reads the configured API connection data. These values
+// are read from environment variables since the client's config reader is a
+// config.Environment.
+//
+// Note that the configuration values can be overridden via command line
+// options, for example by --address.
 func (c *Client) setupAPIConnection() error {
 	c.apiConnection = &APIConnection{
-		Protocol: c.config.GetString("api-server-protocol"),
-		Host:     c.config.GetString("api-server-host"),
-		Port:     c.config.GetString("api-server-port"),
-		Root:     c.config.GetString("api-server-root"),
+		Address: c.config.GetString("dice-address"),
+		Version: c.config.GetString("dice-api-version"),
 	}
 
 	return nil

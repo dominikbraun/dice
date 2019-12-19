@@ -37,23 +37,22 @@ var (
 )
 
 // APIConnection stores necessary information for establishing a connection
-// to the Dice API server. All of its values are configurable in dice.yml.
+// to the Dice API server. The values are read from the client's configuration
+// reader and can be set via the --address option as well.
 type APIConnection struct {
-	Protocol string `json:"protocol"`
-	Host     string `json:"host"`
-	Port     string `json:"port"`
-	Root     string `json:"root"`
+	Address string `json:"address"`
+	Version string `json:"root"`
 }
 
 // buildURL creates an appropriate URL that can be used to send a request.
 func (ac *APIConnection) buildURL() string {
-	root := ac.Root
+	version := ac.Version
 
-	if !strings.HasPrefix(root, "/") && len(root) > 0 {
-		root = fmt.Sprintf("/%s", root)
+	if !strings.HasPrefix(version, "/") && len(version) > 0 {
+		version = fmt.Sprintf("/%s", version)
 	}
 
-	url := fmt.Sprintf("%s://%s:%s%s", ac.Protocol, ac.Host, ac.Port, ac.Root)
+	url := fmt.Sprintf("%s%s", ac.Address, version)
 	return url
 }
 
@@ -92,6 +91,13 @@ func (c *Client) setup() error {
 	}
 
 	return nil
+}
+
+// OverrideAddress overrides the configured Dice API address permanently.
+// This can be useful if a distinct value for the address has been provided,
+// for example by using the --address flag of a CLI command.
+func (c *Client) OverrideAddress(address string) {
+	c.apiConnection.Address = address
 }
 
 // GET is the method used by the CLI for sending a GET request to the API.

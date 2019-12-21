@@ -30,7 +30,7 @@ type ServiceReference string
 type Service struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
-	Hostnames       []string `json:"hostnames"`
+	Routes          []string `json:"routes"`
 	TargetVersion   string   `json:"target_version"`
 	BalancingMethod string   `json:"balancing_method"`
 	IsEnabled       bool     `json:"is_enabled"`
@@ -46,7 +46,7 @@ func NewService(name string, options types.ServiceCreateOptions) (*Service, erro
 	s := Service{
 		ID:              uuid,
 		Name:            name,
-		Hostnames:       make([]string, 0),
+		Routes:          make([]string, 0),
 		TargetVersion:   "",
 		BalancingMethod: options.Balancing,
 		IsEnabled:       options.Enable,

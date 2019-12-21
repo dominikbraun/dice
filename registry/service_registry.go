@@ -41,25 +41,25 @@ type (
 )
 
 var (
-	ErrUnregisteredService       = errors.New("service is not registered")
-	ErrServiceAlreadyRegistered  = errors.New("service is already registered")
-	ErrServiceNotRemovable       = errors.New("service has attached instances on an attached node")
-	ErrUnregisteredDeployment    = errors.New("deployment is not registered")
-	ErrDeploymentNotRemovable    = errors.New("deployed instance is attached on an attached node")
-	ErrUnregisteredHostname      = errors.New("hostname is not registered")
-	ErrHostnameAlreadyRegistered = errors.New("hostname is already registered")
-	ErrInvalidClosure            = errors.New("the provided closure is invalid")
+	ErrUnregisteredService      = errors.New("service is not registered")
+	ErrServiceAlreadyRegistered = errors.New("service is already registered")
+	ErrServiceNotRemovable      = errors.New("service has attached instances on an attached node")
+	ErrUnregisteredDeployment   = errors.New("deployment is not registered")
+	ErrDeploymentNotRemovable   = errors.New("deployed instance is attached on an attached node")
+	ErrUnregisteredRoute        = errors.New("route is not registered")
+	ErrRouteAlreadyRegistered   = errors.New("route is already registered")
+	ErrInvalidClosure           = errors.New("the provided closure is invalid")
 )
 
 type ServiceRegistry struct {
-	Services  map[string]Service
-	Hostnames map[string]string
+	Services map[string]Service
+	Routes   map[string]string
 }
 
 func NewServiceRegistry() *ServiceRegistry {
 	sr := ServiceRegistry{
-		Services:  make(map[string]Service),
-		Hostnames: make(map[string]string),
+		Services: make(map[string]Service),
+		Routes:   make(map[string]string),
 	}
 
 	return &sr
@@ -147,8 +147,8 @@ func (sr *ServiceRegistry) RegisterService(service Service) error {
 		return ErrServiceAlreadyRegistered
 	}
 
-	for _, h := range service.Entity.Hostnames {
-		if err := sr.RegisterHostname(h, serviceID); err != nil {
+	for _, h := range service.Entity.Routes {
+		if err := sr.RegisterRoute(h, serviceID); err != nil {
 			return err
 		}
 	}
@@ -170,8 +170,8 @@ func (sr *ServiceRegistry) UnregisterService(serviceID string, mode UnregisterMo
 		}
 	}
 
-	for _, h := range sr.Services[serviceID].Entity.Hostnames {
-		if err := sr.UnregisterHostname(h); err != nil {
+	for _, h := range sr.Services[serviceID].Entity.Routes {
+		if err := sr.UnregisterRoute(h); err != nil {
 			return err
 		}
 	}
@@ -220,24 +220,24 @@ func (sr *ServiceRegistry) UnregisterDeployment(deployment Deployment, mode Unre
 	return nil
 }
 
-func (sr *ServiceRegistry) RegisterHostname(hostname string, serviceID string) error {
-	if _, exists := sr.Hostnames[hostname]; exists {
-		return ErrHostnameAlreadyRegistered
+func (sr *ServiceRegistry) RegisterRoute(route string, serviceID string) error {
+	if _, exists := sr.Routes[route]; exists {
+		return ErrRouteAlreadyRegistered
 	}
 
 	if _, exists := sr.Services[serviceID]; !exists {
 		return ErrUnregisteredService
 	}
-	sr.Hostnames[hostname] = serviceID
+	sr.Routes[route] = serviceID
 
 	return nil
 }
 
-func (sr *ServiceRegistry) UnregisterHostname(hostname string) error {
-	if _, exists := sr.Hostnames[hostname]; !exists {
-		return ErrUnregisteredHostname
+func (sr *ServiceRegistry) UnregisterRoute(route string) error {
+	if _, exists := sr.Routes[route]; !exists {
+		return ErrUnregisteredRoute
 	}
-	delete(sr.Hostnames, hostname)
+	delete(sr.Routes, route)
 
 	return nil
 }

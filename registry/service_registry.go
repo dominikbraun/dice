@@ -46,8 +46,6 @@ var (
 	ErrServiceNotRemovable      = errors.New("service has attached instances on an attached node")
 	ErrUnregisteredDeployment   = errors.New("deployment is not registered")
 	ErrDeploymentNotRemovable   = errors.New("deployed instance is attached on an attached node")
-	ErrUnregisteredRoute        = errors.New("route is not registered")
-	ErrRouteAlreadyRegistered   = errors.New("route is already registered")
 	ErrInvalidClosure           = errors.New("the provided closure is invalid")
 )
 

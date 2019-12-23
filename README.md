@@ -19,8 +19,7 @@
 
 ---
 
-:bridge_at_night::game_die: Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
-
+:city_sunset::game_die: Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
 
 ## :small_orange_diamond: Included Features
 

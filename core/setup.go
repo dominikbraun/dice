@@ -53,6 +53,20 @@ func (d *Dice) setupReloadConfig() error {
 	return nil
 }
 
+// setupLogger sets up the logger as well as the logfile it will be using.
+func (d *Dice) setupLogger() error {
+	logfile := d.config.GetString("dice-logfile")
+
+	file, err := os.OpenFile(logfile, os.O_WRONLY|os.O_CREATE, 0755)
+	if err != nil {
+		return err
+	}
+
+	d.logger = log.NewLogger(file, log.DebugLevel)
+
+	return nil
+}
+
 // setupKVStore opens or, if it doesn't exist, creates the key-value store.
 func (d *Dice) setupKVStore() error {
 	var err error
@@ -75,7 +89,7 @@ func (d *Dice) setupKVStore() error {
 // setupRegistry initializes the service registry. This is also the point
 // where existing services and instances are acquainted to the registry.
 func (d *Dice) setupRegistry() error {
-	d.registry = registry.NewServiceRegistry()
+	d.registry = registry.NewServiceRegistry(d.logger)
 	return nil
 }
 
@@ -136,20 +150,6 @@ func (d *Dice) setupProxy() error {
 	}
 
 	d.proxy = proxy.New(proxyConfig, d.registry)
-
-	return nil
-}
-
-// setupLogger sets up the logger as well as the logfile it will be using.
-func (d *Dice) setupLogger() error {
-	logfile := d.config.GetString("dice-logfile")
-
-	file, err := os.OpenFile(logfile, os.O_WRONLY|os.O_CREATE, 0755)
-	if err != nil {
-		return err
-	}
-
-	d.logger = log.NewLogger(file, log.InfoLevel)
 
 	return nil
 }

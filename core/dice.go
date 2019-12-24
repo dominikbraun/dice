@@ -44,6 +44,7 @@ const (
 type Dice struct {
 	config       config.Reader
 	reloadConfig chan bool
+	logger       log.Logger
 	kvStore      store.EntityStore
 	registry     *registry.ServiceRegistry
 	healthCheck  *healthcheck.HealthCheck
@@ -51,7 +52,6 @@ type Dice struct {
 	interrupt    chan os.Signal
 	apiServer    *api.Server
 	proxy        *proxy.Proxy
-	logger       log.Logger
 }
 
 // NewDice creates a new Dice instance and sets up all components.
@@ -70,13 +70,13 @@ func (d *Dice) setup() error {
 	steps := []func() error{
 		d.setupConfig,
 		d.setupReloadConfig,
+		d.setupLogger,
 		d.setupKVStore,
 		d.setupRegistry,
 		d.setupHealthCheck,
 		d.setupController,
 		d.setupAPIServer,
 		d.setupProxy,
-		d.setupLogger,
 		d.setupInterrupt,
 	}
 

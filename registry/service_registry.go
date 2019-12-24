@@ -12,32 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package registry provides the service registry and the route registry.
+//
+// While the core package as well as the store package represent the data
+// statically and storage-oriented, the registries provide a representation
+// required at runtime: In-memory, dynamic and quickly accessible.
 package registry
 
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
-)
-
-type UnregisterMode uint
-
-const (
-	SoftUnregister UnregisterMode = 0
-	HardUnregister UnregisterMode = 1
+	"github.com/dominikbraun/dice/log"
 )
 
 type (
-	NodeFilter       func(node *entity.Node) bool
-	ServiceFilter    func(service *entity.Service) bool
-	InstanceFilter   func(instance *entity.Instance) bool
-	DeploymentFilter func(deployment Deployment) bool
-)
-
-type (
-	NodeUpdater       func(node *entity.Node) error
-	ServiceUpdater    func(service *entity.Service) error
-	InstanceUpdater   func(instance *entity.Instance) error
-	DeploymentUpdater func(deployment Deployment) error
+	NodeUpdater     func(node *entity.Node) error
+	ServiceUpdater  func(service *entity.Service) error
+	InstanceUpdater func(instance *entity.Instance) error
 )
 
 var (
@@ -46,54 +37,57 @@ var (
 	ErrServiceNotRemovable      = errors.New("service has attached instances on an attached node")
 	ErrUnregisteredDeployment   = errors.New("deployment is not registered")
 	ErrDeploymentNotRemovable   = errors.New("deployed instance is attached on an attached node")
-	ErrInvalidClosure           = errors.New("the provided closure is invalid")
+	ErrInvalidUpdate            = errors.New("the provided update is invalid")
 )
 
+// ServiceRegistry is the global registry for all services known to Dice.
+// Its purpose is to provide quick access to deployment information about
+// a particular service at runtime.
+//
+// When the proxy asks for the service associated with a particular host,
+// the ServiceRegistry looks up that service and returns all information
+// like deployments and the scheduler (find more in the `Service` docs).
+//
+// ServiceRegistry also offers methods for updating existing service data
+// and for registering new services or service deployments at runtime.
 type ServiceRegistry struct {
-	Services map[string]Service
-	Routes   map[string]string
+	Services      map[string]Service
+	RouteRegistry *RouteRegistry
+	logger        log.Logger
 }
 
-func NewServiceRegistry() *ServiceRegistry {
+// NewServiceRegistry creates a new ServiceRegistry instance that writes
+// to a given log.Logger. The new instance has to be initialized with all
+// stored services on startup, see `Register`.
+func NewServiceRegistry(logger log.Logger) *ServiceRegistry {
 	sr := ServiceRegistry{
-		Services: make(map[string]Service),
-		Routes:   make(map[string]string),
+		Services:      make(map[string]Service),
+		RouteRegistry: NewRouteRegistry(),
+		logger:        logger,
 	}
 
 	return &sr
 }
 
+// Register registers a new service. The build function should return a
+// fully initialized registry.Service instance, including deployments and
+// scheduler.
 func (sr *ServiceRegistry) Register(entity *entity.Service, build func(*entity.Service) Service) error {
 	service := build(entity)
-	return sr.RegisterService(service)
+	return sr.RegisterService(service, false)
 }
 
-func (sr *ServiceRegistry) UpdateNodes(filter NodeFilter, updater NodeUpdater) error {
-	if filter == nil || updater == nil {
-		return ErrInvalidClosure
+// UpdateNodes invokes the NodeUpdater function for each node of each service.
+// Since the registry is service-scoped, a node that has deployments of seven
+// services will be called seven times.
+func (sr *ServiceRegistry) UpdateNodes(updater NodeUpdater) error {
+	if updater == nil {
+		panic(ErrInvalidUpdate)
 	}
 
 	for _, s := range sr.Services {
 		for _, d := range s.Deployments {
-			if filter(d.Node) {
-				if err := updater(d.Node); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
-func (sr *ServiceRegistry) UpdateServices(filter ServiceFilter, updater ServiceUpdater) error {
-	if filter == nil || updater == nil {
-		return ErrInvalidClosure
-	}
-
-	for _, s := range sr.Services {
-		if filter(s.Entity) {
-			if err := updater(s.Entity); err != nil {
+			if err := updater(d.Node); err != nil {
 				return err
 			}
 		}
@@ -102,17 +96,31 @@ func (sr *ServiceRegistry) UpdateServices(filter ServiceFilter, updater ServiceU
 	return nil
 }
 
-func (sr *ServiceRegistry) UpdateInstances(filter InstanceFilter, updater InstanceUpdater) error {
-	if filter == nil || updater == nil {
-		return ErrInvalidClosure
+// UpdateServices invokes the ServiceUpdater function for each service.
+func (sr *ServiceRegistry) UpdateServices(updater ServiceUpdater) error {
+	if updater == nil {
+		panic(ErrInvalidUpdate)
+	}
+
+	for _, s := range sr.Services {
+		if err := updater(s.Entity); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// UpdateInstances invokes the InstanceUpdater for each instance.
+func (sr *ServiceRegistry) UpdateInstances(updater InstanceUpdater) error {
+	if updater == nil {
+		panic(ErrInvalidUpdate)
 	}
 
 	for _, s := range sr.Services {
 		for _, d := range s.Deployments {
-			if filter(d.Instance) {
-				if err := updater(d.Instance); err != nil {
-					return err
-				}
+			if err := updater(d.Instance); err != nil {
+				return err
 			}
 		}
 	}
@@ -120,33 +128,19 @@ func (sr *ServiceRegistry) UpdateInstances(filter InstanceFilter, updater Instan
 	return nil
 }
 
-func (sr *ServiceRegistry) UpdateDeployments(filter DeploymentFilter, updater DeploymentUpdater) error {
-	if filter == nil || updater == nil {
-		return ErrInvalidClosure
-	}
-
-	for _, s := range sr.Services {
-		for _, d := range s.Deployments {
-			if filter(d) {
-				if err := updater(d); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
-func (sr *ServiceRegistry) RegisterService(service Service) error {
+// RegisterService registers a new service. Returns an error if the service
+// is already registered, unless force is set to `true`.
+func (sr *ServiceRegistry) RegisterService(service Service, force bool) error {
 	serviceID := service.Entity.ID
 
 	if _, exists := sr.Services[serviceID]; exists {
-		return ErrServiceAlreadyRegistered
+		if !force {
+			return ErrServiceAlreadyRegistered
+		}
 	}
 
-	for _, h := range service.Entity.Routes {
-		if err := sr.RegisterRoute(h, serviceID); err != nil {
+	for _, r := range service.Entity.Routes {
+		if err := sr.RouteRegistry.RegisterRoute(r, serviceID, force); err != nil {
 			return err
 		}
 	}
@@ -155,12 +149,15 @@ func (sr *ServiceRegistry) RegisterService(service Service) error {
 	return nil
 }
 
-func (sr *ServiceRegistry) UnregisterService(serviceID string, mode UnregisterMode) error {
+// UnregisterService removes a registered service from the registry. Returns
+// an error if the service has attached instances on attached nodes, unless
+// force is set to `true`.
+func (sr *ServiceRegistry) UnregisterService(serviceID string, force bool) error {
 	if _, exists := sr.Services[serviceID]; !exists {
 		return ErrUnregisteredService
 	}
 
-	if mode != HardUnregister {
+	if !force {
 		for _, d := range sr.Services[serviceID].Deployments {
 			if !d.isRemovable() {
 				return ErrServiceNotRemovable
@@ -168,8 +165,8 @@ func (sr *ServiceRegistry) UnregisterService(serviceID string, mode UnregisterMo
 		}
 	}
 
-	for _, h := range sr.Services[serviceID].Entity.Routes {
-		if err := sr.UnregisterRoute(h); err != nil {
+	for _, r := range sr.Services[serviceID].Entity.Routes {
+		if err := sr.RouteRegistry.UnregisterRoute(r); err != nil {
 			return err
 		}
 	}
@@ -178,6 +175,24 @@ func (sr *ServiceRegistry) UnregisterService(serviceID string, mode UnregisterMo
 	return nil
 }
 
+// LookupService looks up the service available under a given route. The
+// second return value indicates whether the service could be found or not.
+func (sr *ServiceRegistry) LookupService(route string) (Service, bool) {
+	serviceID, exists := sr.RouteRegistry.LookupServiceID(route)
+	if !exists {
+		return Service{}, false
+	}
+
+	if service, exists := sr.Services[serviceID]; exists {
+		return service, true
+	}
+	sr.logger.Warnf("service %s registered in router but not in registry", serviceID)
+
+	return Service{}, false
+}
+
+// RegisterDeployment registers new service deployment. Returns an error
+// if the stored service in the `Instance` field is not registered yet.
 func (sr *ServiceRegistry) RegisterDeployment(deployment Deployment) error {
 	serviceID := deployment.Instance.ServiceID
 
@@ -191,7 +206,10 @@ func (sr *ServiceRegistry) RegisterDeployment(deployment Deployment) error {
 	return nil
 }
 
-func (sr *ServiceRegistry) UnregisterDeployment(deployment Deployment, mode UnregisterMode) error {
+// UnregisterDeployment removes a deployment from the registry. Returns
+// an error if the instance is attach on an attached node, unless force
+// is set to `true`.
+func (sr *ServiceRegistry) UnregisterDeployment(deployment Deployment, force bool) error {
 	serviceID := deployment.Instance.ServiceID
 
 	if _, exists := sr.Services[serviceID]; !exists {
@@ -205,7 +223,7 @@ func (sr *ServiceRegistry) UnregisterDeployment(deployment Deployment, mode Unre
 		return ErrUnregisteredDeployment
 	}
 
-	if mode != HardUnregister {
+	if !force {
 		if !deployment.isRemovable() {
 			return ErrDeploymentNotRemovable
 		}
@@ -218,28 +236,9 @@ func (sr *ServiceRegistry) UnregisterDeployment(deployment Deployment, mode Unre
 	return nil
 }
 
-func (sr *ServiceRegistry) RegisterRoute(route string, serviceID string) error {
-	if _, exists := sr.Routes[route]; exists {
-		return ErrRouteAlreadyRegistered
-	}
-
-	if _, exists := sr.Services[serviceID]; !exists {
-		return ErrUnregisteredService
-	}
-	sr.Routes[route] = serviceID
-
-	return nil
-}
-
-func (sr *ServiceRegistry) UnregisterRoute(route string) error {
-	if _, exists := sr.Routes[route]; !exists {
-		return ErrUnregisteredRoute
-	}
-	delete(sr.Routes, route)
-
-	return nil
-}
-
+// indexOfDeployment determines the index of a service's deployment. The
+// given deployment is considered equal to another deployment if its node
+// ID and instance ID are the same. Returns -1 if no deployment matches.
 func (sr *ServiceRegistry) indexOfDeployment(serviceID string, deployment Deployment) (int, error) {
 	if _, exists := sr.Services[serviceID]; !exists {
 		return 0, ErrUnregisteredService

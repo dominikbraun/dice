@@ -39,24 +39,22 @@ var (
 func (d *Dice) synchronizeNode(node *entity.Node, task SynchronizationTask) error {
 	switch task {
 	case Attachment:
-		filter := func(n *entity.Node) bool {
-			return n.ID == node.ID
-		}
 		update := func(n *entity.Node) error {
-			n.IsAttached = true
+			if n.ID == node.ID {
+				n.IsAttached = true
+			}
 			return nil
 		}
-		return d.registry.UpdateNodes(filter, update)
+		return d.registry.UpdateNodes(update)
 
 	case Detachment:
-		filter := func(n *entity.Node) bool {
-			return n.ID == node.ID
-		}
 		update := func(n *entity.Node) error {
-			n.IsAttached = false
+			if n.ID == node.ID {
+				n.IsAttached = false
+			}
 			return nil
 		}
-		return d.registry.UpdateNodes(filter, update)
+		return d.registry.UpdateNodes(update)
 
 	default:
 		return ErrInvalidSynchronizationTask
@@ -68,24 +66,22 @@ func (d *Dice) synchronizeNode(node *entity.Node, task SynchronizationTask) erro
 func (d *Dice) synchronizeService(service *entity.Service, task SynchronizationTask) error {
 	switch task {
 	case Enabling:
-		filter := func(s *entity.Service) bool {
-			return s.ID == service.ID
-		}
 		update := func(s *entity.Service) error {
-			s.IsEnabled = true
+			if s.ID == service.ID {
+				s.IsEnabled = true
+			}
 			return nil
 		}
-		return d.registry.UpdateServices(filter, update)
+		return d.registry.UpdateServices(update)
 
 	case Disabling:
-		filter := func(s *entity.Service) bool {
-			return s.ID == service.ID
-		}
 		update := func(s *entity.Service) error {
-			s.IsEnabled = false
+			if s.ID == service.ID {
+				s.IsEnabled = false
+			}
 			return nil
 		}
-		return d.registry.UpdateServices(filter, update)
+		return d.registry.UpdateServices(update)
 
 	default:
 		return ErrInvalidSynchronizationTask
@@ -97,24 +93,22 @@ func (d *Dice) synchronizeService(service *entity.Service, task SynchronizationT
 func (d *Dice) synchronizeInstance(instance *entity.Instance, task SynchronizationTask) error {
 	switch task {
 	case Attachment:
-		filter := func(i *entity.Instance) bool {
-			return i.ID == instance.ID
-		}
 		update := func(i *entity.Instance) error {
-			i.IsAttached = true
+			if i.ID == instance.ID {
+				i.IsAttached = true
+			}
 			return nil
 		}
-		return d.registry.UpdateInstances(filter, update)
+		return d.registry.UpdateInstances(update)
 
 	case Detachment:
-		filter := func(i *entity.Instance) bool {
-			return i.ID == instance.ID
-		}
 		update := func(i *entity.Instance) error {
-			i.IsAttached = true
+			if i.ID == instance.ID {
+				i.IsAttached = false
+			}
 			return nil
 		}
-		return d.registry.UpdateInstances(filter, update)
+		return d.registry.UpdateInstances(update)
 
 	default:
 		return ErrInvalidSynchronizationTask

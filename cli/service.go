@@ -49,12 +49,14 @@ func (c *CLI) serviceCreateCmd() *cobra.Command {
 			name := args[0]
 			route := "/services/create"
 
-			var response types.Response
-
-			if err := c.client.POST(route, types.ServiceCreate{
+			body := types.ServiceCreate{
 				Name:                 name,
 				ServiceCreateOptions: options,
-			}, &response); err != nil {
+			}
+
+			var response types.Response
+
+			if err := c.client.POST(route, body, &response); err != nil {
 				return err
 			}
 

@@ -49,17 +49,18 @@ func (c *CLI) instanceCreateCmd() *cobra.Command {
 			serviceRef := args[0]
 			nodeRef := args[1]
 			nodeURL := args[2]
-
 			route := "/instances/create"
 
-			var response types.Response
-
-			if err := c.client.POST(route, types.InstanceCreate{
+			body := types.InstanceCreate{
 				ServiceRef:            serviceRef,
 				NodeRef:               nodeRef,
 				URL:                   nodeURL,
 				InstanceCreateOptions: options,
-			}, &response); err != nil {
+			}
+
+			var response types.Response
+
+			if err := c.client.POST(route, body, &response); err != nil {
 				return err
 			}
 

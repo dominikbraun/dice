@@ -51,109 +51,6 @@ func NewKVStore(path string) (*KVStore, error) {
 	return &kv, nil
 }
 
-func (kv *KVStore) setup() error {
-	fn := func(tx *bolt.Tx) error {
-		root, err := tx.CreateBucketIfNotExists(diceBucket)
-		if err != nil {
-			return err
-		}
-
-		if _, err = root.CreateBucketIfNotExists(nodeBucket); err != nil {
-			return err
-		}
-
-		if _, err = root.CreateBucketIfNotExists(serviceBucket); err != nil {
-			return err
-		}
-
-		if _, err := root.CreateBucketIfNotExists(instanceBucket); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return kv.internal.Update(fn)
-}
-
-func (kv *KVStore) set(bucket Bucket, key string, value []byte) error {
-	fn := func(tx *bolt.Tx) error {
-		b := tx.Bucket(diceBucket).Bucket(bucket)
-		if b == nil {
-			return ErrBucketNotFound
-		}
-
-		return b.Put([]byte(key), value)
-	}
-
-	return kv.internal.Update(fn)
-}
-
-func (kv *KVStore) getAll(bucket Bucket) ([][]byte, error) {
-	var result [][]byte
-
-	fn := func(tx *bolt.Tx) error {
-		b := tx.Bucket(diceBucket).Bucket(bucket)
-		if b == nil {
-			return ErrBucketNotFound
-		}
-
-		_ = b.ForEach(func(k, v []byte) error {
-			result = append(result, v)
-			return nil
-		})
-
-		return nil
-	}
-
-	if err := kv.internal.View(fn); err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func (kv *KVStore) get(bucket Bucket, key string) ([]byte, error) {
-	var result []byte
-
-	fn := func(tx *bolt.Tx) error {
-		b := tx.Bucket(diceBucket).Bucket(bucket)
-		if b == nil {
-			return ErrBucketNotFound
-		}
-
-		if value := b.Get([]byte(key)); value != nil {
-			result = value
-			return nil
-		}
-
-		return nil
-	}
-
-	if err := kv.internal.View(fn); err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func (kv *KVStore) delete(bucket Bucket, key string) error {
-	fn := func(tx *bolt.Tx) error {
-		b := tx.Bucket(diceBucket).Bucket(bucket)
-		if b == nil {
-			return ErrBucketNotFound
-		}
-
-		return b.Delete([]byte(key))
-	}
-
-	return kv.internal.Update(fn)
-}
-
-func (kv *KVStore) Close() error {
-	return kv.internal.Close()
-}
-
 func (kv *KVStore) CreateNode(node *entity.Node) error {
 	value, err := json.Marshal(node)
 	if err != nil {
@@ -317,4 +214,107 @@ func (kv *KVStore) UpdateInstance(id string, source *entity.Instance) error {
 
 func (kv *KVStore) DeleteInstance(id string) error {
 	return kv.delete(instanceBucket, id)
+}
+
+func (kv *KVStore) Close() error {
+	return kv.internal.Close()
+}
+
+func (kv *KVStore) setup() error {
+	fn := func(tx *bolt.Tx) error {
+		root, err := tx.CreateBucketIfNotExists(diceBucket)
+		if err != nil {
+			return err
+		}
+
+		if _, err = root.CreateBucketIfNotExists(nodeBucket); err != nil {
+			return err
+		}
+
+		if _, err = root.CreateBucketIfNotExists(serviceBucket); err != nil {
+			return err
+		}
+
+		if _, err := root.CreateBucketIfNotExists(instanceBucket); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	return kv.internal.Update(fn)
+}
+
+func (kv *KVStore) set(bucket Bucket, key string, value []byte) error {
+	fn := func(tx *bolt.Tx) error {
+		b := tx.Bucket(diceBucket).Bucket(bucket)
+		if b == nil {
+			return ErrBucketNotFound
+		}
+
+		return b.Put([]byte(key), value)
+	}
+
+	return kv.internal.Update(fn)
+}
+
+func (kv *KVStore) get(bucket Bucket, key string) ([]byte, error) {
+	var result []byte
+
+	fn := func(tx *bolt.Tx) error {
+		b := tx.Bucket(diceBucket).Bucket(bucket)
+		if b == nil {
+			return ErrBucketNotFound
+		}
+
+		if value := b.Get([]byte(key)); value != nil {
+			result = value
+			return nil
+		}
+
+		return nil
+	}
+
+	if err := kv.internal.View(fn); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (kv *KVStore) getAll(bucket Bucket) ([][]byte, error) {
+	var result [][]byte
+
+	fn := func(tx *bolt.Tx) error {
+		b := tx.Bucket(diceBucket).Bucket(bucket)
+		if b == nil {
+			return ErrBucketNotFound
+		}
+
+		_ = b.ForEach(func(k, v []byte) error {
+			result = append(result, v)
+			return nil
+		})
+
+		return nil
+	}
+
+	if err := kv.internal.View(fn); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (kv *KVStore) delete(bucket Bucket, key string) error {
+	fn := func(tx *bolt.Tx) error {
+		b := tx.Bucket(diceBucket).Bucket(bucket)
+		if b == nil {
+			return ErrBucketNotFound
+		}
+
+		return b.Delete([]byte(key))
+	}
+
+	return kv.internal.Update(fn)
 }

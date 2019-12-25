@@ -49,12 +49,14 @@ func (c *CLI) nodeCreateCmd() *cobra.Command {
 			url := args[0]
 			route := "/nodes/create"
 
-			var response types.Response
-
-			if err := c.client.POST(route, types.NodeCreate{
+			body := types.NodeCreate{
 				URL:               url,
 				NodeCreateOptions: options,
-			}, &response); err != nil {
+			}
+
+			var response types.Response
+
+			if err := c.client.POST(route, body, &response); err != nil {
 				return err
 			}
 

@@ -28,7 +28,7 @@ type NodeInfoOutput struct {
 type ServiceInfoOutput struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
-	Routes          []string `json:"routes"`
+	URLs            []string `json:"urls"`
 	TargetVersion   string   `json:"target_version"`
 	BalancingMethod string   `json:"balancing_method"`
 	IsEnabled       bool     `json:"is_enabled"`

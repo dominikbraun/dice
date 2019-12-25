@@ -15,7 +15,10 @@
 // Package entity provides domain entities and their factory functions.
 package entity
 
-import "github.com/dominikbraun/dice/types"
+import (
+	"fmt"
+	"github.com/dominikbraun/dice/types"
+)
 
 // ServiceReference is a string that identifies a service, e. g. an ID.
 type ServiceReference string
@@ -24,13 +27,13 @@ type ServiceReference string
 // a running application. Instead, the running executables are represented
 // by service instances (see entity.Instance).
 //
-// Each service is available under multiple hostnames like example.com and
-// www.example.com. Also, the load balancing algorithm is configurable for
+// Each service is available under multiple URLs like api.example.com and
+// example.com/api. Also, the load balancing algorithm is configurable for
 // each service. If a service is disabled, requests will run into HTTP 503.
 type Service struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
-	Routes          []string `json:"routes"`
+	URLs            []string `json:"urls"`
 	TargetVersion   string   `json:"target_version"`
 	BalancingMethod string   `json:"balancing_method"`
 	IsEnabled       bool     `json:"is_enabled"`
@@ -46,11 +49,51 @@ func NewService(name string, options types.ServiceCreateOptions) (*Service, erro
 	s := Service{
 		ID:              uuid,
 		Name:            name,
-		Routes:          make([]string, 0),
+		URLs:            make([]string, 0),
 		TargetVersion:   "",
 		BalancingMethod: options.Balancing,
 		IsEnabled:       options.Enable,
 	}
 
 	return &s, nil
+}
+
+// AddURL adds a public URL to a service.
+func (s *Service) AddURL(url string) error {
+	index := s.indexOfURL(url)
+
+	if index != -1 {
+		return fmt.Errorf("URL '%s' is already registered", url)
+	}
+
+	s.URLs = append(s.URLs, url)
+	return nil
+}
+
+// RemoveURL removes a public URL from a service.
+func (s *Service) RemoveURL(url string) error {
+	index := s.indexOfURL(url)
+
+	if index == -1 {
+		return fmt.Errorf("URL '%s' is not registered", url)
+	}
+
+	urls := s.URLs
+	urls[index] = urls[len(urls)-1]
+	s.URLs = urls[:len(urls)-1]
+
+	return nil
+}
+
+// indexOfURL determines the index of a given URL in the `URLs` field.
+func (s *Service) indexOfURL(url string) int {
+	index := -1
+
+	for i, u := range s.URLs {
+		if u == url {
+			index = i
+		}
+	}
+
+	return index
 }

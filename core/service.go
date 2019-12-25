@@ -116,7 +116,7 @@ func (d *Dice) ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInf
 	serviceInfo := types.ServiceInfoOutput{
 		ID:              service.ID,
 		Name:            service.Name,
-		Routes:          service.Routes,
+		URLs:            service.URLs,
 		TargetVersion:   service.TargetVersion,
 		BalancingMethod: service.BalancingMethod,
 		IsEnabled:       service.IsEnabled,
@@ -148,7 +148,7 @@ func (d *Dice) ListServices(options types.ServiceListOptions) ([]types.ServiceIn
 		info := types.ServiceInfoOutput{
 			ID:              s.ID,
 			Name:            s.Name,
-			Routes:          s.Routes,
+			URLs:            s.URLs,
 			TargetVersion:   s.TargetVersion,
 			BalancingMethod: s.BalancingMethod,
 			IsEnabled:       s.IsEnabled,

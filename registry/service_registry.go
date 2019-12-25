@@ -139,7 +139,7 @@ func (sr *ServiceRegistry) RegisterService(service Service, force bool) error {
 		}
 	}
 
-	for _, r := range service.Entity.Routes {
+	for _, r := range service.Entity.URLs {
 		if err := sr.RouteRegistry.RegisterRoute(r, serviceID, force); err != nil {
 			return err
 		}
@@ -165,7 +165,7 @@ func (sr *ServiceRegistry) UnregisterService(serviceID string, force bool) error
 		}
 	}
 
-	for _, r := range sr.Services[serviceID].Entity.Routes {
+	for _, r := range sr.Services[serviceID].Entity.URLs {
 		if err := sr.RouteRegistry.UnregisterRoute(r); err != nil {
 			return err
 		}

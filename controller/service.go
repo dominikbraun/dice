@@ -107,3 +107,25 @@ func (c *Controller) ListServices() http.HandlerFunc {
 		respond(w, r, http.StatusOK, types.Response{Success: true, Data: serviceList})
 	}
 }
+
+// SetServiceURL handles a POST request for adding or removing an URL for a
+// given service. The request body has to contain a ServiceURL JSON.
+func (c *Controller) SetServiceURL() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		serviceRef := entity.ServiceReference(chi.URLParam(r, "ref"))
+		var serviceURL types.ServiceURL
+
+		if err := json.NewDecoder(r.Body).Decode(&serviceURL); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
+			return
+		}
+
+		err := c.backend.SetServiceURL(serviceRef, serviceURL.URL, serviceURL.ServiceURLOptions)
+		if err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		respond(w, r, http.StatusOK, types.Response{Success: true})
+	}
+}

@@ -52,6 +52,11 @@ type ServiceListOptions struct {
 	All bool `json:"all"`
 }
 
+// ServiceURLOptions combines all user options for setting service URLs.
+type ServiceURLOptions struct {
+	Delete bool `json:"delete"`
+}
+
 // InstanceCreateOptions combines all user options for creating a new
 // instance. It serves as a Data Transfer Object for the Dice core.
 type InstanceCreateOptions struct {

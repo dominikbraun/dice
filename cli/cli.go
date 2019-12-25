@@ -57,6 +57,7 @@ func (c *CLI) buildCommands() {
 	serviceCmd.AddCommand(c.serviceDisableCmd())
 	serviceCmd.AddCommand(c.serviceInfoCmd())
 	serviceCmd.AddCommand(c.serviceListCmd())
+	serviceCmd.AddCommand(c.serviceURLCmd())
 
 	instanceCmd := c.instanceCmd()
 

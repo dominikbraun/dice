@@ -61,6 +61,7 @@ func (s *Server) mountRoutes() {
 			r.Post("/enable", s.controller.EnableService())
 			r.Post("/disable", s.controller.DisableService())
 			r.Post("/info", s.controller.ServiceInfo())
+			r.Post("/url", s.controller.SetServiceURL())
 		})
 	})
 

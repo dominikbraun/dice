@@ -28,6 +28,7 @@ const (
 	Detachment SynchronizationTask = 1
 	Enabling   SynchronizationTask = 2
 	Disabling  SynchronizationTask = 3
+	Update     SynchronizationTask = 4
 )
 
 var (
@@ -78,6 +79,15 @@ func (d *Dice) synchronizeService(service *entity.Service, task SynchronizationT
 		update := func(s *entity.Service) error {
 			if s.ID == service.ID {
 				s.IsEnabled = false
+			}
+			return nil
+		}
+		return d.registry.UpdateServices(update)
+
+	case Update:
+		update := func(s *entity.Service) error {
+			if s.ID == service.ID {
+				s = service
 			}
 			return nil
 		}

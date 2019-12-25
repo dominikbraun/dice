@@ -45,6 +45,7 @@ type ServiceTarget interface {
 	DisableService(serviceRef entity.ServiceReference) error
 	ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInfoOutput, error)
 	ListServices(options types.ServiceListOptions) ([]types.ServiceInfoOutput, error)
+	SetServiceURL(serviceRef entity.ServiceReference, url string, options types.ServiceURLOptions) error
 }
 
 // InstanceTarget prescribes methods for backends working with instances.

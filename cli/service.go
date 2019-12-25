@@ -190,3 +190,40 @@ func (c *CLI) serviceListCmd() *cobra.Command {
 
 	return &serviceListCmd
 }
+
+// serviceURLCmd creates and implements the `service url` command.
+func (c *CLI) serviceURLCmd() *cobra.Command {
+	var options types.ServiceURLOptions
+
+	serviceURLCmd := cobra.Command{
+		Use:   "url <ID|NAME> <URL>",
+		Short: `Add or remove an URL for a service`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			serviceRef := args[0]
+			serviceURL := args[1]
+			route := "/services/" + serviceRef + "/url"
+
+			body := types.ServiceURL{
+				URL:               serviceURL,
+				ServiceURLOptions: options,
+			}
+
+			var response types.Response
+
+			if err := c.client.POST(route, body, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
+			return nil
+		},
+	}
+
+	serviceURLCmd.Flags().BoolVarP(&options.Delete, "delete", "d", false, `remove URL from the service`)
+
+	return &serviceURLCmd
+}

@@ -159,6 +159,35 @@ func (d *Dice) ListServices(options types.ServiceListOptions) ([]types.ServiceIn
 	return serviceList, nil
 }
 
+// SetServiceURL sets or removes an URL from a given service. The update
+// will be visible for the service registry and the Dice proxy instantly.
+func (d *Dice) SetServiceURL(serviceRef entity.ServiceReference, url string, options types.ServiceURLOptions) error {
+	service, err := d.findService(serviceRef)
+	if err != nil {
+		return err
+	}
+
+	if service == nil {
+		return ErrServiceNotFound
+	}
+
+	if options.Delete {
+		if err := service.RemoveURL(url); err != nil {
+			return err
+		}
+	} else {
+		if err := service.AddURL(url); err != nil {
+			return err
+		}
+	}
+
+	if err := d.kvStore.UpdateService(service.ID, service); err != nil {
+		return err
+	}
+
+	return d.synchronizeService(service, Update)
+}
+
 // findService attempts to find a node in the key-value store that matches
 // the reference. The ID has the highest priority, then the name is checked.
 //

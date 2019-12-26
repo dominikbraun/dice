@@ -19,7 +19,9 @@
 // required at runtime: In-memory, dynamic and quickly accessible.
 package registry
 
-import "errors"
+import (
+	"errors"
+)
 
 // ServiceRoute is a host with an optional route that serves as a HTTP
 // request target. It is an unique identifier for services.

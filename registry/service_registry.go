@@ -177,7 +177,12 @@ func (sr *ServiceRegistry) UnregisterService(serviceID string, force bool) error
 
 // LookupService looks up the service available under a given route. The
 // second return value indicates whether the service could be found or not.
-func (sr *ServiceRegistry) LookupService(route string) (Service, bool) {
+func (sr *ServiceRegistry) LookupService(host string, path string) (Service, bool) {
+	if path == "/" {
+		path = ""
+	}
+	route := host + path
+
 	serviceID, exists := sr.RouteRegistry.LookupServiceID(route)
 	if !exists {
 		return Service{}, false

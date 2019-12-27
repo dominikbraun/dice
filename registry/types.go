@@ -25,6 +25,7 @@ import "github.com/dominikbraun/dice/entity"
 // deployments of a service and returns the next instance using `Next`.
 type Scheduler interface {
 	Next() (*entity.Instance, error)
+	UpdateDeployments(deployments []Deployment)
 }
 
 // Service is the service representation used by the registries. Compared

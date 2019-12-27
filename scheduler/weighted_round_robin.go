@@ -33,13 +33,13 @@ import (
 // Instances that are either detached or considered dead won't be selected,
 // just as instances that are deployed to a detached or dead node.
 type WeightedRoundRobin struct {
-	deployments   *[]registry.Deployment
+	deployments   []registry.Deployment
 	currentIndex  int
 	currentWeight uint8
 }
 
 // newWeightedRoundRobin creates a new WeightedRoundRobin instance.
-func newWeightedRoundRobin(deployments *[]registry.Deployment) *WeightedRoundRobin {
+func newWeightedRoundRobin(deployments []registry.Deployment) *WeightedRoundRobin {
 	wrr := WeightedRoundRobin{
 		deployments:   deployments,
 		currentIndex:  0,
@@ -55,9 +55,9 @@ func (wrr *WeightedRoundRobin) Next() (*entity.Instance, error) {
 	attempts := 0
 
 lookup:
-	for attempts < len(*wrr.deployments) {
-		index := wrr.currentIndex % len(*wrr.deployments)
-		d := (*wrr.deployments)[index]
+	for attempts < len(wrr.deployments) {
+		index := wrr.currentIndex % len(wrr.deployments)
+		d := (wrr.deployments)[index]
 
 		if !d.Instance.IsAttached || !d.Instance.IsAlive {
 			wrr.currentIndex++
@@ -81,4 +81,8 @@ lookup:
 	}
 
 	return nil, errors.New("no service instance found")
+}
+
+func (wrr *WeightedRoundRobin) UpdateDeployments(deployments []registry.Deployment) {
+	wrr.deployments = deployments
 }

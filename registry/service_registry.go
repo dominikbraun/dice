@@ -52,7 +52,7 @@ var (
 // and for registering new services or service deployments at runtime.
 type ServiceRegistry struct {
 	Services      map[string]Service
-	routeRegistry *RouteRegistry
+	routeRegistry RouteRegistry
 	logger        log.Logger
 }
 
@@ -79,57 +79,6 @@ func (sr *ServiceRegistry) Register(entity *entity.Service, build func(*entity.S
 	}
 
 	return sr.RegisterService(service, false)
-}
-
-// UpdateNodes invokes the NodeUpdater function for each node of each service.
-// Since the registry is service-scoped, a node that has deployments of seven
-// services will be called seven times.
-func (sr *ServiceRegistry) UpdateNodes(updater NodeUpdater) error {
-	if updater == nil {
-		panic(ErrInvalidUpdate)
-	}
-
-	for _, s := range sr.Services {
-		for _, d := range s.Deployments {
-			if err := updater(d.Node); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-// UpdateServices invokes the ServiceUpdater function for each service.
-func (sr *ServiceRegistry) UpdateServices(updater ServiceUpdater) error {
-	if updater == nil {
-		panic(ErrInvalidUpdate)
-	}
-
-	for _, s := range sr.Services {
-		if err := updater(s.Entity); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// UpdateInstances invokes the InstanceUpdater for each instance.
-func (sr *ServiceRegistry) UpdateInstances(updater InstanceUpdater) error {
-	if updater == nil {
-		panic(ErrInvalidUpdate)
-	}
-
-	for _, s := range sr.Services {
-		for _, d := range s.Deployments {
-			if err := updater(d.Instance); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
 }
 
 // RegisterService registers a new service. Returns an error if the service
@@ -193,6 +142,22 @@ func (sr *ServiceRegistry) LookupService(host string) (Service, bool) {
 	sr.logger.Warnf("service %s registered in router but not in registry", serviceID)
 
 	return Service{}, false
+}
+
+// Update is the public API for accessing the registry services and applying
+// an update function on each of them. This function may be used to update the
+// service entity itself or some node or instance information.
+//
+// Update should be the only way for other components to gain write-access to
+// the registry's internal services.
+func (sr *ServiceRegistry) Update(updateFunc func(service Service) error) error {
+	for _, s := range sr.Services {
+		if err := updateFunc(s); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // RegisterServiceURL registers a new public URL for a service. Returns an

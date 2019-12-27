@@ -37,40 +37,35 @@ var (
 
 // routeRegistry is the global registry for service routes. It manages a
 // simple mapping between a service route and a corresponding service ID.
-type RouteRegistry struct {
-	routes map[ServiceRoute]string
-}
+type RouteRegistry map[ServiceRoute]string
 
 // NewRouteRegistry creates a new, ready to go routeRegistry instance.
-func NewRouteRegistry() *RouteRegistry {
-	rr := RouteRegistry{
-		routes: make(map[ServiceRoute]string),
-	}
-
-	return &rr
+func NewRouteRegistry() RouteRegistry {
+	rr := make(map[ServiceRoute]string)
+	return rr
 }
 
 // RegisterRoute registers a new route and maps it against a service ID.
 // Returns an error if it already exists, unless force is set to `true`.
-func (rr *RouteRegistry) RegisterRoute(route string, serviceID string, force bool) error {
-	if _, exists := rr.routes[ServiceRoute(route)]; exists {
+func (rr RouteRegistry) RegisterRoute(route string, serviceID string, force bool) error {
+	if _, exists := rr[ServiceRoute(route)]; exists {
 		if !force {
 			return ErrRouteAlreadyRegistered
 		}
 	}
 
-	rr.routes[ServiceRoute(route)] = serviceID
+	rr[ServiceRoute(route)] = serviceID
 
 	return nil
 }
 
 // UnregisterRoute removes a route from the registry. Returns an error if
 // the route doesn't exist.
-func (rr *RouteRegistry) UnregisterRoute(route string) error {
-	if _, exists := rr.routes[ServiceRoute(route)]; !exists {
+func (rr RouteRegistry) UnregisterRoute(route string) error {
+	if _, exists := rr[ServiceRoute(route)]; !exists {
 		return ErrUnregisteredRoute
 	}
-	delete(rr.routes, ServiceRoute(route))
+	delete(rr, ServiceRoute(route))
 
 	return nil
 }
@@ -78,8 +73,8 @@ func (rr *RouteRegistry) UnregisterRoute(route string) error {
 // LookupServiceID looks up a service ID that is associated with the given
 // route. The second return value indicates whether the service ID could
 // be found or not.
-func (rr *RouteRegistry) LookupServiceID(route string) (string, bool) {
-	if serviceID, exists := rr.routes[ServiceRoute(route)]; exists {
+func (rr RouteRegistry) LookupServiceID(route string) (string, bool) {
+	if serviceID, exists := rr[ServiceRoute(route)]; exists {
 		return serviceID, true
 	}
 
@@ -88,7 +83,7 @@ func (rr *RouteRegistry) LookupServiceID(route string) (string, bool) {
 
 // IsRegistered checks and returns if a given route is registered. Note
 // that there's a difference between `example.com` and `example.com/`.
-func (rr *RouteRegistry) IsRegistered(route string) bool {
-	_, exists := rr.routes[ServiceRoute(route)]
+func (rr RouteRegistry) IsRegistered(route string) bool {
+	_, exists := rr[ServiceRoute(route)]
 	return exists
 }

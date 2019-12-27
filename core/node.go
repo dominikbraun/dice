@@ -18,6 +18,7 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
 	"net/url"
@@ -79,7 +80,14 @@ func (d *Dice) AttachNode(nodeRef entity.NodeReference) error {
 		return err
 	}
 
-	return d.synchronizeNode(node, Attach)
+	return d.registry.Update(func(s registry.Service) error {
+		for _, d := range s.Deployments {
+			if d.Node.ID == node.ID {
+				d.Node.IsAttached = true
+			}
+		}
+		return nil
+	})
 }
 
 // DetachNode detaches an existing node from Dice, removing it as a target
@@ -101,7 +109,14 @@ func (d *Dice) DetachNode(nodeRef entity.NodeReference) error {
 		return err
 	}
 
-	return d.synchronizeNode(node, Detach)
+	return d.registry.Update(func(s registry.Service) error {
+		for _, d := range s.Deployments {
+			if d.Node.ID == node.ID {
+				d.Node.IsAttached = false
+			}
+		}
+		return nil
+	})
 }
 
 // NodeInfo returns user-relevant information for an existing node.

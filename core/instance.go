@@ -18,6 +18,7 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
 	"net/url"
@@ -95,7 +96,14 @@ func (d *Dice) AttachInstance(instanceRef entity.InstanceReference) error {
 		return err
 	}
 
-	return d.synchronizeInstance(instance, Attach)
+	return d.registry.Update(func(s registry.Service) error {
+		for _, d := range s.Deployments {
+			if d.Instance.ID == instance.ID {
+				d.Instance.IsAttached = true
+			}
+		}
+		return nil
+	})
 }
 
 // DetachInstance detaches an existing instance from Dice, removing it as
@@ -117,7 +125,14 @@ func (d *Dice) DetachInstance(instanceRef entity.InstanceReference) error {
 		return err
 	}
 
-	return d.synchronizeInstance(instance, Detach)
+	return d.registry.Update(func(s registry.Service) error {
+		for _, d := range s.Deployments {
+			if d.Instance.ID == instance.ID {
+				d.Instance.IsAttached = false
+			}
+		}
+		return nil
+	})
 }
 
 // InstanceInfo returns user-relevant information for an existing instance.

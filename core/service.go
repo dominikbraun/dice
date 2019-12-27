@@ -18,6 +18,8 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/registry"
+	"github.com/dominikbraun/dice/scheduler"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
 )
@@ -49,6 +51,23 @@ func (d *Dice) CreateService(name string, options types.ServiceCreateOptions) er
 	}
 
 	if err := d.kvStore.CreateService(service); err != nil {
+		return err
+	}
+
+	if err := d.registry.Register(service, func(s *entity.Service) (registry.Service, error) {
+		rs := registry.Service{
+			Entity:      service,
+			Deployments: make([]registry.Deployment, 0),
+		}
+
+		serviceScheduler, err := scheduler.New(rs.Deployments, scheduler.BalancingMethod(options.Balancing))
+		if err != nil {
+			return registry.Service{}, err
+		}
+
+		rs.Scheduler = serviceScheduler
+		return rs, nil
+	}); err != nil {
 		return err
 	}
 
@@ -183,6 +202,16 @@ func (d *Dice) SetServiceURL(serviceRef entity.ServiceReference, url string, opt
 
 	if err := d.kvStore.UpdateService(service.ID, service); err != nil {
 		return err
+	}
+
+	if options.Delete {
+		if err := d.registry.UnregisterServiceURL(url); err != nil {
+			return err
+		}
+	} else {
+		if err := d.registry.RegisterServiceURL(service.ID, url); err != nil {
+			return err
+		}
 	}
 
 	return d.synchronizeService(service, Update)

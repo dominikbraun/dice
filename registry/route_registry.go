@@ -25,6 +25,9 @@ import (
 
 // ServiceRoute is a host with an optional route that serves as a HTTP
 // request target. It is an unique identifier for services.
+//
+// Currently, a service route simply is a host like example.com.
+// ToDo: Implemented service routes in URL-form like example.com/api.
 type ServiceRoute string
 
 var (
@@ -32,13 +35,13 @@ var (
 	ErrRouteAlreadyRegistered = errors.New("route is already registered")
 )
 
-// RouteRegistry is the global registry for service routes. It manages a
+// routeRegistry is the global registry for service routes. It manages a
 // simple mapping between a service route and a corresponding service ID.
 type RouteRegistry struct {
 	routes map[ServiceRoute]string
 }
 
-// NewRouteRegistry creates a new, ready to go RouteRegistry instance.
+// NewRouteRegistry creates a new, ready to go routeRegistry instance.
 func NewRouteRegistry() *RouteRegistry {
 	rr := RouteRegistry{
 		routes: make(map[ServiceRoute]string),

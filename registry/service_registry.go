@@ -52,7 +52,7 @@ var (
 // and for registering new services or service deployments at runtime.
 type ServiceRegistry struct {
 	Services      map[string]Service
-	RouteRegistry *RouteRegistry
+	routeRegistry *RouteRegistry
 	logger        log.Logger
 }
 
@@ -62,7 +62,7 @@ type ServiceRegistry struct {
 func NewServiceRegistry(logger log.Logger) *ServiceRegistry {
 	sr := ServiceRegistry{
 		Services:      make(map[string]Service),
-		RouteRegistry: NewRouteRegistry(),
+		routeRegistry: NewRouteRegistry(),
 		logger:        logger,
 	}
 
@@ -72,8 +72,12 @@ func NewServiceRegistry(logger log.Logger) *ServiceRegistry {
 // Register registers a new service. The build function should return a
 // fully initialized registry.Service instance, including deployments and
 // scheduler.
-func (sr *ServiceRegistry) Register(entity *entity.Service, build func(*entity.Service) Service) error {
-	service := build(entity)
+func (sr *ServiceRegistry) Register(entity *entity.Service, build func(*entity.Service) (Service, error)) error {
+	service, err := build(entity)
+	if err != nil {
+		return err
+	}
+
 	return sr.RegisterService(service, false)
 }
 
@@ -140,7 +144,7 @@ func (sr *ServiceRegistry) RegisterService(service Service, force bool) error {
 	}
 
 	for _, r := range service.Entity.URLs {
-		if err := sr.RouteRegistry.RegisterRoute(r, serviceID, force); err != nil {
+		if err := sr.routeRegistry.RegisterRoute(r, serviceID, force); err != nil {
 			return err
 		}
 	}
@@ -166,7 +170,7 @@ func (sr *ServiceRegistry) UnregisterService(serviceID string, force bool) error
 	}
 
 	for _, r := range sr.Services[serviceID].Entity.URLs {
-		if err := sr.RouteRegistry.UnregisterRoute(r); err != nil {
+		if err := sr.routeRegistry.UnregisterRoute(r); err != nil {
 			return err
 		}
 	}
@@ -177,13 +181,8 @@ func (sr *ServiceRegistry) UnregisterService(serviceID string, force bool) error
 
 // LookupService looks up the service available under a given route. The
 // second return value indicates whether the service could be found or not.
-func (sr *ServiceRegistry) LookupService(host string, path string) (Service, bool) {
-	if path == "/" {
-		path = ""
-	}
-	route := host + path
-
-	serviceID, exists := sr.RouteRegistry.LookupServiceID(route)
+func (sr *ServiceRegistry) LookupService(host string) (Service, bool) {
+	serviceID, exists := sr.routeRegistry.LookupServiceID(host)
 	if !exists {
 		return Service{}, false
 	}
@@ -194,6 +193,18 @@ func (sr *ServiceRegistry) LookupService(host string, path string) (Service, boo
 	sr.logger.Warnf("service %s registered in router but not in registry", serviceID)
 
 	return Service{}, false
+}
+
+// RegisterServiceURL registers a new public URL for a service. Returns an
+// error of the given URL already exists for this or another service.
+func (sr *ServiceRegistry) RegisterServiceURL(serviceID, url string) error {
+	return sr.routeRegistry.RegisterRoute(url, serviceID, false)
+}
+
+// UnregisterServiceURL removes a public URL from the registry. Unregistering
+// an URL will cause Dice to return an error for requests related to that URL.
+func (sr *ServiceRegistry) UnregisterServiceURL(url string) error {
+	return sr.routeRegistry.UnregisterRoute(url)
 }
 
 // RegisterDeployment registers new service deployment. Returns an error

@@ -24,11 +24,11 @@ import (
 type SynchronizationTask uint
 
 const (
-	Attachment SynchronizationTask = 0
-	Detachment SynchronizationTask = 1
-	Enabling   SynchronizationTask = 2
-	Disabling  SynchronizationTask = 3
-	Update     SynchronizationTask = 4
+	Attach SynchronizationTask = iota
+	Detach
+	Enable
+	Disable
+	SetURLs
 )
 
 var (
@@ -39,23 +39,21 @@ var (
 // of a node that is currently managed by the service registry.
 func (d *Dice) synchronizeNode(node *entity.Node, task SynchronizationTask) error {
 	switch task {
-	case Attachment:
-		update := func(n *entity.Node) error {
+	case Attach:
+		return d.registry.UpdateNodes(func(n *entity.Node) error {
 			if n.ID == node.ID {
 				n.IsAttached = true
 			}
 			return nil
-		}
-		return d.registry.UpdateNodes(update)
+		})
 
-	case Detachment:
-		update := func(n *entity.Node) error {
+	case Detach:
+		return d.registry.UpdateNodes(func(n *entity.Node) error {
 			if n.ID == node.ID {
 				n.IsAttached = false
 			}
 			return nil
-		}
-		return d.registry.UpdateNodes(update)
+		})
 
 	default:
 		return ErrInvalidSynchronizationTask
@@ -66,32 +64,29 @@ func (d *Dice) synchronizeNode(node *entity.Node, task SynchronizationTask) erro
 // state of a service that is currently managed by the service registry.
 func (d *Dice) synchronizeService(service *entity.Service, task SynchronizationTask) error {
 	switch task {
-	case Enabling:
-		update := func(s *entity.Service) error {
+	case Enable:
+		return d.registry.UpdateServices(func(s *entity.Service) error {
 			if s.ID == service.ID {
 				s.IsEnabled = true
 			}
 			return nil
-		}
-		return d.registry.UpdateServices(update)
+		})
 
-	case Disabling:
-		update := func(s *entity.Service) error {
+	case Disable:
+		return d.registry.UpdateServices(func(s *entity.Service) error {
 			if s.ID == service.ID {
 				s.IsEnabled = false
 			}
 			return nil
-		}
-		return d.registry.UpdateServices(update)
+		})
 
-	case Update:
-		update := func(s *entity.Service) error {
+	case SetURLs:
+		return d.registry.UpdateServices(func(s *entity.Service) error {
 			if s.ID == service.ID {
-				s = service
+				s.URLs = service.URLs
 			}
 			return nil
-		}
-		return d.registry.UpdateServices(update)
+		})
 
 	default:
 		return ErrInvalidSynchronizationTask
@@ -102,23 +97,21 @@ func (d *Dice) synchronizeService(service *entity.Service, task SynchronizationT
 // state of an instance that is currently managed by the service registry.
 func (d *Dice) synchronizeInstance(instance *entity.Instance, task SynchronizationTask) error {
 	switch task {
-	case Attachment:
-		update := func(i *entity.Instance) error {
+	case Attach:
+		return d.registry.UpdateInstances(func(i *entity.Instance) error {
 			if i.ID == instance.ID {
 				i.IsAttached = true
 			}
 			return nil
-		}
-		return d.registry.UpdateInstances(update)
+		})
 
-	case Detachment:
-		update := func(i *entity.Instance) error {
+	case Detach:
+		return d.registry.UpdateInstances(func(i *entity.Instance) error {
 			if i.ID == instance.ID {
 				i.IsAttached = false
 			}
 			return nil
-		}
-		return d.registry.UpdateInstances(update)
+		})
 
 	default:
 		return ErrInvalidSynchronizationTask

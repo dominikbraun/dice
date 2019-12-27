@@ -18,8 +18,6 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
-	"github.com/dominikbraun/dice/registry"
-	"github.com/dominikbraun/dice/scheduler"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
 )
@@ -54,20 +52,7 @@ func (d *Dice) CreateService(name string, options types.ServiceCreateOptions) er
 		return err
 	}
 
-	if err := d.registry.Register(service, func(s *entity.Service) (registry.Service, error) {
-		rs := registry.Service{
-			Entity:      service,
-			Deployments: make([]registry.Deployment, 0),
-		}
-
-		serviceScheduler, err := scheduler.New(rs.Deployments, scheduler.BalancingMethod(options.Balancing))
-		if err != nil {
-			return registry.Service{}, err
-		}
-
-		rs.Scheduler = serviceScheduler
-		return rs, nil
-	}); err != nil {
+	if err := d.registry.Register(service, d.buildRegistryService); err != nil {
 		return err
 	}
 
@@ -97,7 +82,7 @@ func (d *Dice) EnableService(serviceRef entity.ServiceReference) error {
 		return err
 	}
 
-	return d.synchronizeService(service, Enabling)
+	return d.synchronizeService(service, Enable)
 }
 
 // DisableService disables a service, removing it as request target and
@@ -118,7 +103,7 @@ func (d *Dice) DisableService(serviceRef entity.ServiceReference) error {
 		return err
 	}
 
-	return d.synchronizeService(service, Disabling)
+	return d.synchronizeService(service, Disable)
 }
 
 // ServiceInfo returns user-relevant information for an existing service.
@@ -214,7 +199,7 @@ func (d *Dice) SetServiceURL(serviceRef entity.ServiceReference, url string, opt
 		}
 	}
 
-	return d.synchronizeService(service, Update)
+	return d.synchronizeService(service, SetURLs)
 }
 
 // findService attempts to find a node in the key-value store that matches

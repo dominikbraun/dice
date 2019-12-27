@@ -95,7 +95,7 @@ func (d *Dice) AttachInstance(instanceRef entity.InstanceReference) error {
 		return err
 	}
 
-	return d.synchronizeInstance(instance, Attachment)
+	return d.synchronizeInstance(instance, Attach)
 }
 
 // DetachInstance detaches an existing instance from Dice, removing it as
@@ -117,7 +117,7 @@ func (d *Dice) DetachInstance(instanceRef entity.InstanceReference) error {
 		return err
 	}
 
-	return d.synchronizeInstance(instance, Detachment)
+	return d.synchronizeInstance(instance, Detach)
 }
 
 // InstanceInfo returns user-relevant information for an existing instance.

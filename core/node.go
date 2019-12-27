@@ -79,7 +79,7 @@ func (d *Dice) AttachNode(nodeRef entity.NodeReference) error {
 		return err
 	}
 
-	return d.synchronizeNode(node, Attachment)
+	return d.synchronizeNode(node, Attach)
 }
 
 // DetachNode detaches an existing node from Dice, removing it as a target
@@ -101,7 +101,7 @@ func (d *Dice) DetachNode(nodeRef entity.NodeReference) error {
 		return err
 	}
 
-	return d.synchronizeNode(node, Detachment)
+	return d.synchronizeNode(node, Detach)
 }
 
 // NodeInfo returns user-relevant information for an existing node.

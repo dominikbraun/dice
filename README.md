@@ -85,13 +85,13 @@ $ dice instance create A main-server 172.21.21.1:8080 --name main-instance
 
 This tells Dice to register an instance of service `A` that has been deployed to `main-server` and is available at `172.21.21.1:8080`.
 
-Attaching the created instance to Dice will make it available as a target for load balancing:
+Attaching the created instance to Dice will make it available for load balancing:
 
 ````shell script
 $ dice instance attach main-instance
 ````
 
-We could also use the full instance URL here, but names like `main-instance` are more convenient. The created instance will now receive incoming request for `example.com`.
+We could also use the full instance URL here, but names like `main-instance` are more convenient. The created instance will now receive incoming requests for `example.com`.
 
 ## <img src="https://sternentstehung.de/dice-dot.png"> Installation
 

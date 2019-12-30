@@ -181,7 +181,7 @@ func (d *Dice) initializeRegistry() error {
 // of the particular service and provides a scheduler as well.
 //
 // See the registry.Service docs for further explanations.
-func (d *Dice) buildRegistryService(service *entity.Service) (registry.Service, error) {
+func (d *Dice) buildRegistryService(service *entity.Service) (*registry.Service, error) {
 	registryService := registry.Service{
 		Entity: service,
 	}
@@ -190,7 +190,7 @@ func (d *Dice) buildRegistryService(service *entity.Service) (registry.Service, 
 		return i.ServiceID == service.ID
 	})
 	if err != nil {
-		return registryService, err
+		return &registryService, err
 	}
 
 	registryService.Deployments = make([]registry.Deployment, len(instances))
@@ -198,7 +198,7 @@ func (d *Dice) buildRegistryService(service *entity.Service) (registry.Service, 
 	for i, inst := range instances {
 		node, err := d.kvStore.FindNode(inst.NodeID)
 		if err != nil {
-			return registryService, err
+			return &registryService, err
 		}
 
 		registryService.Deployments[i] = registry.Deployment{
@@ -209,9 +209,9 @@ func (d *Dice) buildRegistryService(service *entity.Service) (registry.Service, 
 
 	serviceScheduler, err := scheduler.New(registryService.Deployments, scheduler.BalancingMethod(service.BalancingMethod))
 	if err != nil {
-		return registryService, err
+		return &registryService, err
 	}
 
 	registryService.Scheduler = serviceScheduler
-	return registryService, nil
+	return &registryService, nil
 }

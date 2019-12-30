@@ -51,7 +51,7 @@ var (
 // ServiceRegistry also offers methods for updating existing service data
 // and for registering new services or service deployments at runtime.
 type ServiceRegistry struct {
-	Services      map[string]Service
+	Services      map[string]*Service
 	routeRegistry RouteRegistry
 	logger        log.Logger
 }
@@ -61,7 +61,7 @@ type ServiceRegistry struct {
 // stored services on startup, see `Register`.
 func NewServiceRegistry(logger log.Logger) *ServiceRegistry {
 	sr := ServiceRegistry{
-		Services:      make(map[string]Service),
+		Services:      make(map[string]*Service),
 		routeRegistry: NewRouteRegistry(),
 		logger:        logger,
 	}
@@ -72,7 +72,7 @@ func NewServiceRegistry(logger log.Logger) *ServiceRegistry {
 // Register registers a new service. The build function should return a
 // fully initialized registry.Service instance, including deployments and
 // scheduler.
-func (sr *ServiceRegistry) Register(entity *entity.Service, build func(*entity.Service) (Service, error)) error {
+func (sr *ServiceRegistry) Register(entity *entity.Service, build func(*entity.Service) (*Service, error)) error {
 	service, err := build(entity)
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func (sr *ServiceRegistry) Register(entity *entity.Service, build func(*entity.S
 
 // RegisterService registers a new service. Returns an error if the service
 // is already registered, unless force is set to `true`.
-func (sr *ServiceRegistry) RegisterService(service Service, force bool) error {
+func (sr *ServiceRegistry) RegisterService(service *Service, force bool) error {
 	serviceID := service.Entity.ID
 
 	if _, exists := sr.Services[serviceID]; exists {
@@ -130,10 +130,10 @@ func (sr *ServiceRegistry) UnregisterService(serviceID string, force bool) error
 
 // LookupService looks up the service available under a given route. The
 // second return value indicates whether the service could be found or not.
-func (sr *ServiceRegistry) LookupService(host string) (Service, bool) {
+func (sr *ServiceRegistry) LookupService(host string) (*Service, bool) {
 	serviceID, exists := sr.routeRegistry.LookupServiceID(host)
 	if !exists {
-		return Service{}, false
+		return &Service{}, false
 	}
 
 	if service, exists := sr.Services[serviceID]; exists {
@@ -141,7 +141,7 @@ func (sr *ServiceRegistry) LookupService(host string) (Service, bool) {
 	}
 	sr.logger.Warnf("service %s registered in router but not in registry", serviceID)
 
-	return Service{}, false
+	return &Service{}, false
 }
 
 // Update is the public API for accessing the registry services and applying
@@ -150,7 +150,7 @@ func (sr *ServiceRegistry) LookupService(host string) (Service, bool) {
 //
 // Update should be the only way for other components to gain write-access to
 // the registry's internal services.
-func (sr *ServiceRegistry) Update(updateFunc func(service Service) error) error {
+func (sr *ServiceRegistry) Update(updateFunc func(service *Service) error) error {
 	for _, s := range sr.Services {
 		if err := updateFunc(s); err != nil {
 			return err
@@ -181,8 +181,8 @@ func (sr *ServiceRegistry) RegisterDeployment(deployment Deployment) error {
 		return ErrUnregisteredService
 	}
 
-	deployments := sr.Services[serviceID].Deployments
-	deployments = append(deployments, deployment)
+	service := sr.Services[serviceID]
+	service.Deployments = append(service.Deployments, deployment)
 
 	return nil
 }

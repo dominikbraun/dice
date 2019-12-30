@@ -40,13 +40,13 @@ type Config struct {
 // mark each instance as dead or alive on each check.
 type HealthCheck struct {
 	config   Config
-	services *map[string]registry.Service
+	services *map[string]*registry.Service
 	stop     chan bool
 }
 
 // New creates a new HealthCheck instance. It will take all service instances
 // from a service map into account.
-func New(config Config, services *map[string]registry.Service) (*HealthCheck, error) {
+func New(config Config, services *map[string]*registry.Service) (*HealthCheck, error) {
 	if services == nil {
 		return nil, ErrInvalidDeployments
 	}

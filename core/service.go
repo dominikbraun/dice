@@ -83,7 +83,7 @@ func (d *Dice) EnableService(serviceRef entity.ServiceReference) error {
 		return err
 	}
 
-	return d.registry.Update(func(s registry.Service) error {
+	return d.registry.Update(func(s *registry.Service) error {
 		if s.Entity.ID == service.ID {
 			s.Entity.IsEnabled = true
 		}
@@ -109,7 +109,7 @@ func (d *Dice) DisableService(serviceRef entity.ServiceReference) error {
 		return err
 	}
 
-	return d.registry.Update(func(s registry.Service) error {
+	return d.registry.Update(func(s *registry.Service) error {
 		if s.Entity.ID == service.ID {
 			s.Entity.IsEnabled = false
 		}
@@ -208,7 +208,7 @@ func (d *Dice) SetServiceURL(serviceRef entity.ServiceReference, url string, opt
 		}
 	}
 
-	return d.registry.Update(func(s registry.Service) error {
+	return d.registry.Update(func(s *registry.Service) error {
 		if s.Entity.ID == service.ID {
 			s.Entity.URLs = service.URLs
 		}

@@ -17,6 +17,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dominikbraun/dice/entity"
 	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
@@ -70,8 +71,19 @@ func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity
 		return err
 	}
 
+	deployment := registry.Deployment{
+		Node:     node,
+		Instance: instance,
+	}
+
+	if err := d.registry.RegisterDeployment(deployment); err != nil {
+		return err
+	}
+
 	if options.Attach {
-		return d.AttachInstance(entity.InstanceReference(instance.ID))
+		if err := d.AttachInstance(entity.InstanceReference(instance.ID)); err != nil {
+			return fmt.Errorf("instance created but not attached: %s", err.Error())
+		}
 	}
 
 	return nil
@@ -96,7 +108,7 @@ func (d *Dice) AttachInstance(instanceRef entity.InstanceReference) error {
 		return err
 	}
 
-	return d.registry.Update(func(s registry.Service) error {
+	return d.registry.Update(func(s *registry.Service) error {
 		for _, d := range s.Deployments {
 			if d.Instance.ID == instance.ID {
 				d.Instance.IsAttached = true
@@ -125,7 +137,7 @@ func (d *Dice) DetachInstance(instanceRef entity.InstanceReference) error {
 		return err
 	}
 
-	return d.registry.Update(func(s registry.Service) error {
+	return d.registry.Update(func(s *registry.Service) error {
 		for _, d := range s.Deployments {
 			if d.Instance.ID == instance.ID {
 				d.Instance.IsAttached = false
@@ -270,14 +282,16 @@ func (d *Dice) instanceIsUnique(instance *entity.Instance) (bool, error) {
 		return false, nil
 	}
 
-	instancesByName, err := d.kvStore.FindInstances(func(i *entity.Instance) bool {
-		return i.ServiceID == instance.ServiceID && i.Name == instance.Name
-	})
+	if instance.Name != "" {
+		instancesByName, err := d.kvStore.FindInstances(func(i *entity.Instance) bool {
+			return i.ServiceID == instance.ServiceID && i.Name == instance.Name
+		})
 
-	if err != nil {
-		return false, err
-	} else if len(instancesByName) > 0 {
-		return false, nil
+		if err != nil {
+			return false, err
+		} else if len(instancesByName) > 0 {
+			return false, nil
+		}
 	}
 
 	return true, nil

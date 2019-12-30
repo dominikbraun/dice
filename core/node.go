@@ -80,7 +80,7 @@ func (d *Dice) AttachNode(nodeRef entity.NodeReference) error {
 		return err
 	}
 
-	return d.registry.Update(func(s registry.Service) error {
+	return d.registry.Update(func(s *registry.Service) error {
 		for _, d := range s.Deployments {
 			if d.Node.ID == node.ID {
 				d.Node.IsAttached = true
@@ -109,7 +109,7 @@ func (d *Dice) DetachNode(nodeRef entity.NodeReference) error {
 		return err
 	}
 
-	return d.registry.Update(func(s registry.Service) error {
+	return d.registry.Update(func(s *registry.Service) error {
 		for _, d := range s.Deployments {
 			if d.Node.ID == node.ID {
 				d.Node.IsAttached = false

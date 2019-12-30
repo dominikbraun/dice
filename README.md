@@ -19,7 +19,7 @@
 
 ---
 
-:city_sunset::game_die: Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
+:game_die: Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
 
 ## <img src="https://sternentstehung.de/dice-dot.png"> Included Features
 
@@ -33,7 +33,7 @@
 * Manage deployments by logical and physical affiliation
 * Dice is passive: Making a service available for load balancing is up to you
 
-## :small_orange_diamond: Simple Example
+## <img src="https://sternentstehung.de/dice-dot.png"> Simple Example
 
 ### Scenario
 
@@ -48,7 +48,7 @@ We've got the services _A_, _B_ and _C_. These services may be web applications 
 
 Service _A_, _B_ and _C_ have an instance deployed to _MainServer_. A service instance is a concrete executable. Additionally, there are instances of _A_ and _B_ deployed to _AnotherServer_ because they're under heavy load.
 
-### Get started
+### Let's start
 
 First of all we register our servers to Dice:
 
@@ -81,12 +81,12 @@ $ dice instance attach MyInstance
 
 We could also use the full instance URL here. `MyInstance` will now receive incoming requests for service _A_.
 
-## :small_orange_diamond: Installation
+## <img src="https://sternentstehung.de/dice-dot.png"> Installation
 
 Download the [latest release of Dice](https://github.com/dominikbraun/dice/releases).
 
 ... Install instructions here ...
 
-## :small_orange_diamond: Usage
+## <img src="https://sternentstehung.de/dice-dot.png"> Usage
 
 Dice is a passive tool. This means that you 

@@ -21,7 +21,7 @@
 
 :city_sunset::game_die: Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
 
-## <img src="https://sternentstehung.de/list-item.png"> Included Features
+## <img src="https://sternentstehung.de/dice-list-item.png"> Included Features
 
 
 * Different load balancing methods for each application

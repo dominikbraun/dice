@@ -50,9 +50,9 @@ Our infrastructure is quite simple: We've got two servers, _main-server_ and _an
 
 Each service _A_, _B_ and _C_ has an instance deployed to _main-server_. An instance is a concrete executable instance of a service, like a PHP application running on Apache or a standalone Go binary. Additionally, there are instances of _A_ and _B_ deployed to _another-server_ because they're under heavy load.
 
-### Getting started
+### Setting up our environment
 
-Let's make our infrastructure available to Dice. After starting the Dice service, we can register our servers:
+Let's make our infrastructure available to Dice. After starting Dice, we can register our servers:
 
 ````shell script
 $ dice node create main-server --weight 2
@@ -73,7 +73,11 @@ We also have to specify the public URL that belongs to our service. Mapping an U
 $ dice service url A example.com
 ````
 
-When an request for `example.com` hits Dice, it will forward the request to an instance of service _A_. We can register such an instance like so:
+When an request for `example.com` hits Dice, it will forward the request to an instance of service _A_.
+
+### Start load balancing
+
+We can register such an instance like so:
 
 ````shell script
 $ dice instance create A main-server 172.21.21.1:8080 --name main-instance

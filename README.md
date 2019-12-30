@@ -37,9 +37,9 @@
 
 ## <img src="https://sternentstehung.de/dice-dot.png"> Simple Example
 
-### Scenario
+### The Scenario
 
-We've got the services _A_, _B_ and _C_. These services may be web applications or authentication services for example. Our infrastructure is simple: There is a _MainServer_ and _AnotherServer_. Servers, virtual machines etc. are known to Dice as _nodes_.
+Our infrastructure is quite simple: We've got two servers, _main-server_ and _another-server_. Servers, virtual machines etc. are known to Dice as _nodes_. Also, we have the services _A_, _B_ and _C_. These services might be web applications, REST APIs or authentication services for example.
 
 <p align="center">
 <br>
@@ -48,9 +48,9 @@ We've got the services _A_, _B_ and _C_. These services may be web applications 
 <br>
 </p>
 
-Service _A_, _B_ and _C_ have an instance deployed to _MainServer_. A service instance is a concrete executable. Additionally, there are instances of _A_ and _B_ deployed to _AnotherServer_ because they're under heavy load.
+Each service _A_, _B_ and _C_ has an instance deployed to _main-server_. An instance is a concrete executable instance of a service, like a PHP application running on Apache or a standalone Go binary. Additionally, there are instances of _A_ and _B_ deployed to _another-server_ because they're under heavy load.
 
-### Let's start
+### Getting started
 
 First of all we register our servers to Dice:
 

@@ -41,7 +41,7 @@ We've got the services _A_, _B_ and _C_. These services may be web applications 
 
 <p align="center">
 <br>
-<img src="https://sternentstehung.de/dice-example.png">
+<img src="https://sternentstehung.de/dice-scenario.png">
 <br>
 <br>
 </p>

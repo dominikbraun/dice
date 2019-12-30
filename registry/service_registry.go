@@ -37,7 +37,6 @@ var (
 	ErrServiceNotRemovable      = errors.New("service has attached instances on an attached node")
 	ErrUnregisteredDeployment   = errors.New("deployment is not registered")
 	ErrDeploymentNotRemovable   = errors.New("deployed instance is attached on an attached node")
-	ErrInvalidUpdate            = errors.New("the provided update is invalid")
 )
 
 // ServiceRegistry is the global registry for all services known to Dice.
@@ -184,6 +183,8 @@ func (sr *ServiceRegistry) RegisterDeployment(deployment Deployment) error {
 	service := sr.Services[serviceID]
 	service.Deployments = append(service.Deployments, deployment)
 
+	service.Scheduler.UpdateDeployments(service.Deployments)
+
 	return nil
 }
 
@@ -210,9 +211,11 @@ func (sr *ServiceRegistry) UnregisterDeployment(deployment Deployment, force boo
 		}
 	}
 
-	deployments := sr.Services[serviceID].Deployments
-	deployments[index] = deployments[len(deployments)-1]
-	deployments = deployments[:len(deployments)-1]
+	service := sr.Services[serviceID]
+	service.Deployments[index] = service.Deployments[len(service.Deployments)-1]
+	service.Deployments = service.Deployments[:len(service.Deployments)-1]
+
+	service.Scheduler.UpdateDeployments(service.Deployments)
 
 	return nil
 }

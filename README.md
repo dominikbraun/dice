@@ -35,7 +35,7 @@
 * Manage deployments by logical and physical affiliation
 * Dice is passive: Making a service available for load balancing is up to you
 
-## <img src="https://sternentstehung.de/dice-dot.png"> Simple Example
+## <img src="https://sternentstehung.de/dice-dot.png"> Quick Example
 
 ### The Scenario
 
@@ -52,36 +52,42 @@ Each service _A_, _B_ and _C_ has an instance deployed to _main-server_. An inst
 
 ### Getting started
 
-First of all we register our servers to Dice:
+Let's make our infrastructure available to Dice. After starting the Dice service, we can register our servers:
 
 ````shell script
-$ dice node create MainServer 172.21.21.1 --weight 2
-$ dice node create AnotherServer 172.21.21.2
+$ dice node create main-server --weight 2
+$ dice node create another-server
 ````
 
-The IP is mandatory, but we could also provide a name. `--weight 2` indicates that the server has double computing capacities.
-Then we tell Dice about our services _A_ and _B_:
+Registering these servers will help Dice choosing an appropriate service instance later. `--weight 2` indicates that `main-server` has double computing capacaties compared to our other servers.
+
+Before we're able to register our service instances, we have to tell Dice about the services itself. For this example, we'll just create service _A_.
 
 ````shell script
 $ dice service create A
-$ dice service create B
 ````
 
-After that, one or more service instances have to be registered.
+We also have to specify the public URL that belongs to our service. Mapping an URL to a service is fairly simple:
 
 ````shell script
-$ dice instance create A MainServer 8080 --name MyInstance
+$ dice service url A example.com
 ````
 
-This tells Dice to register an instance of service `A` that has been deployed to `MainServer` and is available on port `8080`.
-
-Now we attach the created instance to Dice, which will make it available as a target for load balancing:
+When an request for `example.com` hits Dice, it will forward the request to an instance of service _A_. We can register such an instance like so:
 
 ````shell script
-$ dice instance attach MyInstance
+$ dice instance create A main-server 172.21.21.1:8080 --name main-instance
 ````
 
-We could also use the full instance URL here. `MyInstance` will now receive incoming requests for service _A_.
+This tells Dice to register an instance of service `A` that has been deployed to `main-server` and is available at `172.21.21.1:8080`.
+
+Attaching the created instance to Dice will make it available as a target for load balancing:
+
+````shell script
+$ dice instance attach main-instance
+````
+
+We could also use the full instance URL here, but names like `main-instance` are more convenient. The created instance will now receive incoming request for `example.com`.
 
 ## <img src="https://sternentstehung.de/dice-dot.png"> Installation
 

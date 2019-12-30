@@ -1,6 +1,8 @@
 <p align="center">
 <br>
+<br>
 <img src="https://sternentstehung.de/dice-colored-100.png">
+<br>
 <br>
 <br>
 </p>

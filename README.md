@@ -4,7 +4,6 @@
 <img src="https://sternentstehung.de/dice-colored-100.png">
 <br>
 <br>
-<br>
 </p>
 
 <h3 align="center">Dice &ndash; Simple load balancing for non-microservice infrastructures.</h3>

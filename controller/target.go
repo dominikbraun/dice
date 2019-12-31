@@ -18,7 +18,6 @@ package controller
 import (
 	"github.com/dominikbraun/dice/entity"
 	"github.com/dominikbraun/dice/types"
-	"net/url"
 )
 
 // Target concludes all *Target interfaces. Any Target implementation is
@@ -31,7 +30,7 @@ type Target interface {
 
 // NodeTarget prescribes methods for backends working with nodes.
 type NodeTarget interface {
-	CreateNode(url *url.URL, options types.NodeCreateOptions) error
+	CreateNode(name string, options types.NodeCreateOptions) error
 	AttachNode(nodeRef entity.NodeReference) error
 	DetachNode(nodeRef entity.NodeReference) error
 	NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, error)

@@ -167,7 +167,9 @@ func (d *Dice) initializeRegistry() error {
 		}
 
 		if err := d.registry.RegisterService(registryService, false); err != nil {
-			return err
+			if err != registry.ErrRouteAlreadyRegistered {
+				return err
+			}
 		}
 	}
 

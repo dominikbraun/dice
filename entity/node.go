@@ -19,7 +19,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"github.com/dominikbraun/dice/types"
-	"net/url"
 	"time"
 )
 
@@ -35,7 +34,6 @@ type NodeReference string
 type Node struct {
 	ID            string    `json:"id"`
 	Name          string    `json:"name"`
-	URL           *url.URL  `json:"url"`
 	Weight        uint8     `json:"weight"`
 	IsAttached    bool      `json:"is_attached"`
 	CreatedAt     time.Time `json:"created_at"`
@@ -44,7 +42,7 @@ type Node struct {
 }
 
 // NewNode creates a new Node instance. It doesn't guarantee uniqueness.
-func NewNode(url *url.URL, options types.NodeCreateOptions) (*Node, error) {
+func NewNode(name string, options types.NodeCreateOptions) (*Node, error) {
 	uuid, err := generateEntityID()
 	if err != nil {
 		return nil, err
@@ -52,8 +50,7 @@ func NewNode(url *url.URL, options types.NodeCreateOptions) (*Node, error) {
 
 	n := Node{
 		ID:            uuid,
-		Name:          options.Name,
-		URL:           url,
+		Name:          name,
 		Weight:        options.Weight,
 		IsAttached:    options.Attach,
 		CreatedAt:     time.Now(),

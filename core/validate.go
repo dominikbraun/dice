@@ -18,7 +18,6 @@ package core
 import (
 	"github.com/dominikbraun/dice/entity"
 	"regexp"
-	"strings"
 )
 
 // urlSafe specifies a regular expression for a valid URL. It only allows
@@ -34,10 +33,6 @@ func validateNode(node *entity.Node) (bool, string) {
 
 	if !urlSafe.MatchString(node.Name) {
 		return false, "Name must only contain _ and - as special characters"
-	}
-
-	if strings.Contains(node.URL.String(), "://") {
-		return false, "URL must not contain protocol"
 	}
 
 	return true, ""

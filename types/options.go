@@ -18,9 +18,8 @@ package types
 // NodeCreateOptions combines all user options for creating a new node.
 // It serves as a Data Transfer Object for the Dice core.
 type NodeCreateOptions struct {
-	Name   string `json:"name"`
-	Weight uint8  `json:"weight"`
-	Attach bool   `json:"attach"`
+	Weight uint8 `json:"weight"`
+	Attach bool  `json:"attach"`
 }
 
 // NodeInfoOptions combines all user options for printing information

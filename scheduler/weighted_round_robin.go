@@ -59,7 +59,7 @@ lookup:
 		index := wrr.currentIndex % len(wrr.deployments)
 		d := (wrr.deployments)[index]
 
-		if !d.Instance.IsAttached {
+		if !d.Instance.IsAttached || !d.Instance.IsAlive {
 			wrr.currentIndex++
 			attempts++
 			continue lookup

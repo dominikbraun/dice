@@ -21,7 +21,6 @@ import (
 	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
-	"net/url"
 )
 
 var (
@@ -32,8 +31,8 @@ var (
 // CreateNode creates a new node with the provided URL and stores the node
 // in the key-value store. If the `Attach` option is set, the created node
 // will be attached immediately.
-func (d *Dice) CreateNode(url *url.URL, options types.NodeCreateOptions) error {
-	node, err := entity.NewNode(url, options)
+func (d *Dice) CreateNode(name string, options types.NodeCreateOptions) error {
+	node, err := entity.NewNode(name, options)
 	if err != nil {
 		return err
 	}
@@ -133,7 +132,6 @@ func (d *Dice) NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, err
 	nodeInfo := types.NodeInfoOutput{
 		ID:         node.ID,
 		Name:       node.Name,
-		URL:        node.URL.String(),
 		IsAttached: node.IsAttached,
 		IsAlive:    node.IsAlive,
 	}
@@ -164,7 +162,6 @@ func (d *Dice) ListNodes(options types.NodeListOptions) ([]types.NodeInfoOutput,
 		info := types.NodeInfoOutput{
 			ID:         n.ID,
 			Name:       n.Name,
-			URL:        n.URL.String(),
 			IsAttached: n.IsAttached,
 			IsAlive:    n.IsAlive,
 		}
@@ -200,16 +197,6 @@ func (d *Dice) findNode(nodeRef entity.NodeReference) (*entity.Node, error) {
 		return nodesByName[0], nil
 	}
 
-	nodesByURL, err := d.kvStore.FindNodes(func(node *entity.Node) bool {
-		return node.URL.String() == string(nodeRef)
-	})
-
-	if err != nil {
-		return nil, err
-	} else if len(nodesByURL) > 0 {
-		return nodesByURL[0], nil
-	}
-
 	return nil, nil
 }
 
@@ -224,17 +211,7 @@ func (d *Dice) nodeIsUnique(node *entity.Node) (bool, error) {
 		return false, nil
 	}
 
-	if node.Name != "" {
-		storedNode, err = d.findNode(entity.NodeReference(node.Name))
-
-		if err != nil {
-			return false, err
-		} else if storedNode != nil {
-			return false, nil
-		}
-	}
-
-	storedNode, err = d.findNode(entity.NodeReference(node.URL.String()))
+	storedNode, err = d.findNode(entity.NodeReference(node.Name))
 
 	if err != nil {
 		return false, err

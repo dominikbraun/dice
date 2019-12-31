@@ -26,7 +26,7 @@ package types
 //
 // The other following types like ServiceCreate serve the exact same purpose.
 type NodeCreate struct {
-	URL string `json:"url"`
+	Name string `json:"name"`
 	NodeCreateOptions
 }
 

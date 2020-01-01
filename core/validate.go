@@ -22,7 +22,7 @@ import (
 
 // urlSafe specifies a regular expression for a valid URL. It only allows
 // characters that are URL-safe according to RFC 3986.
-var urlSafe = regexp.MustCompile("^[a-zA-Z0-9_-]*$")
+var urlSafe = regexp.MustCompile("^[a-zA-Z0-9_.-]*$")
 
 // validateNode checks all node properties and determines if they're valid.
 // It does not check whether the node does already exist or not.

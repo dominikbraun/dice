@@ -42,15 +42,15 @@ func (c *CLI) nodeCreateCmd() *cobra.Command {
 	var options types.NodeCreateOptions
 
 	nodeCreateCmd := cobra.Command{
-		Use:   "create <URL>",
+		Use:   "create <NAME>",
 		Short: `Create a new node`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			url := args[0]
+			name := args[0]
 			route := "/nodes/create"
 
 			body := types.NodeCreate{
-				URL:               url,
+				Name:              name,
 				NodeCreateOptions: options,
 			}
 
@@ -68,7 +68,6 @@ func (c *CLI) nodeCreateCmd() *cobra.Command {
 		},
 	}
 
-	nodeCreateCmd.Flags().StringVarP(&options.Name, "name", "n", "", `assign a name to the node`)
 	nodeCreateCmd.Flags().Uint8VarP(&options.Weight, "weight", "w", 1, `specify the node's weight`)
 	nodeCreateCmd.Flags().BoolVarP(&options.Attach, "attach", "a", false, `immediately attach the node`)
 
@@ -78,7 +77,7 @@ func (c *CLI) nodeCreateCmd() *cobra.Command {
 // nodeAttachCmd creates and implements the `node attach` command.
 func (c *CLI) nodeAttachCmd() *cobra.Command {
 	nodeAttachCmd := cobra.Command{
-		Use:   "attach <ID|NAME|URL>",
+		Use:   "attach <ID|NAME>",
 		Short: `Attach an existing node`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -105,7 +104,7 @@ func (c *CLI) nodeAttachCmd() *cobra.Command {
 // nodeDetachCmd creates and implements the `node detach` command.
 func (c *CLI) nodeDetachCmd() *cobra.Command {
 	nodeDetachCmd := cobra.Command{
-		Use:   "detach <ID|NAME|URL>",
+		Use:   "detach <ID|NAME>",
 		Short: `Detach an existing node`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -134,7 +133,7 @@ func (c *CLI) nodeInfoCmd() *cobra.Command {
 	var options types.NodeInfoOptions
 
 	nodeInfoCmd := cobra.Command{
-		Use:   "info <ID|NAME|URL>",
+		Use:   "info <ID|NAME>",
 		Short: `Print information for a node`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

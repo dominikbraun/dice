@@ -22,7 +22,7 @@ import (
 	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
-	"net/url"
+	"strings"
 )
 
 var (
@@ -50,7 +50,7 @@ func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity
 		return ErrNodeNotFound
 	}
 
-	instance, err := entity.NewInstance(service.ID, node.ID, url, options)
+	instance, err := entity.NewInstance(service.ID, node.ID, normalizeURL(url), options)
 	if err != nil {
 		return err
 	}
@@ -163,7 +163,7 @@ func (d *Dice) InstanceInfo(instanceRef entity.InstanceReference) (types.Instanc
 		Name:       instance.Name,
 		ServiceID:  instance.ServiceID,
 		NodeID:     instance.NodeID,
-		URL:        instance.URL,
+		URL:        instance.URL.String(),
 		Version:    instance.Version,
 		IsAttached: instance.IsAttached,
 		IsAlive:    instance.IsAlive,
@@ -203,14 +203,16 @@ func (d *Dice) findInstance(instanceRef entity.InstanceReference) (*entity.Insta
 		return instancesByName[0], nil
 	}
 
-	if instanceURL, err := url.Parse("//" + string(instanceRef)); err == nil {
-		instanceByURL, err := d.findInstanceByURL(instanceURL)
+	instanceURL := normalizeURL(string(instanceRef))
 
-		if err != nil {
-			return nil, err
-		} else if instanceByURL != nil {
-			return instanceByURL, nil
-		}
+	instancesByURL, err := d.kvStore.FindInstances(func(i *entity.Instance) bool {
+		return i.URL.String() == instanceURL
+	})
+
+	if err != nil {
+		return nil, err
+	} else if len(instanceURL) > 0 {
+		return instancesByURL[0], nil
 	}
 
 	return nil, nil
@@ -241,7 +243,7 @@ func (d *Dice) ListInstances(options types.InstanceListOptions) ([]types.Instanc
 			Name:       inst.Name,
 			ServiceID:  inst.ServiceID,
 			NodeID:     inst.NodeID,
-			URL:        inst.URL,
+			URL:        inst.URL.String(),
 			Version:    inst.Version,
 			IsAttached: inst.IsAttached,
 			IsAlive:    inst.IsAlive,
@@ -250,22 +252,6 @@ func (d *Dice) ListInstances(options types.InstanceListOptions) ([]types.Instanc
 	}
 
 	return serviceList, nil
-}
-
-// findInstanceByURL takes an URL and searches for an instance that is
-// available under that URL.
-func (d *Dice) findInstanceByURL(url *url.URL) (*entity.Instance, error) {
-	instancesByNode, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
-		return instance.URL == url.String()
-	})
-
-	if err != nil {
-		return nil, err
-	} else if len(instancesByNode) > 0 {
-		return instancesByNode[0], nil
-	}
-
-	return nil, nil
 }
 
 // instanceIsUnique checks if a newly created instance is unique. An instance
@@ -295,4 +281,21 @@ func (d *Dice) instanceIsUnique(instance *entity.Instance) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// normalizeURL turns any URL string into an normalized, uniformly URL. This
+// is necessary for converting a user input like example.com into an appropriate
+// url.URL instance.
+//
+// Even though example.com is a valid URL for url.Parse(), it is not possible to
+// dial it since the scheme is missing. Only //example.com would be usable, and
+// normalizeURL makes sure that the provided URL will be usable.
+func normalizeURL(url string) string {
+	normalized := url
+
+	if strings.HasPrefix(url, "http") && !strings.HasPrefix(url, "//") {
+		normalized = "//" + normalized
+	}
+
+	return normalized
 }

@@ -23,6 +23,8 @@
 
 :game_die: Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
 
+**Project status:** In development, some features are experimental yet.
+
 ## <img src="https://sternentstehung.de/dice-dot.png"> Included Features
 
 
@@ -55,43 +57,39 @@ Each service _A_, _B_ and _C_ has an instance deployed to _main-server_. An inst
 Let's make our infrastructure available to Dice. After starting Dice, we can register our servers:
 
 ````shell script
-$ dice node create main-server --weight 2
-$ dice node create another-server
+$ dice node create --attach --weight=2 main-server
+$ dice node create --attach another-server
 ````
 
-Registering these servers will help Dice choosing an appropriate service instance later. `--weight 2` indicates that `main-server` has double computing capacaties compared to our other servers.
+Registering these servers will help Dice choosing an appropriate service instance later. `--weight=2` indicates that `main-server` has double computing capacities.
 
-Before we're able to register our service instances, we have to tell Dice about the services itself. For this example, we'll just create service _A_.
+After that, we have to tell Dice about our services. For this example, we'll just create service _A_.
 
 ````shell script
-$ dice service create A
+$ dice service create --url=example.com --enable A
 ````
 
-We also have to specify the public URL that belongs to our service. Mapping an URL to a service is fairly simple:
-
-````shell script
-$ dice service url A example.com
-````
-
-When an request for `example.com` hits Dice, it will forward the request to an instance of service _A_.
+By using `--url=example.com`, we specify a public URL that the service is associated with. We can add or remove these URLs later as well. When a request for `example.com` hits Dice, it will forward the request to an instance of service _A_.
 
 ### Start load balancing
 
-We can register such an instance like so:
+We can register our instances of _A_ like so:
 
 ````shell script
-$ dice instance create A main-server 172.21.21.1:8080 --name main-instance
+$ dice instance create --name=first-instance A main-server 172.21.21.1:8080
+$ dice instance create --name=second-instance A another-server 172.21.21.2:8080
 ````
 
-This tells Dice to register an instance of service `A` that has been deployed to `main-server` and is available at `172.21.21.1:8080`.
+For example, the first command tells Dice to register an instance of service `A` that has been deployed to `main-server` and is available at `172.21.21.1:8080`.
 
-Attaching the created instance to Dice will make it available for load balancing:
+Attaching the created instances to Dice will make them available for load balancing:
 
 ````shell script
-$ dice instance attach main-instance
+$ dice instance attach first-instance
+$ dice instance attach second-instance
 ````
 
-We could also use the full instance URL here, but names like `main-instance` are more convenient. The created instance will now receive incoming requests for `example.com`.
+We could also use the full instance URL here, but names like `first-instance` are more convenient. Incoming requests for `example.com` will now be balanced among our instances.
 
 ## <img src="https://sternentstehung.de/dice-dot.png"> Installation
 

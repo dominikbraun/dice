@@ -17,7 +17,6 @@ package entity
 
 import (
 	"github.com/dominikbraun/dice/types"
-	u "net/url"
 	"time"
 )
 
@@ -36,7 +35,7 @@ type Instance struct {
 	Name          string    `json:"name"`
 	ServiceID     string    `json:"service_id"`
 	NodeID        string    `json:"node_id"`
-	URL           *u.URL    `json:"url"`
+	URL           string    `json:"url"`
 	Version       string    `json:"version"`
 	IsAttached    bool      `json:"is_attached"`
 	IsUpdated     bool      `json:"is_updated"`
@@ -52,17 +51,12 @@ func NewInstance(serviceID, nodeID string, url string, options types.InstanceCre
 		return nil, err
 	}
 
-	instanceURL, err := u.Parse(url)
-	if err != nil {
-		return nil, err
-	}
-
 	i := Instance{
 		ID:            uuid,
 		Name:          options.Name,
 		ServiceID:     serviceID,
 		NodeID:        nodeID,
-		URL:           instanceURL,
+		URL:           url,
 		Version:       options.Version,
 		IsAttached:    options.Attach,
 		IsUpdated:     false,

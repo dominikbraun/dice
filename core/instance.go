@@ -163,7 +163,7 @@ func (d *Dice) InstanceInfo(instanceRef entity.InstanceReference) (types.Instanc
 		Name:       instance.Name,
 		ServiceID:  instance.ServiceID,
 		NodeID:     instance.NodeID,
-		URL:        instance.URL.String(),
+		URL:        instance.URL,
 		Version:    instance.Version,
 		IsAttached: instance.IsAttached,
 		IsAlive:    instance.IsAlive,
@@ -206,7 +206,7 @@ func (d *Dice) findInstance(instanceRef entity.InstanceReference) (*entity.Insta
 	instanceURL := normalizeURL(string(instanceRef))
 
 	instancesByURL, err := d.kvStore.FindInstances(func(i *entity.Instance) bool {
-		return i.URL.String() == instanceURL
+		return i.URL == instanceURL
 	})
 
 	if err != nil {
@@ -243,7 +243,7 @@ func (d *Dice) ListInstances(options types.InstanceListOptions) ([]types.Instanc
 			Name:       inst.Name,
 			ServiceID:  inst.ServiceID,
 			NodeID:     inst.NodeID,
-			URL:        inst.URL.String(),
+			URL:        inst.URL,
 			Version:    inst.Version,
 			IsAttached: inst.IsAttached,
 			IsAlive:    inst.IsAlive,

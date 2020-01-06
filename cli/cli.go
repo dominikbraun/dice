@@ -47,6 +47,7 @@ func (c *CLI) buildCommands() {
 	nodeCmd.AddCommand(c.nodeCreateCmd())
 	nodeCmd.AddCommand(c.nodeAttachCmd())
 	nodeCmd.AddCommand(c.nodeDetachCmd())
+	nodeCmd.AddCommand(c.nodeRemoveCmd())
 	nodeCmd.AddCommand(c.nodeInfoCmd())
 	nodeCmd.AddCommand(c.nodeListCmd())
 

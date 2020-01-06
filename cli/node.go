@@ -128,6 +128,37 @@ func (c *CLI) nodeDetachCmd() *cobra.Command {
 	return &nodeDetachCmd
 }
 
+// nodeRemoveCmd creates and implements the `node remove` command.
+func (c *CLI) nodeRemoveCmd() *cobra.Command {
+	var options types.NodeRemoveOptions
+
+	nodeRemoveCmd := cobra.Command{
+		Use:   "remove <ID|NAME>",
+		Short: `Remove a node`,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			nodeRef := args[0]
+			route := "/nodes/" + nodeRef + "/remove"
+
+			var response types.Response
+
+			if err := c.client.POST(route, options, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
+			return nil
+		},
+	}
+
+	nodeRemoveCmd.Flags().BoolVarP(&options.Force, "force", "f", false, `force the removal`)
+
+	return &nodeRemoveCmd
+}
+
 // nodeInfoCmd creates and implements the `node info` command.
 func (c *CLI) nodeInfoCmd() *cobra.Command {
 	var options types.NodeInfoOptions

@@ -51,10 +51,7 @@ type Deployment struct {
 
 // isRemovable checks if a deployment can be removed safely.
 func (d Deployment) isRemovable() bool {
-	if d.Node.IsAttached && d.Instance.IsAttached {
-		return false
-	}
-	return true
+	return !d.Node.IsAttached && !d.Instance.IsAttached
 }
 
 // equals checks if a deployment is considered equal to another deployment.

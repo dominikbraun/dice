@@ -17,6 +17,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dominikbraun/dice/entity"
 	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
@@ -65,11 +66,10 @@ func (d *Dice) CreateNode(name string, options types.NodeCreateOptions) error {
 // synchronize the node with the service registry.
 func (d *Dice) AttachNode(nodeRef entity.NodeReference) error {
 	node, err := d.findNode(nodeRef)
+
 	if err != nil {
 		return err
-	}
-
-	if node == nil {
+	} else if node == nil {
 		return ErrNodeNotFound
 	}
 
@@ -94,11 +94,10 @@ func (d *Dice) AttachNode(nodeRef entity.NodeReference) error {
 // that node unavailable until it gets attached again.
 func (d *Dice) DetachNode(nodeRef entity.NodeReference) error {
 	node, err := d.findNode(nodeRef)
+
 	if err != nil {
 		return err
-	}
-
-	if node == nil {
+	} else if node == nil {
 		return ErrNodeNotFound
 	}
 
@@ -118,14 +117,42 @@ func (d *Dice) DetachNode(nodeRef entity.NodeReference) error {
 	})
 }
 
+// RemoveNode deletes a node entirely, removing it from the key-value store
+// and unregistering it from the service registry.
+//
+// Returns an error if there are attached instances deployed to the affected
+// node, unless --force is used.
+func (d *Dice) RemoveNode(nodeRef entity.NodeReference, options types.NodeRemoveOptions) error {
+	node, err := d.findNode(nodeRef)
+
+	if err != nil {
+		return err
+	} else if node == nil {
+		return ErrNodeNotFound
+	}
+
+	filter := func(deployment registry.Deployment) bool {
+		return deployment.Node.ID == node.ID
+	}
+
+	if ok := d.registry.UnregisterDeployments(filter, options.Force); !ok {
+		return fmt.Errorf("node has attached instances, detach them or use --force")
+	}
+
+	if err := d.kvStore.DeleteNode(node.ID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // NodeInfo returns user-relevant information for an existing node.
 func (d *Dice) NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, error) {
 	node, err := d.findNode(nodeRef)
+
 	if err != nil {
 		return types.NodeInfoOutput{}, err
-	}
-
-	if node == nil {
+	} else if node == nil {
 		return types.NodeInfoOutput{}, ErrNodeNotFound
 	}
 

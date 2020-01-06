@@ -71,6 +71,27 @@ func (c *Controller) DetachNode() http.HandlerFunc {
 	}
 }
 
+// RemoveNode handles a POST request for removing an existing node. The
+// request URL has to contain a valid node reference.
+func (c *Controller) RemoveNode() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		nodeRef := entity.NodeReference(chi.URLParam(r, "ref"))
+
+		var options types.NodeRemoveOptions
+
+		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		if err := c.backend.RemoveNode(nodeRef, options); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+		}
+
+		respond(w, r, http.StatusOK, types.Response{Success: true})
+	}
+}
+
 // NodeInfo handles a POST request for retrieving information for a node. The
 // request URL has to contain a valid node reference.
 func (c *Controller) NodeInfo() http.HandlerFunc {

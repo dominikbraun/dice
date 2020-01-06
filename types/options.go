@@ -28,6 +28,11 @@ type NodeInfoOptions struct {
 	Quiet bool `json:"quiet"`
 }
 
+// NodeRemoveOptions combines all user options for removing a node.
+type NodeRemoveOptions struct {
+	Force bool `json:"force"`
+}
+
 // NodeInfoOptions combines all user options for listing nodes.
 type NodeListOptions struct {
 	All bool `json:"all"`

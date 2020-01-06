@@ -188,36 +188,43 @@ func (sr *ServiceRegistry) RegisterDeployment(deployment Deployment) error {
 	return nil
 }
 
-// UnregisterDeployment removes a deployment from the registry. Returns
-// an error if the instance is attach on an attached node, unless force
-// is set to `true`.
-func (sr *ServiceRegistry) UnregisterDeployment(deployment Deployment, force bool) error {
-	serviceID := deployment.Instance.ServiceID
-
-	if _, exists := sr.Services[serviceID]; !exists {
-		return ErrUnregisteredService
-	}
-
-	index, err := sr.indexOfDeployment(serviceID, deployment)
-	if err != nil {
-		return err
-	} else if index == -1 {
-		return ErrUnregisteredDeployment
-	}
-
+// UnregisterDeployments removes all deployments from all services that match
+// the provided filter function.
+//
+// By default, UnregisterDeployments makes sure that each affected deployment
+// is removable safely. If that's not the case, UnregisterDeployments returns
+// `false` before removing any deployment. This  can be omitted by setting
+// force to `true`.
+//
+// An example for removing all deployments to node a1b2c3:
+//
+//		_ = serviceRegistry.UnregisterDeployments(func(deployment Deployment) bool {
+//			return deployment.node.ID == "a1b2c3"
+//		})
+//
+// However, it would be more safe to check UnregisterDeployments' return value
+// and inform the user if some deployments could not be removed safely.
+func (sr *ServiceRegistry) UnregisterDeployments(filter func(deployment Deployment) bool, force bool) bool {
 	if !force {
-		if !deployment.isRemovable() {
-			return ErrDeploymentNotRemovable
+		for _, s := range sr.Services {
+			for _, d := range s.Deployments {
+				if filter(d) && !d.isRemovable() {
+					return false
+				}
+			}
 		}
 	}
 
-	service := sr.Services[serviceID]
-	service.Deployments[index] = service.Deployments[len(service.Deployments)-1]
-	service.Deployments = service.Deployments[:len(service.Deployments)-1]
+	for _, s := range sr.Services {
+		for i, d := range s.Deployments {
+			if filter(d) {
+				s.Deployments[i] = s.Deployments[len(s.Deployments)-1]
+				s.Deployments = s.Deployments[:len(s.Deployments)-1]
+			}
+		}
+	}
 
-	service.Scheduler.UpdateDeployments(service.Deployments)
-
-	return nil
+	return true
 }
 
 // indexOfDeployment determines the index of a service's deployment. The

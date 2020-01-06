@@ -52,6 +52,7 @@ type InstanceTarget interface {
 	CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, url string, options types.InstanceCreateOptions) error
 	AttachInstance(instanceRef entity.InstanceReference) error
 	DetachInstance(instanceRef entity.InstanceReference) error
+	RemoveNode(nodeRef entity.NodeReference, options types.NodeRemoveOptions) error
 	InstanceInfo(instanceRef entity.InstanceReference) (types.InstanceInfoOutput, error)
 	ListInstances(options types.InstanceListOptions) ([]types.InstanceInfoOutput, error)
 }

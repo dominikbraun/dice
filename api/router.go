@@ -73,6 +73,7 @@ func (s *Server) mountRoutes() {
 		r.Route("/{ref}", func(r chi.Router) {
 			r.Post("/attach", s.controller.AttachInstance())
 			r.Post("/detach", s.controller.DetachInstance())
+			r.Post("/remove", s.controller.RemoveInstance())
 			r.Post("/info", s.controller.InstanceInfo())
 		})
 	})

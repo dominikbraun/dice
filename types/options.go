@@ -22,15 +22,15 @@ type NodeCreateOptions struct {
 	Attach bool  `json:"attach"`
 }
 
+// NodeRemoveOptions combines all user options for removing a node.
+type NodeRemoveOptions struct {
+	Force bool `json:"force"`
+}
+
 // NodeInfoOptions combines all user options for printing information
 // about a node.
 type NodeInfoOptions struct {
 	Quiet bool `json:"quiet"`
-}
-
-// NodeRemoveOptions combines all user options for removing a node.
-type NodeRemoveOptions struct {
-	Force bool `json:"force"`
 }
 
 // NodeInfoOptions combines all user options for listing nodes.
@@ -67,6 +67,12 @@ type InstanceCreateOptions struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 	Attach  bool   `json:"attach"`
+}
+
+// InstanceRemoveOptions combines all user options for removing an
+// instance.
+type InstanceRemoveOptions struct {
+	Force bool `json:"force"`
 }
 
 // InstanceInfoOptions combines all user options for printing information

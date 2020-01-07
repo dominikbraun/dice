@@ -75,6 +75,27 @@ func (c *Controller) DetachInstance() http.HandlerFunc {
 	}
 }
 
+// RemoveInstance handles a POST request for removing an existing instance.
+// The request URL has to contain a valid instance reference.
+func (c *Controller) RemoveInstance() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		instanceRef := entity.InstanceReference(chi.URLParam(r, "ref"))
+
+		var options types.InstanceRemoveOptions
+
+		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		if err := c.backend.RemoveInstance(instanceRef, options); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+		}
+
+		respond(w, r, http.StatusOK, types.Response{Success: true})
+	}
+}
+
 // InstanceInfo handles a POST request for retrieving information for an
 // instance. The request URL has to contain a valid node reference.
 func (c *Controller) InstanceInfo() http.HandlerFunc {

@@ -139,11 +139,7 @@ func (d *Dice) RemoveNode(nodeRef entity.NodeReference, options types.NodeRemove
 		return fmt.Errorf("node has attached instances, detach them or use --force")
 	}
 
-	if err := d.kvStore.DeleteNode(node.ID); err != nil {
-		return err
-	}
-
-	return nil
+	return d.kvStore.DeleteNode(node.ID)
 }
 
 // NodeInfo returns user-relevant information for an existing node.

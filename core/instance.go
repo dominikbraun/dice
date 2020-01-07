@@ -94,11 +94,10 @@ func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity
 // data and synchronize the instance with the service registry.
 func (d *Dice) AttachInstance(instanceRef entity.InstanceReference) error {
 	instance, err := d.findInstance(instanceRef)
+
 	if err != nil {
 		return err
-	}
-
-	if instance == nil {
+	} else if instance == nil {
 		return ErrInstanceNotFound
 	}
 
@@ -123,11 +122,10 @@ func (d *Dice) AttachInstance(instanceRef entity.InstanceReference) error {
 // instances of the service untouched.
 func (d *Dice) DetachInstance(instanceRef entity.InstanceReference) error {
 	instance, err := d.findInstance(instanceRef)
+
 	if err != nil {
 		return err
-	}
-
-	if instance == nil {
+	} else if instance == nil {
 		return ErrInstanceNotFound
 	}
 
@@ -147,15 +145,40 @@ func (d *Dice) DetachInstance(instanceRef entity.InstanceReference) error {
 	})
 }
 
+// RemoveInstance removes an instance entirely. After getting unregistered
+// from the service registry, it won't be available for load balancing any
+// longer. Also, it can't be restored anymore.
+//
+// Returns an error in case the instance can't be removed safely, unless
+// --force is used.
+func (d *Dice) RemoveInstance(instanceRef entity.InstanceReference, options types.InstanceRemoveOptions) error {
+	instance, err := d.findInstance(instanceRef)
+
+	if err != nil {
+		return err
+	} else if instance == nil {
+		return ErrInstanceNotFound
+	}
+
+	filter := func(deployment registry.Deployment) bool {
+		return deployment.Instance.ID == instance.ID
+	}
+
+	if ok := d.registry.UnregisterDeployments(filter, options.Force); !ok {
+		return fmt.Errorf("instance is attached, detach it or use --force")
+	}
+
+	return d.kvStore.DeleteInstance(instance.ID)
+}
+
 // InstanceInfo returns user-relevant information for an existing instance.
 func (d *Dice) InstanceInfo(instanceRef entity.InstanceReference) (types.InstanceInfoOutput, error) {
 	instance, err := d.findInstance(instanceRef)
+
 	if err != nil {
 		return types.InstanceInfoOutput{}, err
-	}
-
-	if instance == nil {
-		return types.InstanceInfoOutput{}, err
+	} else if instance == nil {
+		return types.InstanceInfoOutput{}, ErrInstanceNotFound
 	}
 
 	instanceInfo := types.InstanceInfoOutput{

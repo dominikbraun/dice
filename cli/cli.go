@@ -65,6 +65,7 @@ func (c *CLI) buildCommands() {
 	instanceCmd.AddCommand(c.instanceCreateCmd())
 	instanceCmd.AddCommand(c.instanceAttachCmd())
 	instanceCmd.AddCommand(c.instanceDetachCmd())
+	instanceCmd.AddCommand(c.instanceRemoveCmd())
 	instanceCmd.AddCommand(c.instanceInfoCmd())
 	instanceCmd.AddCommand(c.instanceListCmd())
 

@@ -133,6 +133,37 @@ func (c *CLI) instanceDetachCmd() *cobra.Command {
 	return &instanceDetachCmd
 }
 
+// instanceRemoveCmd creates and implemented the `instance remove` command.
+func (c *CLI) instanceRemoveCmd() *cobra.Command {
+	var options types.InstanceRemoveOptions
+
+	instanceRemoveCmd := cobra.Command{
+		Use:   "remove <ID|NAME|URL>",
+		Short: `Remove an instance`,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			instanceRef := args[0]
+			route := "/instances/" + instanceRef + "/remove"
+
+			var response types.Response
+
+			if err := c.client.POST(route, options, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
+			return nil
+		},
+	}
+
+	instanceRemoveCmd.Flags().BoolVarP(&options.Force, "force", "f", false, `force the removal`)
+
+	return &instanceRemoveCmd
+}
+
 // instanceInfoCmd creates and implements the `instance info` command.
 func (c *CLI) instanceInfoCmd() *cobra.Command {
 	var options types.InstanceInfoOptions

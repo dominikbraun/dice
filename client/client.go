@@ -28,7 +28,6 @@ import (
 )
 
 const (
-	configName  string = "dice"
 	contentType string = "application/json"
 )
 

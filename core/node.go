@@ -136,7 +136,7 @@ func (d *Dice) RemoveNode(nodeRef entity.NodeReference, options types.NodeRemove
 	}
 
 	if ok := d.registry.UnregisterDeployments(filter, options.Force); !ok {
-		return fmt.Errorf("node has attached instances, detach them or use --force")
+		return fmt.Errorf("node is attached or has attached instances, detach or use --force")
 	}
 
 	return d.kvStore.DeleteNode(node.ID)

@@ -16,6 +16,7 @@ package proxy
 
 import (
 	"context"
+	"fmt"
 	"github.com/dominikbraun/dice/registry"
 	"net/http"
 )
@@ -65,6 +66,27 @@ func (p *Proxy) Shutdown() error {
 func (p *Proxy) handleRequest() http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		// ToDo: Determine service and handle request
+		_, _ = w.Write([]byte(fmt.Sprintf("Target URL: %s\n", r.URL.String())))
+		_, _ = w.Write([]byte(fmt.Sprintf("Target Host: %s\n", r.Host)))
+
+		service, ok := p.registry.LookupService(r.Host)
+		_, _ = w.Write([]byte(fmt.Sprintf("Service: %s\n", service)))
+		_, _ = w.Write([]byte(fmt.Sprintf("Is registered: %v\n", ok)))
+
+		if service == nil || service.Scheduler == nil {
+			return
+		}
+
+		target, err := service.Scheduler.Next()
+		if err != nil {
+			_, _ = w.Write([]byte(fmt.Sprintf("ERROR: %v\n", err)))
+		}
+
+		if target == nil {
+			return
+		}
+
+		_, _ = w.Write([]byte(fmt.Sprintf("Target: %v\n", target)))
 	}
 
 	return http.HandlerFunc(handler)

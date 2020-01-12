@@ -82,9 +82,11 @@ func (p *Proxy) Shutdown() error {
 func (p *Proxy) handleRequest() http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		service, ok := p.registry.LookupService(r.Host)
-		_, _ = w.Write([]byte(fmt.Sprintf("Service: %#+v\n", service)))
-		_, _ = w.Write([]byte(fmt.Sprintf("Is registered: %v\n", ok)))
 
+		// The following cases cause Dice to return error 503:
+		// - service is not registered/not found in the registry
+		// - service is not enabled
+		// - service scheduler is nil -> ToDo: Can that really happen?
 		if !ok || !service.Entity.IsEnabled || service.Scheduler == nil {
 			p.displayError(w, r, http.StatusServiceUnavailable, "Service Unavailable")
 			return
@@ -109,7 +111,8 @@ func (p *Proxy) displayError(w http.ResponseWriter, r *http.Request, status int,
 <body style="text-align: center">
 	<h1 style="font-family: arial">Error %d: %s</h1>
 	<hr />
-	<p style="font-family: arial">Dice</p>`
+	<p style="font-family: arial">Dice</p>
+</body>`
 
 	body := fmt.Sprintf(template, status, message)
 

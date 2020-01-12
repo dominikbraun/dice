@@ -200,7 +200,7 @@ func (sr *ServiceRegistry) RegisterDeployment(deployment Deployment) error {
 //
 //		_ = serviceRegistry.UnregisterDeployments(func(deployment Deployment) bool {
 //			return deployment.node.ID == "a1b2c3"
-//		})
+//		}, false)
 //
 // However, it would be more safe to check UnregisterDeployments' return value
 // and inform the user if some deployments could not be removed safely.
@@ -222,6 +222,7 @@ func (sr *ServiceRegistry) UnregisterDeployments(filter func(deployment Deployme
 				s.Deployments = s.Deployments[:len(s.Deployments)-1]
 			}
 		}
+		s.Scheduler.UpdateDeployments(s.Deployments)
 	}
 
 	return true

@@ -52,29 +52,39 @@ func newWeightedRoundRobin(deployments []registry.Deployment) *WeightedRoundRobi
 // Next implements registry.Scheduler.Next. It is an implementation of the
 // Weighted Round Robin algorithm, respecting the rules described above.
 func (wrr *WeightedRoundRobin) Next() (*entity.Instance, error) {
+	// attempts limits the number of lookups to the number of deployments.
 	attempts := 0
 
 lookup:
-	for attempts < len(wrr.deployments) {
+	for attempts <= len(wrr.deployments) {
+		// index specifies the deployment that will be selected based on the
+		// request count and available deployments.
 		index := wrr.currentIndex % len(wrr.deployments)
 		d := (wrr.deployments)[index]
 
+		// Skip the selected deployment if it currently isn't attached or
+		// alive and start a new lookup attempt.
 		if !d.Instance.IsAttached || !d.Instance.IsAlive {
-			wrr.currentIndex++
-			attempts++
-			continue lookup
-		}
-
-		if d.Node.Weight == wrr.currentWeight {
 			wrr.currentIndex++
 			wrr.currentWeight = uint8(0)
 			attempts++
 			continue lookup
 		}
 
+		// If the deployment node's weight is higher than the weight counter,
+		// there's still some capacity and we can pick that deployment.
 		if d.Node.Weight > wrr.currentWeight {
 			wrr.currentWeight++
 			return d.Instance, nil
+		}
+
+		// Otherwise, if the node's maximum weight has been reached, we move
+		// on the next index and start a new lookup.
+		if d.Node.Weight == wrr.currentWeight {
+			wrr.currentIndex++
+			wrr.currentWeight = uint8(0)
+			attempts++
+			continue lookup
 		}
 
 		attempts++

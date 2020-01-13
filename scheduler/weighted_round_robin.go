@@ -83,6 +83,7 @@ lookup:
 	return nil, errors.New("no service instance found")
 }
 
+// UpdateDeployments implements registry.Scheduler.UpdateDeployments.
 func (wrr *WeightedRoundRobin) UpdateDeployments(deployments []registry.Deployment) {
 	wrr.deployments = deployments
 }

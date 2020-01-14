@@ -69,8 +69,7 @@ lookup:
 		index := wrr.currentIndex % len(wrr.deployments)
 		d := (wrr.deployments)[index]
 
-		// Skip the selected deployment if it currently isn't attached or
-		// alive and start a new lookup attempt.
+		// Start a new lookup if the instance isn't attached or alive.
 		if !d.Instance.IsAttached || !d.Instance.IsAlive {
 			wrr.currentIndex++
 			wrr.currentWeight = uint8(0)
@@ -86,7 +85,7 @@ lookup:
 		}
 
 		// Otherwise, if the node's maximum weight has been reached, we move
-		// on the next index and start a new lookup.
+		// on to the next index and start a new lookup.
 		if d.Node.Weight == wrr.currentWeight {
 			wrr.currentIndex++
 			wrr.currentWeight = uint8(0)

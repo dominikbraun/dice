@@ -21,6 +21,10 @@ import (
 	"github.com/dominikbraun/dice/registry"
 )
 
+var (
+	ErrNoInstanceFound = errors.New("no service instance found")
+)
+
 // WeightedRoundRobin is a scheduler that basically implements the Round
 // Robin algorithm under consideration of node weights.
 //
@@ -52,8 +56,14 @@ func newWeightedRoundRobin(deployments []registry.Deployment) *WeightedRoundRobi
 // Next implements registry.Scheduler.Next. It is an implementation of the
 // Weighted Round Robin algorithm, respecting the rules described above.
 func (wrr *WeightedRoundRobin) Next() (*entity.Instance, error) {
+	if len(wrr.deployments) == 0 {
+		return nil, ErrNoInstanceFound
+	}
+
+	attempts := 0
+
 lookup:
-	for a := 0; a < len(wrr.deployments); a++ {
+	for attempts <= len(wrr.deployments) {
 		// index specifies the deployment that will be selected based on the
 		// request count and available deployments.
 		index := wrr.currentIndex % len(wrr.deployments)
@@ -64,6 +74,7 @@ lookup:
 		if !d.Instance.IsAttached || !d.Instance.IsAlive {
 			wrr.currentIndex++
 			wrr.currentWeight = uint8(0)
+			attempts++
 			continue lookup
 		}
 
@@ -79,11 +90,14 @@ lookup:
 		if d.Node.Weight == wrr.currentWeight {
 			wrr.currentIndex++
 			wrr.currentWeight = uint8(0)
+			attempts++
 			continue lookup
 		}
+
+		attempts++
 	}
 
-	return nil, errors.New("no service instance found")
+	return nil, ErrNoInstanceFound
 }
 
 // UpdateDeployments implements registry.Scheduler.UpdateDeployments.

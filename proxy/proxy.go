@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/dominikbraun/dice/registry"
+	"io"
 	"net/http"
 )
 
@@ -35,16 +36,18 @@ type Config struct {
 //
 // Proxy only uses read-only access on ServiceRegistry.
 type Proxy struct {
-	config   Config
-	registry *registry.ServiceRegistry
-	server   *http.Server
+	config    Config
+	registry  *registry.ServiceRegistry
+	server    *http.Server
+	transport http.RoundTripper
 }
 
 // New creates a new Proxy instance and sets up a ready-to-go HTTP server.
 func New(config Config, registry *registry.ServiceRegistry) *Proxy {
 	p := Proxy{
-		config:   config,
-		registry: registry,
+		config:    config,
+		registry:  registry,
+		transport: http.DefaultTransport,
 	}
 
 	p.server = &http.Server{
@@ -92,16 +95,69 @@ func (p *Proxy) handleRequest() http.Handler {
 			return
 		}
 
-		_, err := service.Scheduler.Next()
+		instance, err := service.Scheduler.Next()
 		if err != nil {
 			p.displayError(w, r, http.StatusServiceUnavailable, "Service Unavailable")
 			return
 		}
 
-		// ToDo: Forward request and return response.
+		response, err := p.dialBackend(r, instance.URL)
+		if err != nil {
+			p.displayError(w, r, http.StatusInternalServerError, err.Error())
+		}
+
+		if err := p.streamResponse(w, response); err != nil {
+			p.displayError(w, r, http.StatusInternalServerError, err.Error())
+		}
 	}
 
 	return http.HandlerFunc(handler)
+}
+
+func (p *Proxy) dialBackend(src *http.Request, targetURL string) (*http.Response, error) {
+	backendRequest, err := http.NewRequest(src.Method, "https://"+targetURL, src.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	backendRequest.ContentLength = src.ContentLength
+	backendRequest.Host = src.Host
+	backendRequest.Header = make(http.Header)
+
+	for key, val := range src.Header {
+		backendRequest.Header[key] = val
+	}
+
+	response, err := p.transport.RoundTrip(backendRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+func (p *Proxy) streamResponse(w http.ResponseWriter, response *http.Response) error {
+	buf := make([]byte, 8192)
+
+	for {
+		length, err := response.Body.Read(buf)
+		if err != nil && err != io.EOF {
+			return err
+		}
+
+		if length > 0 {
+			_, writeErr := w.Write(buf[:length])
+			if writeErr != nil {
+				return err
+			}
+		}
+
+		if err == io.EOF {
+			break
+		}
+	}
+
+	return nil
 }
 
 // displayError returns an error response to the client by setting the provided

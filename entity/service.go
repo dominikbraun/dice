@@ -18,6 +18,7 @@ package entity
 import (
 	"fmt"
 	"github.com/dominikbraun/dice/types"
+	"strings"
 )
 
 // ServiceReference is a string that identifies a service, e. g. an ID.
@@ -46,10 +47,16 @@ func NewService(name string, options types.ServiceCreateOptions) (*Service, erro
 		return nil, err
 	}
 
+	urls := strings.Split(options.URLs, ",")
+
+	for _, u := range urls {
+		u = strings.Trim(u, " ")
+	}
+
 	s := Service{
 		ID:              uuid,
 		Name:            name,
-		URLs:            make([]string, 0),
+		URLs:            urls,
 		TargetVersion:   "",
 		BalancingMethod: options.Balancing,
 		IsEnabled:       options.Enable,

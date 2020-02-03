@@ -26,6 +26,7 @@ import (
 var (
 	ErrServiceNotFound      = errors.New("service could not be found")
 	ErrServiceAlreadyExists = errors.New("a service with the given ID or name already exists")
+	ErrServiceURLExists     = errors.New("one or more of the specified URLs already exists")
 )
 
 // CreateService creates a new service with the provided name and stores
@@ -35,6 +36,15 @@ func (d *Dice) CreateService(name string, options types.ServiceCreateOptions) er
 	service, err := entity.NewService(name, options)
 	if err != nil {
 		return err
+	}
+
+	ok, err := d.urlsAreValid(service)
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		return ErrServiceURLExists
 	}
 
 	if ok, message := validateService(service); !ok {
@@ -214,6 +224,29 @@ func (d *Dice) SetServiceURL(serviceRef entity.ServiceReference, url string, opt
 		}
 		return nil
 	})
+}
+
+// urlsAreValid indicates whether a services' URLs are valid and unique
+// so that it can be used safely. This check should be performed before
+// the service entity gets persisted.
+func (d *Dice) urlsAreValid(service *entity.Service) (bool, error) {
+	servicesByURL, err := d.kvStore.FindServices(func(s *entity.Service) bool {
+		for _, u := range s.URLs {
+			for _, su := range service.URLs {
+				if u == su {
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	if err != nil {
+		return false, err
+	}
+	isValid := len(servicesByURL) == 0
+
+	return isValid, nil
 }
 
 // findService attempts to find a node in the key-value store that matches

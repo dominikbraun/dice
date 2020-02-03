@@ -65,7 +65,7 @@ Registering nodes will help Dice choosing an appropriate service instance later.
 After that, we have to tell Dice about our services – let's just create service _A_ here.
 
 ````shell script
-$ dice service create --url=example.com --enable A
+$ dice service create --urls=example.com --enable A
 ````
 
 By using `--url=example.com`, we specify a public URL that the service is associated with. We can add or remove these URLs later as well. When a request for `example.com` hits Dice, it will forward the request to an instance of service _A_.

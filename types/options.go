@@ -41,6 +41,7 @@ type NodeListOptions struct {
 // ServiceCreateOptions combines all user options for creating a new
 // service. It serves as a Data Transfer Object for the Dice core.
 type ServiceCreateOptions struct {
+	URLs      string `json:"urls"`
 	Balancing string `json:"balancing"`
 	Enable    bool   `json:"enable"`
 }

@@ -68,6 +68,7 @@ func (c *CLI) serviceCreateCmd() *cobra.Command {
 		},
 	}
 
+	serviceCreateCmd.Flags().StringVar(&options.URLs, "urls", "", `add one or more public URLs`)
 	serviceCreateCmd.Flags().StringVar(&options.Balancing, "balancing", "weighted_round_robin", `specify a balancing method`)
 	serviceCreateCmd.Flags().BoolVar(&options.Enable, "enable", false, `immediately enable the service`)
 

@@ -21,7 +21,7 @@
 
 ---
 
-:game_die: Dice is an experimental load balancer designed for non-microservice, static infrastructures with focus on simplicity and flexibility.
+:game_die: Dice is an experimental load balancer designed for non-microservice, static infrastructures with focus on simplicity, operability and high flexibility.
 
 **Project status:** In active development.
 

@@ -18,7 +18,6 @@ package controller
 import (
 	"github.com/dominikbraun/dice/entity"
 	"github.com/dominikbraun/dice/types"
-	"net/url"
 )
 
 // Target concludes all *Target interfaces. Any Target implementation is
@@ -31,9 +30,10 @@ type Target interface {
 
 // NodeTarget prescribes methods for backends working with nodes.
 type NodeTarget interface {
-	CreateNode(url *url.URL, options types.NodeCreateOptions) error
+	CreateNode(name string, options types.NodeCreateOptions) error
 	AttachNode(nodeRef entity.NodeReference) error
 	DetachNode(nodeRef entity.NodeReference) error
+	RemoveNode(nodeRef entity.NodeReference, options types.NodeRemoveOptions) error
 	NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, error)
 	ListNodes(options types.NodeListOptions) ([]types.NodeInfoOutput, error)
 }
@@ -45,6 +45,7 @@ type ServiceTarget interface {
 	DisableService(serviceRef entity.ServiceReference) error
 	ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInfoOutput, error)
 	ListServices(options types.ServiceListOptions) ([]types.ServiceInfoOutput, error)
+	SetServiceURL(serviceRef entity.ServiceReference, url string, options types.ServiceURLOptions) error
 }
 
 // InstanceTarget prescribes methods for backends working with instances.
@@ -52,6 +53,7 @@ type InstanceTarget interface {
 	CreateInstance(serviceRef entity.ServiceReference, nodeRef entity.NodeReference, url string, options types.InstanceCreateOptions) error
 	AttachInstance(instanceRef entity.InstanceReference) error
 	DetachInstance(instanceRef entity.InstanceReference) error
+	RemoveInstance(instanceRef entity.InstanceReference, options types.InstanceRemoveOptions) error
 	InstanceInfo(instanceRef entity.InstanceReference) (types.InstanceInfoOutput, error)
 	ListInstances(options types.InstanceListOptions) ([]types.InstanceInfoOutput, error)
 }

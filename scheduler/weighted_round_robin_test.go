@@ -47,7 +47,7 @@ func TestWeightedRoundRobin_Next(t *testing.T) {
 		{Node: node3, Instance: instance5},
 	}
 
-	wrr, err := New(&deployments, WeightedRoundRobinBalancing)
+	wrr, err := New(deployments, WeightedRoundRobinBalancing)
 	if err != nil {
 		t.Error(err)
 	}

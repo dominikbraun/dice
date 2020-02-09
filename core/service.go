@@ -18,6 +18,7 @@ package core
 import (
 	"errors"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
 )
@@ -25,6 +26,7 @@ import (
 var (
 	ErrServiceNotFound      = errors.New("service could not be found")
 	ErrServiceAlreadyExists = errors.New("a service with the given ID or name already exists")
+	ErrServiceURLExists     = errors.New("one or more of the specified URLs already exists")
 )
 
 // CreateService creates a new service with the provided name and stores
@@ -34,6 +36,15 @@ func (d *Dice) CreateService(name string, options types.ServiceCreateOptions) er
 	service, err := entity.NewService(name, options)
 	if err != nil {
 		return err
+	}
+
+	ok, err := d.urlsAreValid(service)
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		return ErrServiceURLExists
 	}
 
 	if ok, message := validateService(service); !ok {
@@ -49,6 +60,10 @@ func (d *Dice) CreateService(name string, options types.ServiceCreateOptions) er
 	}
 
 	if err := d.kvStore.CreateService(service); err != nil {
+		return err
+	}
+
+	if err := d.registry.Register(service, d.buildRegistryService); err != nil {
 		return err
 	}
 
@@ -78,7 +93,12 @@ func (d *Dice) EnableService(serviceRef entity.ServiceReference) error {
 		return err
 	}
 
-	return d.synchronizeService(service, Enabling)
+	return d.registry.Update(func(s *registry.Service) error {
+		if s.Entity.ID == service.ID {
+			s.Entity.IsEnabled = true
+		}
+		return nil
+	})
 }
 
 // DisableService disables a service, removing it as request target and
@@ -99,7 +119,12 @@ func (d *Dice) DisableService(serviceRef entity.ServiceReference) error {
 		return err
 	}
 
-	return d.synchronizeService(service, Disabling)
+	return d.registry.Update(func(s *registry.Service) error {
+		if s.Entity.ID == service.ID {
+			s.Entity.IsEnabled = false
+		}
+		return nil
+	})
 }
 
 // ServiceInfo returns user-relevant information for an existing service.
@@ -116,7 +141,7 @@ func (d *Dice) ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInf
 	serviceInfo := types.ServiceInfoOutput{
 		ID:              service.ID,
 		Name:            service.Name,
-		Hostnames:       service.Hostnames,
+		URLs:            service.URLs,
 		TargetVersion:   service.TargetVersion,
 		BalancingMethod: service.BalancingMethod,
 		IsEnabled:       service.IsEnabled,
@@ -148,7 +173,7 @@ func (d *Dice) ListServices(options types.ServiceListOptions) ([]types.ServiceIn
 		info := types.ServiceInfoOutput{
 			ID:              s.ID,
 			Name:            s.Name,
-			Hostnames:       s.Hostnames,
+			URLs:            s.URLs,
 			TargetVersion:   s.TargetVersion,
 			BalancingMethod: s.BalancingMethod,
 			IsEnabled:       s.IsEnabled,
@@ -157,6 +182,71 @@ func (d *Dice) ListServices(options types.ServiceListOptions) ([]types.ServiceIn
 	}
 
 	return serviceList, nil
+}
+
+// SetServiceURL sets or removes an URL from a given service. The update
+// will be visible for the service registry and the Dice proxy instantly.
+func (d *Dice) SetServiceURL(serviceRef entity.ServiceReference, url string, options types.ServiceURLOptions) error {
+	service, err := d.findService(serviceRef)
+	if err != nil {
+		return err
+	} else if service == nil {
+		return ErrServiceNotFound
+	}
+
+	if options.Delete {
+		if err := service.RemoveURL(url); err != nil {
+			return err
+		}
+	} else {
+		if err := service.AddURL(url); err != nil {
+			return err
+		}
+	}
+
+	if err := d.kvStore.UpdateService(service.ID, service); err != nil {
+		return err
+	}
+
+	if options.Delete {
+		if err := d.registry.UnregisterServiceURL(url); err != nil {
+			return err
+		}
+	} else {
+		if err := d.registry.RegisterServiceURL(service.ID, url); err != nil {
+			return err
+		}
+	}
+
+	return d.registry.Update(func(s *registry.Service) error {
+		if s.Entity.ID == service.ID {
+			s.Entity.URLs = service.URLs
+		}
+		return nil
+	})
+}
+
+// urlsAreValid indicates whether a services' URLs are valid and unique
+// so that it can be used safely. This check should be performed before
+// the service entity gets persisted.
+func (d *Dice) urlsAreValid(service *entity.Service) (bool, error) {
+	servicesByURL, err := d.kvStore.FindServices(func(s *entity.Service) bool {
+		for _, u := range s.URLs {
+			for _, su := range service.URLs {
+				if u == su {
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	if err != nil {
+		return false, err
+	}
+	isValid := len(servicesByURL) == 0
+
+	return isValid, nil
 }
 
 // findService attempts to find a node in the key-value store that matches

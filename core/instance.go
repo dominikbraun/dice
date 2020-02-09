@@ -17,10 +17,12 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
-	"net/url"
+	"strings"
 )
 
 var (
@@ -48,7 +50,7 @@ func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity
 		return ErrNodeNotFound
 	}
 
-	instance, err := entity.NewInstance(service.ID, node.ID, url, options)
+	instance, err := entity.NewInstance(service.ID, node.ID, normalizeURL(url), options)
 	if err != nil {
 		return err
 	}
@@ -69,8 +71,19 @@ func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity
 		return err
 	}
 
+	deployment := registry.Deployment{
+		Node:     node,
+		Instance: instance,
+	}
+
+	if err := d.registry.RegisterDeployment(deployment); err != nil {
+		return err
+	}
+
 	if options.Attach {
-		return d.AttachInstance(entity.InstanceReference(instance.ID))
+		if err := d.AttachInstance(entity.InstanceReference(instance.ID)); err != nil {
+			return fmt.Errorf("instance created but not attached: %s", err.Error())
+		}
 	}
 
 	return nil
@@ -81,11 +94,10 @@ func (d *Dice) CreateInstance(serviceRef entity.ServiceReference, nodeRef entity
 // data and synchronize the instance with the service registry.
 func (d *Dice) AttachInstance(instanceRef entity.InstanceReference) error {
 	instance, err := d.findInstance(instanceRef)
+
 	if err != nil {
 		return err
-	}
-
-	if instance == nil {
+	} else if instance == nil {
 		return ErrInstanceNotFound
 	}
 
@@ -95,7 +107,14 @@ func (d *Dice) AttachInstance(instanceRef entity.InstanceReference) error {
 		return err
 	}
 
-	return d.synchronizeInstance(instance, Attachment)
+	return d.registry.Update(func(s *registry.Service) error {
+		for _, d := range s.Deployments {
+			if d.Instance.ID == instance.ID {
+				d.Instance.IsAttached = true
+			}
+		}
+		return nil
+	})
 }
 
 // DetachInstance detaches an existing instance from Dice, removing it as
@@ -103,11 +122,10 @@ func (d *Dice) AttachInstance(instanceRef entity.InstanceReference) error {
 // instances of the service untouched.
 func (d *Dice) DetachInstance(instanceRef entity.InstanceReference) error {
 	instance, err := d.findInstance(instanceRef)
+
 	if err != nil {
 		return err
-	}
-
-	if instance == nil {
+	} else if instance == nil {
 		return ErrInstanceNotFound
 	}
 
@@ -117,18 +135,50 @@ func (d *Dice) DetachInstance(instanceRef entity.InstanceReference) error {
 		return err
 	}
 
-	return d.synchronizeInstance(instance, Detachment)
+	return d.registry.Update(func(s *registry.Service) error {
+		for _, d := range s.Deployments {
+			if d.Instance.ID == instance.ID {
+				d.Instance.IsAttached = false
+			}
+		}
+		return nil
+	})
+}
+
+// RemoveInstance removes an instance entirely. After getting unregistered
+// from the service registry, it won't be available for load balancing any
+// longer. Also, it can't be restored anymore.
+//
+// Returns an error in case the instance can't be removed safely, unless
+// --force is used.
+func (d *Dice) RemoveInstance(instanceRef entity.InstanceReference, options types.InstanceRemoveOptions) error {
+	instance, err := d.findInstance(instanceRef)
+
+	if err != nil {
+		return err
+	} else if instance == nil {
+		return ErrInstanceNotFound
+	}
+
+	filter := func(deployment registry.Deployment) bool {
+		return deployment.Instance.ID == instance.ID
+	}
+
+	if ok := d.registry.UnregisterDeployments(filter, options.Force); !ok {
+		return fmt.Errorf("instance is attached, detach it or use --force")
+	}
+
+	return d.kvStore.DeleteInstance(instance.ID)
 }
 
 // InstanceInfo returns user-relevant information for an existing instance.
 func (d *Dice) InstanceInfo(instanceRef entity.InstanceReference) (types.InstanceInfoOutput, error) {
 	instance, err := d.findInstance(instanceRef)
+
 	if err != nil {
 		return types.InstanceInfoOutput{}, err
-	}
-
-	if instance == nil {
-		return types.InstanceInfoOutput{}, err
+	} else if instance == nil {
+		return types.InstanceInfoOutput{}, ErrInstanceNotFound
 	}
 
 	instanceInfo := types.InstanceInfoOutput{
@@ -143,50 +193,6 @@ func (d *Dice) InstanceInfo(instanceRef entity.InstanceReference) (types.Instanc
 	}
 
 	return instanceInfo, nil
-}
-
-// findInstance attempts to find an instance in the key-value store that
-// matches the reference. The ID has the highest priority, then name and
-// URL are checked.
-//
-// In order to identify the instance by its URL, a node with the provided
-// URL will be searched. If an instance with the URL's port is deployed to
-// that node, that instance will be selected.
-//
-// If multiple instances match, only the first one will be returned. If no
-// instances match, `nil` - and no error - will be returned.
-func (d *Dice) findInstance(instanceRef entity.InstanceReference) (*entity.Instance, error) {
-	instancesByID, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
-		return instance.ID == string(instanceRef)
-	})
-
-	if err != nil {
-		return nil, err
-	} else if len(instancesByID) > 0 {
-		return instancesByID[0], nil
-	}
-
-	instancesByName, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
-		return instance.Name == string(instanceRef)
-	})
-
-	if err != nil {
-		return nil, err
-	} else if len(instancesByName) > 0 {
-		return instancesByName[0], nil
-	}
-
-	if instanceURL, err := url.Parse("//" + string(instanceRef)); err == nil {
-		instanceByURL, err := d.findInstanceByURL(instanceURL)
-
-		if err != nil {
-			return nil, err
-		} else if instanceByURL != nil {
-			return instanceByURL, nil
-		}
-	}
-
-	return nil, nil
 }
 
 // ListInstances returns a list of stored instances. By default, detached
@@ -225,17 +231,47 @@ func (d *Dice) ListInstances(options types.InstanceListOptions) ([]types.Instanc
 	return serviceList, nil
 }
 
-// findInstanceByURL takes an URL and searches for an instance that is
-// available under that URL.
-func (d *Dice) findInstanceByURL(url *url.URL) (*entity.Instance, error) {
-	instancesByNode, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
-		return instance.URL == url.String()
+// findInstance attempts to find an instance in the key-value store that
+// matches the reference. The ID has the highest priority, then name and
+// URL are checked.
+//
+// In order to identify the instance by its URL, a node with the provided
+// URL will be searched. If an instance with the URL's port is deployed to
+// that node, that instance will be selected.
+//
+// If multiple instances match, only the first one will be returned. If no
+// instances match, `nil` - and no error - will be returned.
+func (d *Dice) findInstance(instanceRef entity.InstanceReference) (*entity.Instance, error) {
+	instancesByID, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
+		return instance.ID == string(instanceRef)
 	})
 
 	if err != nil {
 		return nil, err
-	} else if len(instancesByNode) > 0 {
-		return instancesByNode[0], nil
+	} else if len(instancesByID) > 0 {
+		return instancesByID[0], nil
+	}
+
+	instancesByName, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
+		return instance.Name == string(instanceRef)
+	})
+
+	if err != nil {
+		return nil, err
+	} else if len(instancesByName) > 0 {
+		return instancesByName[0], nil
+	}
+
+	instanceURL := normalizeURL(string(instanceRef))
+
+	instancesByURL, err := d.kvStore.FindInstances(func(i *entity.Instance) bool {
+		return i.URL == instanceURL
+	})
+
+	if err != nil {
+		return nil, err
+	} else if len(instanceURL) > 0 {
+		return instancesByURL[0], nil
 	}
 
 	return nil, nil
@@ -255,15 +291,34 @@ func (d *Dice) instanceIsUnique(instance *entity.Instance) (bool, error) {
 		return false, nil
 	}
 
-	instancesByName, err := d.kvStore.FindInstances(func(i *entity.Instance) bool {
-		return i.ServiceID == instance.ServiceID && i.Name == instance.Name
-	})
+	if instance.Name != "" {
+		instancesByName, err := d.kvStore.FindInstances(func(i *entity.Instance) bool {
+			return i.ServiceID == instance.ServiceID && i.Name == instance.Name
+		})
 
-	if err != nil {
-		return false, err
-	} else if len(instancesByName) > 0 {
-		return false, nil
+		if err != nil {
+			return false, err
+		} else if len(instancesByName) > 0 {
+			return false, nil
+		}
 	}
 
 	return true, nil
+}
+
+// normalizeURL turns any URL string into an normalized, uniformly URL. This
+// is necessary for converting a user input like example.com into an appropriate
+// url.URL instance.
+//
+// Even though example.com is a valid URL for url.Parse(), it is not possible to
+// dial it since the scheme is missing. Only //example.com would be usable, and
+// normalizeURL makes sure that the provided URL will be usable.
+func normalizeURL(url string) string {
+	normalized := url
+
+	if strings.HasPrefix(url, "http") && !strings.HasPrefix(url, "//") {
+		normalized = "//" + normalized
+	}
+
+	return normalized
 }

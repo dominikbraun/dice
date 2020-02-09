@@ -40,13 +40,13 @@ type Config struct {
 // mark each instance as dead or alive on each check.
 type HealthCheck struct {
 	config   Config
-	services *map[string]registry.Service
+	services *map[string]*registry.Service
 	stop     chan bool
 }
 
 // New creates a new HealthCheck instance. It will take all service instances
 // from a service map into account.
-func New(config Config, services *map[string]registry.Service) (*HealthCheck, error) {
+func New(config Config, services *map[string]*registry.Service) (*HealthCheck, error) {
 	if services == nil {
 		return nil, ErrInvalidDeployments
 	}
@@ -101,7 +101,7 @@ func (hc *HealthCheck) checkServices() {
 // pingInstance reads the address from an instance and attempts to establish a
 // connection to that address. The dialer will use the configured timeout.
 func (hc *HealthCheck) pingInstance(node *entity.Node, instance *entity.Instance) bool {
-	address := fmt.Sprintf("%s:%v", node.URL.Hostname(), instance.URL)
+	address := fmt.Sprintf("%s:%v", node.Name, instance.URL)
 
 	conn, err := net.DialTimeout("tcp", address, hc.config.Timeout)
 	if err != nil {

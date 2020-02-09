@@ -17,10 +17,11 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dominikbraun/dice/entity"
+	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
-	"net/url"
 )
 
 var (
@@ -31,8 +32,8 @@ var (
 // CreateNode creates a new node with the provided URL and stores the node
 // in the key-value store. If the `Attach` option is set, the created node
 // will be attached immediately.
-func (d *Dice) CreateNode(url *url.URL, options types.NodeCreateOptions) error {
-	node, err := entity.NewNode(url, options)
+func (d *Dice) CreateNode(name string, options types.NodeCreateOptions) error {
+	node, err := entity.NewNode(name, options)
 	if err != nil {
 		return err
 	}
@@ -65,11 +66,10 @@ func (d *Dice) CreateNode(url *url.URL, options types.NodeCreateOptions) error {
 // synchronize the node with the service registry.
 func (d *Dice) AttachNode(nodeRef entity.NodeReference) error {
 	node, err := d.findNode(nodeRef)
+
 	if err != nil {
 		return err
-	}
-
-	if node == nil {
+	} else if node == nil {
 		return ErrNodeNotFound
 	}
 
@@ -79,7 +79,14 @@ func (d *Dice) AttachNode(nodeRef entity.NodeReference) error {
 		return err
 	}
 
-	return d.synchronizeNode(node, Attachment)
+	return d.registry.Update(func(s *registry.Service) error {
+		for _, d := range s.Deployments {
+			if d.Node.ID == node.ID {
+				d.Node.IsAttached = true
+			}
+		}
+		return nil
+	})
 }
 
 // DetachNode detaches an existing node from Dice, removing it as a target
@@ -87,11 +94,10 @@ func (d *Dice) AttachNode(nodeRef entity.NodeReference) error {
 // that node unavailable until it gets attached again.
 func (d *Dice) DetachNode(nodeRef entity.NodeReference) error {
 	node, err := d.findNode(nodeRef)
+
 	if err != nil {
 		return err
-	}
-
-	if node == nil {
+	} else if node == nil {
 		return ErrNodeNotFound
 	}
 
@@ -101,24 +107,54 @@ func (d *Dice) DetachNode(nodeRef entity.NodeReference) error {
 		return err
 	}
 
-	return d.synchronizeNode(node, Detachment)
+	return d.registry.Update(func(s *registry.Service) error {
+		for _, d := range s.Deployments {
+			if d.Node.ID == node.ID {
+				d.Node.IsAttached = false
+			}
+		}
+		return nil
+	})
+}
+
+// RemoveNode deletes a node entirely, removing it from the key-value store
+// and unregistering it from the service registry.
+//
+// Returns an error if there are attached instances deployed to the affected
+// node, unless --force is used.
+func (d *Dice) RemoveNode(nodeRef entity.NodeReference, options types.NodeRemoveOptions) error {
+	node, err := d.findNode(nodeRef)
+
+	if err != nil {
+		return err
+	} else if node == nil {
+		return ErrNodeNotFound
+	}
+
+	filter := func(deployment registry.Deployment) bool {
+		return deployment.Node.ID == node.ID
+	}
+
+	if ok := d.registry.UnregisterDeployments(filter, options.Force); !ok {
+		return fmt.Errorf("node is attached or has attached instances, detach or use --force")
+	}
+
+	return d.kvStore.DeleteNode(node.ID)
 }
 
 // NodeInfo returns user-relevant information for an existing node.
 func (d *Dice) NodeInfo(nodeRef entity.NodeReference) (types.NodeInfoOutput, error) {
 	node, err := d.findNode(nodeRef)
+
 	if err != nil {
 		return types.NodeInfoOutput{}, err
-	}
-
-	if node == nil {
+	} else if node == nil {
 		return types.NodeInfoOutput{}, ErrNodeNotFound
 	}
 
 	nodeInfo := types.NodeInfoOutput{
 		ID:         node.ID,
 		Name:       node.Name,
-		URL:        node.URL.String(),
 		IsAttached: node.IsAttached,
 		IsAlive:    node.IsAlive,
 	}
@@ -149,7 +185,6 @@ func (d *Dice) ListNodes(options types.NodeListOptions) ([]types.NodeInfoOutput,
 		info := types.NodeInfoOutput{
 			ID:         n.ID,
 			Name:       n.Name,
-			URL:        n.URL.String(),
 			IsAttached: n.IsAttached,
 			IsAlive:    n.IsAlive,
 		}
@@ -185,16 +220,6 @@ func (d *Dice) findNode(nodeRef entity.NodeReference) (*entity.Node, error) {
 		return nodesByName[0], nil
 	}
 
-	nodesByURL, err := d.kvStore.FindNodes(func(node *entity.Node) bool {
-		return node.URL.String() == string(nodeRef)
-	})
-
-	if err != nil {
-		return nil, err
-	} else if len(nodesByURL) > 0 {
-		return nodesByURL[0], nil
-	}
-
 	return nil, nil
 }
 
@@ -209,17 +234,7 @@ func (d *Dice) nodeIsUnique(node *entity.Node) (bool, error) {
 		return false, nil
 	}
 
-	if node.Name != "" {
-		storedNode, err = d.findNode(entity.NodeReference(node.Name))
-
-		if err != nil {
-			return false, err
-		} else if storedNode != nil {
-			return false, nil
-		}
-	}
-
-	storedNode, err = d.findNode(entity.NodeReference(node.URL.String()))
+	storedNode, err = d.findNode(entity.NodeReference(node.Name))
 
 	if err != nil {
 		return false, err

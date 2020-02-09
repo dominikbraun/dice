@@ -21,6 +21,10 @@ import (
 	"github.com/dominikbraun/dice/registry"
 )
 
+var (
+	ErrNoInstanceFound = errors.New("no service instance found")
+)
+
 // WeightedRoundRobin is a scheduler that basically implements the Round
 // Robin algorithm under consideration of node weights.
 //
@@ -33,13 +37,13 @@ import (
 // Instances that are either detached or considered dead won't be selected,
 // just as instances that are deployed to a detached or dead node.
 type WeightedRoundRobin struct {
-	deployments   *[]registry.Deployment
+	deployments   []registry.Deployment
 	currentIndex  int
 	currentWeight uint8
 }
 
 // newWeightedRoundRobin creates a new WeightedRoundRobin instance.
-func newWeightedRoundRobin(deployments *[]registry.Deployment) *WeightedRoundRobin {
+func newWeightedRoundRobin(deployments []registry.Deployment) *WeightedRoundRobin {
 	wrr := WeightedRoundRobin{
 		deployments:   deployments,
 		currentIndex:  0,
@@ -52,19 +56,36 @@ func newWeightedRoundRobin(deployments *[]registry.Deployment) *WeightedRoundRob
 // Next implements registry.Scheduler.Next. It is an implementation of the
 // Weighted Round Robin algorithm, respecting the rules described above.
 func (wrr *WeightedRoundRobin) Next() (*entity.Instance, error) {
+	if len(wrr.deployments) == 0 {
+		return nil, ErrNoInstanceFound
+	}
+
 	attempts := 0
 
 lookup:
-	for attempts < len(*wrr.deployments) {
-		index := wrr.currentIndex % len(*wrr.deployments)
-		d := (*wrr.deployments)[index]
+	for attempts <= len(wrr.deployments) {
+		// index specifies the deployment that will be selected based on the
+		// request count and available deployments.
+		index := wrr.currentIndex % len(wrr.deployments)
+		d := (wrr.deployments)[index]
 
+		// Start a new lookup if the instance isn't attached or alive.
 		if !d.Instance.IsAttached || !d.Instance.IsAlive {
 			wrr.currentIndex++
+			wrr.currentWeight = uint8(0)
 			attempts++
 			continue lookup
 		}
 
+		// If the deployment node's weight is higher than the weight counter,
+		// there's still some capacity and we can pick that deployment.
+		if d.Node.Weight > wrr.currentWeight {
+			wrr.currentWeight++
+			return d.Instance, nil
+		}
+
+		// Otherwise, if the node's maximum weight has been reached, we move
+		// on to the next index and start a new lookup.
 		if d.Node.Weight == wrr.currentWeight {
 			wrr.currentIndex++
 			wrr.currentWeight = uint8(0)
@@ -72,13 +93,13 @@ lookup:
 			continue lookup
 		}
 
-		if d.Node.Weight > wrr.currentWeight {
-			wrr.currentWeight++
-			return d.Instance, nil
-		}
-
 		attempts++
 	}
 
-	return nil, errors.New("no service instance found")
+	return nil, ErrNoInstanceFound
+}
+
+// UpdateDeployments implements registry.Scheduler.UpdateDeployments.
+func (wrr *WeightedRoundRobin) UpdateDeployments(deployments []registry.Deployment) {
+	wrr.deployments = deployments
 }

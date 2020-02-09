@@ -49,12 +49,14 @@ func (c *CLI) serviceCreateCmd() *cobra.Command {
 			name := args[0]
 			route := "/services/create"
 
-			var response types.Response
-
-			if err := c.client.POST(route, types.ServiceCreate{
+			body := types.ServiceCreate{
 				Name:                 name,
 				ServiceCreateOptions: options,
-			}, &response); err != nil {
+			}
+
+			var response types.Response
+
+			if err := c.client.POST(route, body, &response); err != nil {
 				return err
 			}
 
@@ -66,6 +68,7 @@ func (c *CLI) serviceCreateCmd() *cobra.Command {
 		},
 	}
 
+	serviceCreateCmd.Flags().StringVar(&options.URLs, "urls", "", `add one or more public URLs`)
 	serviceCreateCmd.Flags().StringVar(&options.Balancing, "balancing", "weighted_round_robin", `specify a balancing method`)
 	serviceCreateCmd.Flags().BoolVar(&options.Enable, "enable", false, `immediately enable the service`)
 
@@ -138,7 +141,7 @@ func (c *CLI) serviceInfoCmd() *cobra.Command {
 			serviceRef := args[0]
 			route := "/services/" + serviceRef + "/info"
 
-			var serviceInfoResponse types.ServiceInfoOutputResponse
+			var serviceInfoResponse types.ServiceInfoResponse
 
 			if err := c.client.POST(route, nil, &serviceInfoResponse); err != nil {
 				return err
@@ -189,4 +192,41 @@ func (c *CLI) serviceListCmd() *cobra.Command {
 	serviceListCmd.Flags().BoolVarP(&options.All, "all", "a", false, `list all services`)
 
 	return &serviceListCmd
+}
+
+// serviceURLCmd creates and implements the `service url` command.
+func (c *CLI) serviceURLCmd() *cobra.Command {
+	var options types.ServiceURLOptions
+
+	serviceURLCmd := cobra.Command{
+		Use:   "url <ID|NAME> <URL>",
+		Short: `Add or remove an URL for a service`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			serviceRef := args[0]
+			serviceURL := args[1]
+			route := "/services/" + serviceRef + "/url"
+
+			body := types.ServiceURL{
+				URL:               serviceURL,
+				ServiceURLOptions: options,
+			}
+
+			var response types.Response
+
+			if err := c.client.POST(route, body, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
+			return nil
+		},
+	}
+
+	serviceURLCmd.Flags().BoolVarP(&options.Delete, "delete", "d", false, `remove URL from the service`)
+
+	return &serviceURLCmd
 }

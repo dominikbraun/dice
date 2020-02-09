@@ -36,7 +36,7 @@ var (
 
 // New creates a new Scheduler instance depending on the provided balancing
 // method. The particular instance has read-only access to the deployments.
-func New(deployments *[]registry.Deployment, method BalancingMethod) (registry.Scheduler, error) {
+func New(deployments []registry.Deployment, method BalancingMethod) (registry.Scheduler, error) {
 	switch method {
 	case WeightedRoundRobinBalancing:
 		return newWeightedRoundRobin(deployments), nil

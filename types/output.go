@@ -19,7 +19,6 @@ package types
 type NodeInfoOutput struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
-	URL        string `json:"url"`
 	IsAttached bool   `json:"is_attached"`
 	IsAlive    bool   `json:"is_alive"`
 }
@@ -28,7 +27,7 @@ type NodeInfoOutput struct {
 type ServiceInfoOutput struct {
 	ID              string   `json:"id"`
 	Name            string   `json:"name"`
-	Hostnames       []string `json:"hostnames"`
+	URLs            []string `json:"urls"`
 	TargetVersion   string   `json:"target_version"`
 	BalancingMethod string   `json:"balancing_method"`
 	IsEnabled       bool     `json:"is_enabled"`

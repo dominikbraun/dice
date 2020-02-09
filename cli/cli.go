@@ -47,6 +47,7 @@ func (c *CLI) buildCommands() {
 	nodeCmd.AddCommand(c.nodeCreateCmd())
 	nodeCmd.AddCommand(c.nodeAttachCmd())
 	nodeCmd.AddCommand(c.nodeDetachCmd())
+	nodeCmd.AddCommand(c.nodeRemoveCmd())
 	nodeCmd.AddCommand(c.nodeInfoCmd())
 	nodeCmd.AddCommand(c.nodeListCmd())
 
@@ -57,12 +58,14 @@ func (c *CLI) buildCommands() {
 	serviceCmd.AddCommand(c.serviceDisableCmd())
 	serviceCmd.AddCommand(c.serviceInfoCmd())
 	serviceCmd.AddCommand(c.serviceListCmd())
+	serviceCmd.AddCommand(c.serviceURLCmd())
 
 	instanceCmd := c.instanceCmd()
 
 	instanceCmd.AddCommand(c.instanceCreateCmd())
 	instanceCmd.AddCommand(c.instanceAttachCmd())
 	instanceCmd.AddCommand(c.instanceDetachCmd())
+	instanceCmd.AddCommand(c.instanceRemoveCmd())
 	instanceCmd.AddCommand(c.instanceInfoCmd())
 	instanceCmd.AddCommand(c.instanceListCmd())
 

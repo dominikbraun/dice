@@ -17,7 +17,6 @@ package store
 import (
 	"github.com/dominikbraun/dice/entity"
 	"github.com/dominikbraun/dice/types"
-	"net/url"
 	"testing"
 )
 
@@ -41,8 +40,7 @@ func setupOnNil(t *testing.T) {
 func TestKVStore_CreateNode(t *testing.T) {
 	setupOnNil(t)
 
-	nodeURL, _ := url.Parse("172.21.21.1")
-	node, _ := entity.NewNode(nodeURL, types.NodeCreateOptions{Name: "test-node-1"})
+	node, _ := entity.NewNode("172.21.21.1", types.NodeCreateOptions{})
 
 	if err := kvStore.CreateNode(node); err != nil {
 		t.Error(err.Error())
@@ -52,8 +50,7 @@ func TestKVStore_CreateNode(t *testing.T) {
 func TestKVStore_FindNode(t *testing.T) {
 	setupOnNil(t)
 
-	nodeURL, _ := url.Parse("172.21.21.2")
-	node, _ := entity.NewNode(nodeURL, types.NodeCreateOptions{Name: "test-node-2"})
+	node, _ := entity.NewNode("172.21.21.2", types.NodeCreateOptions{})
 
 	if err := kvStore.CreateNode(node); err != nil {
 		t.Error(err.Error())
@@ -77,11 +74,8 @@ func TestKVStore_FindNode(t *testing.T) {
 func TestKVStore_FindNodes(t *testing.T) {
 	setupOnNil(t)
 
-	nodeURL1, _ := url.Parse("172.21.21.3")
-	node1, _ := entity.NewNode(nodeURL1, types.NodeCreateOptions{Weight: 255})
-
-	nodeURL2, _ := url.Parse("172.21.21.4")
-	node2, _ := entity.NewNode(nodeURL2, types.NodeCreateOptions{Weight: 255})
+	node1, _ := entity.NewNode("172.21.21.3", types.NodeCreateOptions{Weight: 255})
+	node2, _ := entity.NewNode("172.21.21.4", types.NodeCreateOptions{Weight: 255})
 
 	if err := kvStore.CreateNode(node1); err != nil {
 		t.Error(err)
@@ -92,7 +86,7 @@ func TestKVStore_FindNodes(t *testing.T) {
 	}
 
 	nodesByURL, err := kvStore.FindNodes(func(node *entity.Node) bool {
-		return node.URL.String() == nodeURL1.String()
+		return node.Name == node1.Name
 	})
 	if err != nil {
 		t.Error(err)
@@ -117,8 +111,7 @@ func TestKVStore_FindNodes(t *testing.T) {
 func TestKVStore_UpdateNode(t *testing.T) {
 	setupOnNil(t)
 
-	nodeURL, _ := url.Parse("172.21.21.5")
-	node, _ := entity.NewNode(nodeURL, types.NodeCreateOptions{})
+	node, _ := entity.NewNode("172.21.21.5", types.NodeCreateOptions{})
 
 	if err := kvStore.CreateNode(node); err != nil {
 		t.Error(err)
@@ -143,8 +136,7 @@ func TestKVStore_UpdateNode(t *testing.T) {
 func TestKVStore_DeleteNode(t *testing.T) {
 	setupOnNil(t)
 
-	nodeURL, _ := url.Parse("172.21.21.6")
-	node, _ := entity.NewNode(nodeURL, types.NodeCreateOptions{})
+	node, _ := entity.NewNode("172.21.21.6", types.NodeCreateOptions{})
 
 	if err := kvStore.CreateNode(node); err != nil {
 		t.Error(err)

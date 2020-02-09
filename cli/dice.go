@@ -15,22 +15,41 @@
 // Package cli provides the Dice CLI commands and their implementation.
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
 // diceCmd creates and implements the `dice` command, which is also the
 // root command. The dice command itself does not have any functionality.
+//
+// Each time the  `dice` command is executed, the --address option is being
+// parsed. If an address has been specified, the client's target address
+// will be overridden by that address.
 func (c *CLI) diceCmd() *cobra.Command {
+	var address string
+
 	diceCmd := cobra.Command{
 		Use:          "dice",
 		Short:        `Simple load balancing for non-microservice infrastructures`,
-		Long:         `Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice infrastructures.`,
+		Long:         `🎲 Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice infrastructures.`,
 		Version:      "0.0.0",
 		SilenceUsage: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// The API connection data from the environment variables can be
+			// overridden via CLI flags. If the address is specified, force
+			// the client to use this address instead of the configured one.
+			if address != "" {
+				c.client.OverrideAddress(address)
+			}
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_ = cmd.Help()
 			return nil
 		},
 	}
+
+	diceCmd.PersistentFlags().StringVar(&address, "address", "", `specify the address of the Dice API`)
 
 	return &diceCmd
 }

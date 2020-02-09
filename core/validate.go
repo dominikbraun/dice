@@ -18,12 +18,11 @@ package core
 import (
 	"github.com/dominikbraun/dice/entity"
 	"regexp"
-	"strings"
 )
 
 // urlSafe specifies a regular expression for a valid URL. It only allows
 // characters that are URL-safe according to RFC 3986.
-var urlSafe = regexp.MustCompile("^[a-zA-Z0-9_-]*$")
+var urlSafe = regexp.MustCompile("^[a-zA-Z0-9_.-]*$")
 
 // validateNode checks all node properties and determines if they're valid.
 // It does not check whether the node does already exist or not.
@@ -34,10 +33,6 @@ func validateNode(node *entity.Node) (bool, string) {
 
 	if !urlSafe.MatchString(node.Name) {
 		return false, "Name must only contain _ and - as special characters"
-	}
-
-	if strings.Contains(node.URL.String(), "://") {
-		return false, "URL must not contain protocol"
 	}
 
 	return true, ""

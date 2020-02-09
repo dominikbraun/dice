@@ -23,24 +23,35 @@ package types
 // API use case, it is significantly simpler to read the request's JSON into
 // a single struct. This is NodeCreate's purpose: It combines all necessary
 // information and gets populated with the JSON from the request body.
+//
+// The other following types like ServiceCreate serve the exact same purpose.
 type NodeCreate struct {
-	URL string `json:"url"`
+	Name string `json:"name"`
 	NodeCreateOptions
 }
 
 // ServiceCreate is a type exclusively used for the REST API. It holds all
 // information required to create a new service.
 //
-// For further information, see the documentation for NodeCreate.
+// For further information about its usage, see the docs for NodeCreate.
 type ServiceCreate struct {
 	Name string `json:"name"`
 	ServiceCreateOptions
 }
 
+// ServiceURL is a type exclusively used for the REST API. It holds all
+// information required to set an URL for a service.
+//
+// For further information about its usage, see the docs for NodeCreate.
+type ServiceURL struct {
+	URL string `json:"url"`
+	ServiceURLOptions
+}
+
 // InstanceCreate is a type exclusively used for the REST API. It holds all
 // information required to create a new instance.
 //
-// For further information, see the documentation for NodeCreate.
+// For further information about its usage, see the docs for NodeCreate.
 type InstanceCreate struct {
 	ServiceRef string `json:"service_ref"`
 	NodeRef    string `json:"node_ref"`
@@ -49,14 +60,17 @@ type InstanceCreate struct {
 }
 
 // Response represents an API response that will be returned to the client.
+//
+// All *Response types wrap this basic response and a specific *Output type,
+// forming an API response for a specific command.
 type Response struct {
 	Success bool        `json:"success"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
-// NodeInfoOutputResponse is an API response that carries a NodeInfoOutput.
-type NodeInfoOutputResponse struct {
+// NodeInfoResponse is an API response that carries a NodeInfoOutput.
+type NodeInfoResponse struct {
 	Response
 	Data NodeInfoOutput `json:"data"`
 }
@@ -68,8 +82,8 @@ type NodeListResponse struct {
 	Data []NodeInfoOutput `json:"data"`
 }
 
-// ServiceInfoOutputResponse carrying a ServiceInfoOutput.
-type ServiceInfoOutputResponse struct {
+// ServiceInfoResponse carrying a ServiceInfoOutput.
+type ServiceInfoResponse struct {
 	Response
 	Data ServiceInfoOutput `json:"data"`
 }
@@ -82,8 +96,8 @@ type ServiceListResponse struct {
 	Data []ServiceInfoOutput `json:"data"`
 }
 
-// InstanceInfoOutputResponse carrying a InstanceInfoOutput.
-type InstanceInfoOutputResponse struct {
+// InstanceInfoResponse carrying a InstanceInfoOutput.
+type InstanceInfoResponse struct {
 	Response
 	Data InstanceInfoOutput `json:"data"`
 }

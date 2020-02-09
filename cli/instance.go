@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package cli provides the Dice CLI commands and their implementation.
 package cli
 
 import (
@@ -41,24 +42,25 @@ func (c *CLI) instanceCreateCmd() *cobra.Command {
 	var options types.InstanceCreateOptions
 
 	instanceCreateCmd := cobra.Command{
-		Use:   "create <SERVICE> <NODE> <PORT>",
+		Use:   "create <SERVICE> <NODE> <URL>",
 		Short: `Create a new service instance`,
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serviceRef := args[0]
 			nodeRef := args[1]
-			nodeURL := args[2]
-
+			instanceURL := args[2]
 			route := "/instances/create"
+
+			body := types.InstanceCreate{
+				ServiceRef:            serviceRef,
+				NodeRef:               nodeRef,
+				URL:                   instanceURL,
+				InstanceCreateOptions: options,
+			}
 
 			var response types.Response
 
-			if err := c.client.POST(route, types.InstanceCreate{
-				ServiceRef:            serviceRef,
-				NodeRef:               nodeRef,
-				URL:                   nodeURL,
-				InstanceCreateOptions: options,
-			}, &response); err != nil {
+			if err := c.client.POST(route, body, &response); err != nil {
 				return err
 			}
 
@@ -131,6 +133,37 @@ func (c *CLI) instanceDetachCmd() *cobra.Command {
 	return &instanceDetachCmd
 }
 
+// instanceRemoveCmd creates and implemented the `instance remove` command.
+func (c *CLI) instanceRemoveCmd() *cobra.Command {
+	var options types.InstanceRemoveOptions
+
+	instanceRemoveCmd := cobra.Command{
+		Use:   "remove <ID|NAME|URL>",
+		Short: `Remove an instance`,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			instanceRef := args[0]
+			route := "/instances/" + instanceRef + "/remove"
+
+			var response types.Response
+
+			if err := c.client.POST(route, options, &response); err != nil {
+				return err
+			}
+
+			if !response.Success {
+				return errors.New(response.Message)
+			}
+
+			return nil
+		},
+	}
+
+	instanceRemoveCmd.Flags().BoolVarP(&options.Force, "force", "f", false, `force the removal`)
+
+	return &instanceRemoveCmd
+}
+
 // instanceInfoCmd creates and implements the `instance info` command.
 func (c *CLI) instanceInfoCmd() *cobra.Command {
 	var options types.InstanceInfoOptions
@@ -143,7 +176,7 @@ func (c *CLI) instanceInfoCmd() *cobra.Command {
 			instanceRef := args[0]
 			route := "/instances/" + instanceRef + "/info"
 
-			var instanceInfoResponse types.InstanceInfoOutputResponse
+			var instanceInfoResponse types.InstanceInfoResponse
 
 			if err := c.client.POST(route, nil, &instanceInfoResponse); err != nil {
 				return err

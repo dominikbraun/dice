@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package config provides configuration reader implementations.
 package config
 
 import (
 	"github.com/spf13/viper"
 )
 
+// Reader represents a configuration reader. This can be a configuration
+// file, system environment variables or other configuration sources.
 type Reader interface {
 	Get(key string) interface{}
 	GetString(key string) string
@@ -26,7 +29,8 @@ type Reader interface {
 	SetDefault(key string, value interface{})
 }
 
-func NewConfig(filename string) (Reader, error) {
+// NewFile creates a new configuration file reader.
+func NewFile(filename string) (Reader, error) {
 	r := viper.New()
 
 	r.SetConfigName(filename)
@@ -36,11 +40,16 @@ func NewConfig(filename string) (Reader, error) {
 
 	if err := r.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			println("Warning: Configuration file not found. Using default values.")
 			return r, nil
 		}
 		return nil, err
 	}
 
 	return r, nil
+}
+
+// NewFile creates a new environment variable reader.
+func NewEnvironment() (Reader, error) {
+	e := Environment{}
+	return e, nil
 }

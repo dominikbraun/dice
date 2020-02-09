@@ -18,9 +18,13 @@ package types
 // NodeCreateOptions combines all user options for creating a new node.
 // It serves as a Data Transfer Object for the Dice core.
 type NodeCreateOptions struct {
-	Name   string `json:"name"`
-	Weight uint8  `json:"weight"`
-	Attach bool   `json:"attach"`
+	Weight uint8 `json:"weight"`
+	Attach bool  `json:"attach"`
+}
+
+// NodeRemoveOptions combines all user options for removing a node.
+type NodeRemoveOptions struct {
+	Force bool `json:"force"`
 }
 
 // NodeInfoOptions combines all user options for printing information
@@ -37,6 +41,7 @@ type NodeListOptions struct {
 // ServiceCreateOptions combines all user options for creating a new
 // service. It serves as a Data Transfer Object for the Dice core.
 type ServiceCreateOptions struct {
+	URLs      string `json:"urls"`
 	Balancing string `json:"balancing"`
 	Enable    bool   `json:"enable"`
 }
@@ -52,12 +57,23 @@ type ServiceListOptions struct {
 	All bool `json:"all"`
 }
 
+// ServiceURLOptions combines all user options for setting service URLs.
+type ServiceURLOptions struct {
+	Delete bool `json:"delete"`
+}
+
 // InstanceCreateOptions combines all user options for creating a new
 // instance. It serves as a Data Transfer Object for the Dice core.
 type InstanceCreateOptions struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 	Attach  bool   `json:"attach"`
+}
+
+// InstanceRemoveOptions combines all user options for removing an
+// instance.
+type InstanceRemoveOptions struct {
+	Force bool `json:"force"`
 }
 
 // InstanceInfoOptions combines all user options for printing information

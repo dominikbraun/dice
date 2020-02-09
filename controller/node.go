@@ -21,7 +21,6 @@ import (
 	"github.com/dominikbraun/dice/types"
 	"github.com/go-chi/chi"
 	"net/http"
-	"net/url"
 )
 
 // CreateNode handles a POST request for creating a new node. The request
@@ -35,13 +34,7 @@ func (c *Controller) CreateNode() http.HandlerFunc {
 			return
 		}
 
-		nodeURL, err := url.Parse(nodeCreate.URL)
-		if err != nil {
-			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidURL)
-			return
-		}
-
-		if err := c.backend.CreateNode(nodeURL, nodeCreate.NodeCreateOptions); err != nil {
+		if err := c.backend.CreateNode(nodeCreate.Name, nodeCreate.NodeCreateOptions); err != nil {
 			respondError(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
@@ -71,6 +64,27 @@ func (c *Controller) DetachNode() http.HandlerFunc {
 		nodeRef := entity.NodeReference(chi.URLParam(r, "ref"))
 
 		if err := c.backend.DetachNode(nodeRef); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+		}
+
+		respond(w, r, http.StatusOK, types.Response{Success: true})
+	}
+}
+
+// RemoveNode handles a POST request for removing an existing node. The
+// request URL has to contain a valid node reference.
+func (c *Controller) RemoveNode() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		nodeRef := entity.NodeReference(chi.URLParam(r, "ref"))
+
+		var options types.NodeRemoveOptions
+
+		if err := json.NewDecoder(r.Body).Decode(&options); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		if err := c.backend.RemoveNode(nodeRef, options); err != nil {
 			respondError(w, r, http.StatusUnprocessableEntity, err)
 		}
 

@@ -6,7 +6,7 @@
 <br>
 </p>
 
-<h3 align="center">Dice &ndash; Simple load balancing for non-microservice infrastructures.</h3>
+<h3 align="center">Dice &ndash; An experimental load balancer for non-microservice infrastructures.</h3>
 
 <p align="center">
 <img src="https://circleci.com/gh/dominikbraun/foodunit.svg?style=shield">
@@ -21,7 +21,9 @@
 
 ---
 
-:game_die: Dice is an ergonomic, flexible, easy to use load balancer designed for non-microservice, static infrastructures.
+:game_die: Dice is a yet experimental load balancer designed for non-microservice, static infrastructures with focus on simplicity, operability and flexibility.
+
+**Project status:** In active development.
 
 ## <img src="https://sternentstehung.de/dice-dot.png"> Included Features
 
@@ -32,10 +34,10 @@
 * Configuration changes without restart
 * Nodes with less computing resources receive less requests
 * Attachment and detachment of instances on the fly
-* Manage deployments by logical and physical affiliation
-* Dice is passive: Making a service available for load balancing is up to you
+* Deployments managed by logical and physical affiliation
+* Dice is passive and explicit: Make services available for load balancing yourself
 
-## <img src="https://sternentstehung.de/dice-dot.png"> Quick Example
+## <img src="https://sternentstehung.de/dice-dot.png"> Simple Example
 
 ### The Scenario
 
@@ -52,35 +54,28 @@ Each service _A_, _B_ and _C_ has an instance deployed to _main-server_. An inst
 
 ### Setting up our environment
 
-Let's make our infrastructure available to Dice. After starting Dice, we can register our servers:
+To keep things short, we'll just create one node, one service and one instance. After starting Dice, we can register our _main-server_:
 
 ````shell script
-$ dice node create main-server --weight 2
-$ dice node create another-server
+$ dice node create --attach --weight=2 main-server
 ````
 
-Registering these servers will help Dice choosing an appropriate service instance later. `--weight 2` indicates that `main-server` has double computing capacaties compared to our other servers.
+Registering nodes will help Dice choosing an appropriate service instance later. `--weight=2` indicates that the server has double computing capacities.
 
-Before we're able to register our service instances, we have to tell Dice about the services itself. For this example, we'll just create service _A_.
+After that, we have to tell Dice about our services – let's just create service _A_ here.
 
 ````shell script
-$ dice service create A
+$ dice service create --urls=example.com --enable A
 ````
 
-We also have to specify the public URL that belongs to our service. Mapping an URL to a service is fairly simple:
-
-````shell script
-$ dice service url A example.com
-````
-
-When an request for `example.com` hits Dice, it will forward the request to an instance of service _A_.
+By using `--url=example.com`, we specify a public URL that the service is associated with. We can add or remove these URLs later as well. When a request for `example.com` hits Dice, it will forward the request to an instance of service _A_.
 
 ### Start load balancing
 
-We can register such an instance like so:
+Registering a service instance is fairly easy:
 
 ````shell script
-$ dice instance create A main-server 172.21.21.1:8080 --name main-instance
+$ dice instance create --name=first-instance A main-server 172.21.21.1:8080
 ````
 
 This tells Dice to register an instance of service `A` that has been deployed to `main-server` and is available at `172.21.21.1:8080`.
@@ -88,17 +83,15 @@ This tells Dice to register an instance of service `A` that has been deployed to
 Attaching the created instance to Dice will make it available for load balancing:
 
 ````shell script
-$ dice instance attach main-instance
+$ dice instance attach first-instance
 ````
 
-We could also use the full instance URL here, but names like `main-instance` are more convenient. The created instance will now receive incoming requests for `example.com`.
+Incoming requests for `example.com` will be balanced among instances of _A_. In this case, `first-instance` will be used each time.
 
 ## <img src="https://sternentstehung.de/dice-dot.png"> Installation
 
-Download the [latest release of Dice](https://github.com/dominikbraun/dice/releases).
+Download the [latest release of Dice](https://github.com/dominikbraun/dice/releases) [...]
 
-... Install instructions here ...
+## <img src="https://sternentstehung.de/dice-dot.png"> Getting started
 
-## <img src="https://sternentstehung.de/dice-dot.png"> Usage
-
-Dice is a passive tool. This means that you 
+[...]

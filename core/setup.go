@@ -36,13 +36,33 @@ import (
 func (d *Dice) setupConfig() error {
 	var err error
 
-	if d.config, err = config.NewConfig(configName); err != nil {
+	if d.config, err = config.NewFile(configName); err != nil {
 		return err
 	}
 
-	for key, value := range config.Defaults {
+	for key, value := range config.DiceDefaults {
 		d.config.SetDefault(key, value)
 	}
+
+	return nil
+}
+
+// setupReloadConfig sets up the channel for triggering a config reload.
+func (d *Dice) setupReloadConfig() error {
+	d.reloadConfig = make(chan bool)
+	return nil
+}
+
+// setupLogger sets up the logger as well as the logfile it will be using.
+func (d *Dice) setupLogger() error {
+	logfile := d.config.GetString("dice-logfile")
+
+	file, err := os.OpenFile(logfile, os.O_WRONLY|os.O_CREATE, 0755)
+	if err != nil {
+		return err
+	}
+
+	d.logger = log.NewLogger(file, log.DebugLevel)
 
 	return nil
 }
@@ -52,7 +72,9 @@ func (d *Dice) setupKVStore() error {
 	var err error
 
 	if d.kvStore != nil {
-		d.kvStore.Close()
+		if err := d.kvStore.Close(); err != nil {
+			return err
+		}
 	}
 
 	path := d.config.GetString("kv-store-file")
@@ -67,7 +89,7 @@ func (d *Dice) setupKVStore() error {
 // setupRegistry initializes the service registry. This is also the point
 // where existing services and instances are acquainted to the registry.
 func (d *Dice) setupRegistry() error {
-	d.registry = registry.NewServiceRegistry()
+	d.registry = registry.NewServiceRegistry(d.logger)
 	return nil
 }
 
@@ -94,7 +116,7 @@ func (d *Dice) setupHealthCheck() error {
 // setupController creates a new Controller instance that utilizes Dice
 // itself as a controller target. It will be used by the API server.
 func (d *Dice) setupController() error {
-	d.controller = controller.New(d)
+	d.controller = controller.New(d, d.reloadConfig)
 	return nil
 }
 
@@ -128,20 +150,6 @@ func (d *Dice) setupProxy() error {
 	}
 
 	d.proxy = proxy.New(proxyConfig, d.registry)
-
-	return nil
-}
-
-// setupLogger sets up the logger as well as the logfile it will be using.
-func (d *Dice) setupLogger() error {
-	logfile := d.config.GetString("dice-logfile")
-
-	file, err := os.OpenFile(logfile, os.O_WRONLY|os.O_CREATE, 0755)
-	if err != nil {
-		return err
-	}
-
-	d.logger = log.NewLogger(file, log.InfoLevel)
 
 	return nil
 }

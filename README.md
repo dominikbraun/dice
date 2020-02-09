@@ -6,7 +6,7 @@
 <br>
 </p>
 
-<h3 align="center">Dice &ndash; An experimental load balancer for non-microservice infrastructures.</h3>
+<h3 align="center">Dice &ndash; A yet experimental load balancer for non-microservice infrastructures.</h3>
 
 <p align="center">
 <img src="https://circleci.com/gh/dominikbraun/foodunit.svg?style=shield">
@@ -21,7 +21,7 @@
 
 ---
 
-:game_die: Dice is a yet experimental load balancer designed for non-microservice, static infrastructures with focus on simplicity, operability and flexibility.
+:game_die: Dice is a load balancer designed for non-microservice, static infrastructures with focus on simplicity, operability and flexibility. Experimental yet.
 
 **Project status:** In active development.
 

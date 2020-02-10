@@ -129,6 +129,33 @@ func (c *CLI) serviceDisableCmd() *cobra.Command {
 	return &serviceDisableCmd
 }
 
+// serviceUpdateCmd creates and implemented the `service update` command.
+func (c *CLI) serviceUpdateCmd() *cobra.Command {
+	serviceUpdateCmd := cobra.Command{
+		Use:   "update <ID|NAME> <VERSION>",
+		Short: `Update the service to a specific version`,
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			serviceRef := args[0]
+			route := "/services/" + serviceRef + "/update"
+
+			serviceUpdate := types.ServiceUpdate{
+				TargetVersion: args[1],
+			}
+
+			var response types.Response
+
+			if err := c.client.POST(route, serviceUpdate, &response); err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	return &serviceUpdateCmd
+}
+
 // serviceInfoCmd creates and implements the `service info` command.
 func (c *CLI) serviceInfoCmd() *cobra.Command {
 	var options types.ServiceInfoOptions

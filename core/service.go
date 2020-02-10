@@ -21,7 +21,6 @@ import (
 	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
-	"strings"
 )
 
 var (
@@ -140,7 +139,7 @@ func (d *Dice) UpdateService(serviceRef entity.ServiceReference, targetVersion s
 	}
 
 	attachableInstances, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
-		return instance.Version == strings.Trim(targetVersion, " ")
+		return instance.Version == targetVersion
 	})
 
 	if err != nil {
@@ -157,7 +156,7 @@ func (d *Dice) UpdateService(serviceRef entity.ServiceReference, targetVersion s
 	}
 
 	detachableInstances, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
-		return instance.Version != strings.Trim(targetVersion, " ")
+		return instance.Version != targetVersion
 	})
 
 	if err != nil {

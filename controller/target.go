@@ -43,6 +43,7 @@ type ServiceTarget interface {
 	CreateService(name string, options types.ServiceCreateOptions) error
 	EnableService(serviceRef entity.ServiceReference) error
 	DisableService(serviceRef entity.ServiceReference) error
+	UpdateService(serviceRef entity.ServiceReference, targetVersion string) error
 	ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInfoOutput, error)
 	ListServices(options types.ServiceListOptions) ([]types.ServiceInfoOutput, error)
 	SetServiceURL(serviceRef entity.ServiceReference, url string, options types.ServiceURLOptions) error

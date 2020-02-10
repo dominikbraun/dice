@@ -71,6 +71,28 @@ func (c *Controller) DisableService() http.HandlerFunc {
 	}
 }
 
+// UpdateService handles a POST request for updating a service. The request
+// URL has to contain a valid service reference, the body must provide a
+// valid instance of types.ServiceUpdate.
+func (c *Controller) UpdateService() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		serviceRef := entity.ServiceReference(chi.URLParam(r, "ref"))
+
+		var serviceUpdate types.ServiceUpdate
+
+		if err := json.NewDecoder(r.Body).Decode(&serviceUpdate); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, ErrInvalidFormData)
+			return
+		}
+
+		if err := c.backend.UpdateService(serviceRef, serviceUpdate.TargetVersion); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, err)
+		}
+
+		respond(w, r, http.StatusOK, types.Response{Success: true})
+	}
+}
+
 // ServiceInfo handles a POST request for retrieving information for a
 // service. The request URL has to contain a valid service reference.
 func (c *Controller) ServiceInfo() http.HandlerFunc {

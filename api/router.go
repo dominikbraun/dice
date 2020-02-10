@@ -61,6 +61,7 @@ func (s *Server) mountRoutes() {
 		r.Route("/{ref}", func(r chi.Router) {
 			r.Post("/enable", s.controller.EnableService())
 			r.Post("/disable", s.controller.DisableService())
+			r.Post("/update", s.controller.UpdateService())
 			r.Post("/info", s.controller.ServiceInfo())
 			r.Post("/url", s.controller.SetServiceURL())
 		})

@@ -21,6 +21,7 @@ import (
 	"github.com/dominikbraun/dice/registry"
 	"github.com/dominikbraun/dice/store"
 	"github.com/dominikbraun/dice/types"
+	"strings"
 )
 
 var (
@@ -79,11 +80,10 @@ func (d *Dice) CreateService(name string, options types.ServiceCreateOptions) er
 // service with the service registry.
 func (d *Dice) EnableService(serviceRef entity.ServiceReference) error {
 	service, err := d.findService(serviceRef)
+
 	if err != nil {
 		return err
-	}
-
-	if service == nil {
+	} else if service == nil {
 		return ErrServiceNotFound
 	}
 
@@ -105,11 +105,10 @@ func (d *Dice) EnableService(serviceRef entity.ServiceReference) error {
 // therefore making it unavailable for any clients.
 func (d *Dice) DisableService(serviceRef entity.ServiceReference) error {
 	service, err := d.findService(serviceRef)
+
 	if err != nil {
 		return err
-	}
-
-	if service == nil {
+	} else if service == nil {
 		return ErrServiceNotFound
 	}
 
@@ -127,14 +126,60 @@ func (d *Dice) DisableService(serviceRef entity.ServiceReference) error {
 	})
 }
 
+// UpdateService updates a service whose instances have already been deployed
+// under specific version tags. That is, all instances whose versions do not
+// match the targetVersion will be detached. Instances that have a matching
+// version will be attached.
+func (d *Dice) UpdateService(serviceRef entity.ServiceReference, targetVersion string) error {
+	service, err := d.findService(serviceRef)
+
+	if err != nil {
+		return err
+	} else if service == nil {
+		return ErrServiceNotFound
+	}
+
+	attachableInstances, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
+		return instance.Version == strings.Trim(targetVersion, " ")
+	})
+
+	if err != nil {
+		return err
+	}
+
+	for _, i := range attachableInstances {
+		// AttachInstance and DetachInstance will search the KV store entry
+		// again in order to create an instance, change it and write it back.
+		// ToDo: Avoid loading instances from the KV store twice.
+		if err := d.AttachInstance(entity.InstanceReference(i.ID)); err != nil {
+			return err
+		}
+	}
+
+	detachableInstances, err := d.kvStore.FindInstances(func(instance *entity.Instance) bool {
+		return instance.Version != strings.Trim(targetVersion, " ")
+	})
+
+	if err != nil {
+		return err
+	}
+
+	for _, i := range detachableInstances {
+		if err := d.DetachInstance(entity.InstanceReference(i.ID)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ServiceInfo returns user-relevant information for an existing service.
 func (d *Dice) ServiceInfo(serviceRef entity.ServiceReference) (types.ServiceInfoOutput, error) {
 	service, err := d.findService(serviceRef)
+
 	if err != nil {
 		return types.ServiceInfoOutput{}, err
-	}
-
-	if service == nil {
+	} else if service == nil {
 		return types.ServiceInfoOutput{}, ErrServiceNotFound
 	}
 
@@ -188,6 +233,7 @@ func (d *Dice) ListServices(options types.ServiceListOptions) ([]types.ServiceIn
 // will be visible for the service registry and the Dice proxy instantly.
 func (d *Dice) SetServiceURL(serviceRef entity.ServiceReference, url string, options types.ServiceURLOptions) error {
 	service, err := d.findService(serviceRef)
+
 	if err != nil {
 		return err
 	} else if service == nil {

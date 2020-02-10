@@ -39,6 +39,14 @@ type ServiceCreate struct {
 	ServiceCreateOptions
 }
 
+// ServiceUpdate is a type exclusively used for the REST API. It holds all
+// information required to update a service.
+//
+// For further information about its usage, see the docs for NodeCreate.
+type ServiceUpdate struct {
+	TargetVersion string `json:"target_version"`
+}
+
 // ServiceURL is a type exclusively used for the REST API. It holds all
 // information required to set an URL for a service.
 //

@@ -138,9 +138,10 @@ func (c *CLI) instanceRemoveCmd() *cobra.Command {
 	var options types.InstanceRemoveOptions
 
 	instanceRemoveCmd := cobra.Command{
-		Use:   "remove <ID|NAME|URL>",
-		Short: `Remove an instance`,
-		Args:  cobra.ExactArgs(1),
+		Use:     "remove <ID|NAME|URL>",
+		Short:   `Remove an instance`,
+		Aliases: []string{"rm"},
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			instanceRef := args[0]
 			route := "/instances/" + instanceRef + "/remove"
@@ -201,9 +202,10 @@ func (c *CLI) instanceListCmd() *cobra.Command {
 	var options types.InstanceListOptions
 
 	instanceListCmd := cobra.Command{
-		Use:   "list",
-		Short: `List attached instances`,
-		Args:  cobra.ExactArgs(0),
+		Use:     "list",
+		Short:   `List attached instances`,
+		Aliases: []string{"ls"},
+		Args:    cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			route := "/instances/list"
 			var instanceListResponse types.InstanceListResponse

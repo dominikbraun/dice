@@ -193,9 +193,10 @@ func (c *CLI) serviceListCmd() *cobra.Command {
 	var options types.ServiceListOptions
 
 	serviceListCmd := cobra.Command{
-		Use:   "list",
-		Short: `List enabled services`,
-		Args:  cobra.ExactArgs(0),
+		Use:     "list",
+		Short:   `List enabled services`,
+		Aliases: []string{"ls"},
+		Args:    cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			route := "/services/list"
 			var serviceListResponse types.ServiceListResponse

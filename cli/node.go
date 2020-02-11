@@ -133,9 +133,10 @@ func (c *CLI) nodeRemoveCmd() *cobra.Command {
 	var options types.NodeRemoveOptions
 
 	nodeRemoveCmd := cobra.Command{
-		Use:   "remove <ID|NAME>",
-		Short: `Remove a node`,
-		Args:  cobra.ExactArgs(1),
+		Use:     "remove <ID|NAME>",
+		Short:   `Remove a node`,
+		Aliases: []string{"rm"},
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			nodeRef := args[0]
 			route := "/nodes/" + nodeRef + "/remove"
@@ -196,9 +197,10 @@ func (c *CLI) nodeListCmd() *cobra.Command {
 	var options types.NodeListOptions
 
 	nodeListCmd := cobra.Command{
-		Use:   "list",
-		Short: `List attached nodes`,
-		Args:  cobra.ExactArgs(0),
+		Use:     "list",
+		Short:   `List attached nodes`,
+		Aliases: []string{"ls"},
+		Args:    cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			route := "/nodes/list"
 			var nodeListResponse types.NodeListResponse
